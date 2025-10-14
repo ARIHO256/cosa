@@ -1,4 +1,8 @@
 {% extends 'main_app/base.html' %}
 {% block content %}
-{% block coordinator_content %}{% endblock %}
+<section class="app-section app-section--dashboard">
+  <div class="app-section-inner">
+    {% block coordinator_content %}{% endblock %}
+  </div>
+</section>
 {% endblock %}

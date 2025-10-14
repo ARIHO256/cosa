@@ -311,6 +311,23 @@
         padding: 0 1.5rem;
       }
 
+      .app-section {
+        display: block;
+        margin: 0 0 var(--app-spacing-lg);
+        padding: 0;
+      }
+
+      .app-section-inner {
+        display: flex;
+        flex-direction: column;
+        gap: var(--app-spacing);
+        background: transparent;
+      }
+
+      .app-section--dashboard .app-section-inner {
+        gap: var(--app-spacing-lg);
+      }
+
       .app-messages {
         padding: var(--app-spacing) 0 0;
       }

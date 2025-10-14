@@ -1184,6 +1184,7 @@
   </head>
   <body class="app-shell">
     {% with request.resolver_match.url_name as current %}
+    {% block app_header %}
     <header class="app-header">
       <div class="app-header-inner">
         <a class="app-brand" href="{% url 'home' %}">
@@ -1211,7 +1212,14 @@
             <span class="app-header-label">Logout</span>
           </a>
           {% else %}
-          <!-- Alumni header profile moved to quick nav -->
+          <a href="{% url 'alumni_profile' %}" class="app-profile-action">
+            <i class="fas fa-user"></i>
+            <span class="app-header-label">Profile</span>
+          </a>
+          <a href="{% url 'user_logout' %}">
+            <i class="fas fa-sign-out-alt"></i>
+            <span class="app-header-label">Logout</span>
+          </a>
           {% endif %} {% else %}
           <a href="{% url 'login_page' %}">
             <i class="fas fa-sign-in-alt"></i>
@@ -1225,6 +1233,7 @@
         </div>
       </div>
 
+      {% block app_header_quick_nav %}
       <div class="app-header-quick-nav">
         {% if user.is_authenticated %} {% if user.user_type == '1' %}
         <a
@@ -1349,7 +1358,9 @@
         >
         {% endif %}
       </div>
+      {% endblock %}
     </header>
+    {% endblock %}
 
     {% if messages %}
     <section class="app-messages">
@@ -1376,6 +1387,7 @@
       <div class="app-content-inner">{% block content %}{% endblock %}</div>
     </main>
 
+    {% block app_footer %}
     <footer class="app-footer">
       <div class="app-footer-inner">
         <p>
@@ -1394,7 +1406,9 @@
         </p>
       </div>
     </footer>
+    {% endblock %}
 
+    {% block app_bottom_nav %}
     <nav class="app-bottom-nav">
       <div class="app-bottom-nav-inner">
         {% if user.is_authenticated %} {% if user.user_type == '1' %}
@@ -1546,6 +1560,7 @@
         {% endif %}
       </div>
     </nav>
+    {% endblock %}
     {% endwith %}
 
     <!-- Bootstrap JS -->

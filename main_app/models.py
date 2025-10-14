@@ -161,8 +161,6 @@ class AlumniCoordinator(models.Model):
 
 class GraduationYear(models.Model):
     YEAR_CHOICES = [(str(year), str(year)) for year in range(2003, 2026)]
-
-
     year = models.CharField(max_length=20, unique=True, choices=YEAR_CHOICES)
     display_order = models.PositiveIntegerField(default=0, help_text="Controls the ordering of levels in lists")
     is_active = models.BooleanField(default=True)

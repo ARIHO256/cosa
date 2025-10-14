@@ -1,0 +1,49 @@
+{% with current=request.resolver_match.url_name %}
+<div class="app-rail-card">
+  <h6>Shortcuts</h6>
+  <ul>
+    <li>
+      <a href="{% url 'alumni_home' %}" class="{% if current == 'alumni_home' %}active{% endif %}">
+        <i class="fas fa-home"></i>
+        <span>Home</span>
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'alumni_profile' %}" class="{% if current == 'alumni_profile' %}active{% endif %}">
+        <i class="fas fa-id-badge"></i>
+        <span>Profile</span>
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'job_board' %}" class="{% if current == 'job_board' or current == 'post_job' or current == 'apply_job' or current == 'my_applications' %}active{% endif %}">
+        <i class="fas fa-briefcase"></i>
+        <span>Jobs</span>
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'events' %}" class="{% if current == 'events' or current == 'register_event' or current == 'my_events' %}active{% endif %}">
+        <i class="fas fa-calendar-alt"></i>
+        <span>Events</span>
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'alumni_directory' %}" class="{% if current == 'alumni_directory' or current == 'alumni_detail' %}active{% endif %}">
+        <i class="fas fa-users"></i>
+        <span>Directory</span>
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'messages_inbox' %}" class="{% if current == 'messages_inbox' or current == 'send_message' or current == 'send_message_to' or current == 'messages_sent' or current == 'view_message' %}active{% endif %}">
+        <i class="fas fa-comments"></i>
+        <span>Messages</span>
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'alumni_feedback' %}" class="{% if current == 'alumni_feedback' %}active{% endif %}">
+        <i class="fas fa-comment-dots"></i>
+        <span>Feedback</span>
+      </a>
+    </li>
+  </ul>
+</div>
+{% endwith %}

@@ -1,31 +1,43 @@
-<form role="form" method="POST" enctype="multipart/form-data">
+<form role="form" method="POST" enctype="multipart/form-data" class="app-form">
     {% csrf_token %}
-    <div class="card-body">
-
-
-        {% for field in form  %}
-        <div class="form-group">
-            {{field.errors}}
-            {{field.label_tag}}
-            {{field}}
-
+    {% if form.non_field_errors %}
+    <div class="app-form__group app-form__group--error">
+        <div class="app-form__errors">
+            {% for error in form.non_field_errors %}
+            <span>{{ error }}</span>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    <div class="app-form__body">
+        {% for field in form %}
+        <div class="app-form__group{% if field.errors %} app-form__group--error{% endif %}">
+            {% if field.label %}
+            <label class="app-form__label" for="{{ field.id_for_label }}">
+                {{ field.label }}{% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+            </label>
+            {% endif %}
+            {{ field }}
+            {% if field.help_text %}
+            <small class="app-form__hint">{{ field.help_text|safe }}</small>
+            {% endif %}
+            {% if field.errors %}
+            <div class="app-form__errors">
+                {% for error in field.errors %}
+                <span>{{ error }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
         </div>
         {% endfor %}
-
-
-
-
     </div>
-    <!-- /.card-body -->
-
-    <div class="card-footer">
-        <button type="submit" class="btn btn-primary btn-block">
+    <div class="app-form__actions">
+        <button type="submit" class="btn btn-primary">
             {% if button_text %}
-            {{button_text}}
+            {{ button_text }}
             {% else %}
             Submit
             {% endif %}
-
         </button>
     </div>
 </form>

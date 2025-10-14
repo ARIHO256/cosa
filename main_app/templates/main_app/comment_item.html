@@ -1,268 +1,209 @@
-{% load static %}
+{% load static conversation_filters %}
 
-<!-- Single Comment Item with Recursive Replies -->
-<div class="comment-item mb-3" data-comment-id="{{ comment.id }}" data-depth="{{ comment.depth }}">
-    <div class="d-flex">
-        <div class="me-3">
-            {% if comment.user.profile_pic %}
-            <img src="{{ comment.user.profile_pic.url }}" alt="Profile" 
-                 class="rounded-circle" width="40" height="40">
-            {% else %}
-            <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" 
-                 style="width: {% if comment.depth > 0 %}30{% else %}40{% endif %}px; height: {% if comment.depth > 0 %}30{% else %}40{% endif %}px;">
-                <i class="fas fa-user text-white"></i>
-            </div>
-            {% endif %}
-        </div>
-        <div class="flex-grow-1">
-            <div class="d-flex justify-content-between align-items-start">
-                <div>
-                    <h6 class="mb-1 {% if comment.depth > 0 %}small{% endif %}">{{ comment.user.get_full_name }}</h6>
-                    <p class="mb-2 {% if comment.depth > 0 %}small{% endif %}">{{ comment.content }}</p>
-                </div>
-                <small class="text-muted">{{ comment.created_at|date:"M d, Y g:i A" }}</small>
-            </div>
-            <div class="comment-actions">
-                {% if user.is_authenticated %}
-                <button class="btn btn-sm btn-outline-primary like-comment" 
-                        data-comment-id="{{ comment.id }}"
-                        {% if comment.user_liked %}data-liked="true"{% endif %}>
-                    <i class="fas fa-thumbs-up"></i> 
-                    <span class="like-text">{% if comment.user_liked %}Unlike{% else %}Like{% endif %}</span>
-                    <span class="like-count">({{ comment.like_count }})</span>
-                </button>
-                <button class="btn btn-sm btn-outline-secondary reply-comment" 
-                        data-comment-id="{{ comment.id }}">
-                    <i class="fas fa-reply"></i> Reply
-                </button>
+<div class="comment-thread" data-comment-id="{{ comment.id }}" style="--depth: {{ comment.depth|default:0 }}">
+    <div class="comment-thread__bubble">
+        <header class="comment-thread__header">
+            <span class="comment-thread__avatar">
+                {% if comment.user.profile_pic %}
+                    <img src="{{ comment.user.profile_pic.url }}" alt="{{ comment.user|display_name }}">
                 {% else %}
-                <div class="btn btn-sm btn-outline-secondary" title="Login to like">
-                    <i class="fas fa-thumbs-up"></i> 
-                    Like <span class="like-count">({{ comment.like_count }})</span>
+                    {{ comment.user|initial }}
+                {% endif %}
+            </span>
+            <div class="comment-thread__title">
+                <span class="comment-thread__author">{{ comment.user|display_name }}</span>
+                <span class="comment-thread__timestamp">{{ comment.created_at|date:"M d, Y g:i A" }}</span>
+            </div>
+        </header>
+
+        <div class="comment-thread__content">
+            {{ comment.content|linebreaksbr }}
+        </div>
+
+        <footer class="comment-thread__footer">
+            {% if user.is_authenticated %}
+                <button class="comment-thread__action like-comment" data-comment-id="{{ comment.id }}" {% if comment.user_liked %}data-liked="true"{% endif %}>
+                    <i class="fas fa-thumbs-up"></i>
+                    <span class="comment-thread__action-label">{% if comment.user_liked %}Unlike{% else %}Like{% endif %}</span>
+                    <span class="comment-thread__action-count">{{ comment.like_count }}</span>
+                </button>
+                <button class="comment-thread__action reply-comment" data-comment-id="{{ comment.id }}">
+                    <i class="fas fa-reply"></i>
+                    <span class="comment-thread__action-label">Reply</span>
+                </button>
+            {% else %}
+                <span class="comment-thread__action muted">
+                    <i class="fas fa-thumbs-up"></i>
+                    <span class="comment-thread__action-label">Likes</span>
+                    <span class="comment-thread__action-count">{{ comment.like_count }}</span>
+                </span>
+            {% endif %}
+        </footer>
+
+        <div class="reply-form" data-comment-id="{{ comment.id }}" style="display:none;">
+            {% if user.is_authenticated %}
+            <form class="reply-comment-form">
+                {% csrf_token %}
+                <div class="mb-2">
+                    <textarea class="form-control form-control-sm" name="content" rows="2" placeholder="Write a reply..." required></textarea>
                 </div>
-                {% endif %}
-            </div>
-            
-            <!-- Reply Form (Hidden by default) -->
-            <div class="reply-form ms-4 mt-3" style="display: none;" data-comment-id="{{ comment.id }}">
-                {% if user.is_authenticated %}
-                <form class="reply-comment-form">
-                    {% csrf_token %}
-                    <div class="mb-2">
-                        <textarea class="form-control form-control-sm" name="content" rows="2" 
-                                  placeholder="Write a reply..." required></textarea>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary btn-sm">
-                            <i class="fas fa-paper-plane me-1"></i>Reply
-                        </button>
-                        <button type="button" class="btn btn-secondary btn-sm cancel-reply">
-                            <i class="fas fa-times me-1"></i>Cancel
-                        </button>
-                    </div>
-                </form>
-                {% endif %}
-            </div>
-            
-            <!-- Recursive Replies -->
-            {% if comment.get_replies %}
-            <div class="replies ms-4 mt-3">
-                {% for reply in comment.get_replies %}
-                    {% include 'main_app/comment_item.html' with comment=reply %}
-                {% endfor %}
-            </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="fas fa-paper-plane me-1"></i>Send
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm cancel-reply">Cancel</button>
+                </div>
+            </form>
             {% endif %}
         </div>
     </div>
+
+    {% if comment.get_replies %}
+    <div class="comment-thread__children">
+        {% for reply in comment.get_replies %}
+            {% include 'main_app/comment_item.html' with comment=reply %}
+        {% endfor %}
+    </div>
+    {% endif %}
 </div>
 
 <style>
-/* Base comment styling */
-.comment-item {
-    border: 1px solid #e9ecef;
-    border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 15px;
-    background: white;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
+.comment-thread {
+    position: relative;
+    margin-top: 0.75rem;
+    margin-left: clamp(0rem, calc(var(--depth, 0) * 1.1rem), 3.4rem);
 }
 
-.comment-item:hover {
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+.comment-thread::before {
+    content: "";
+    position: absolute;
+    top: 0.5rem;
+    bottom: -0.5rem;
+    left: calc(-0.55rem);
+    width: 1px;
+    background: rgba(148, 163, 184, 0.35);
+    opacity: calc(var(--depth, 0) > 0 ? 1 : 0);
+}
+
+.comment-thread__bubble {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 18px;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+    padding: 0.85rem 1rem;
+}
+
+.comment-thread__header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.comment-thread__avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.85), rgba(59, 130, 246, 0.75));
+    color: #fff;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.25);
+}
+
+.comment-thread__avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.comment-thread__title {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.85rem;
+}
+
+.comment-thread__author {
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.comment-thread__timestamp {
+    font-size: 0.72rem;
+    color: #94a3b8;
+}
+
+.comment-thread__content {
+    margin: 0.65rem 0 0.5rem;
+    color: #334155;
+    line-height: 1.55;
+    font-size: 0.9rem;
+}
+
+.comment-thread__footer {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.comment-thread__action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    border-radius: 999px;
+    padding: 0.25rem 0.7rem;
+    font-size: 0.72rem;
+    background: rgba(255, 255, 255, 0.9);
+    color: #475569;
+    transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.comment-thread__action:hover {
     transform: translateY(-1px);
+    background: rgba(37, 99, 235, 0.08);
 }
 
-/* Nested reply styling with unlimited depth */
-.comment-item[data-depth="0"] {
-    border-left: 4px solid #007bff;
+.comment-thread__action.muted {
+    border-style: dashed;
+    cursor: default;
 }
 
-.comment-item[data-depth="1"] {
-    border-left: 4px solid #17a2b8;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    margin-left: 20px;
-    border-radius: 6px;
-    padding: 12px;
+.comment-thread__action-count {
+    font-weight: 600;
+    color: #1f2937;
 }
 
-.comment-item[data-depth="2"] {
-    border-left: 4px solid #fd7e14;
-    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
-    margin-left: 40px;
-    border-radius: 5px;
-    padding: 10px;
+.comment-thread__children {
+    margin-left: clamp(0.6rem, calc(var(--depth, 0) * 0.2rem + 0.8rem), 2rem);
+    margin-top: 0.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
 }
 
-.comment-item[data-depth="3"] {
-    border-left: 4px solid #20c997;
-    background: linear-gradient(135deg, #d1ecf1 0%, #a8e6cf 100%);
-    margin-left: 60px;
-    border-radius: 5px;
-    padding: 8px;
-}
-
-.comment-item[data-depth="4"] {
-    border-left: 4px solid #6f42c1;
-    background: linear-gradient(135deg, #e2e3f5 0%, #d1d8ff 100%);
-    margin-left: 80px;
-    border-radius: 4px;
-    padding: 8px;
-}
-
-.comment-item[data-depth="5"] {
-    border-left: 4px solid #dc3545;
-    background: linear-gradient(135deg, #f8d7da 0%, #ffe6e6 100%);
-    margin-left: 100px;
-    border-radius: 4px;
-    padding: 6px;
-}
-
-.comment-item[data-depth="6"] {
-    border-left: 4px solid #343a40;
-    background: linear-gradient(135deg, #e9ecef 0%, #ced4da 100%);
-    margin-left: 120px;
-    border-radius: 3px;
-    padding: 6px;
-}
-
-.comment-item[data-depth="7"] {
-    border-left: 4px solid #0dcaf0;
-    background: linear-gradient(135deg, #d8f3ff 0%, #b3e8ff 100%);
-    margin-left: 140px;
-    border-radius: 3px;
-    padding: 5px;
-}
-
-.comment-item[data-depth="8"] {
-    border-left: 4px solid #ffc107;
-    background: linear-gradient(135deg, #fff8e1 0%, #ffe082 100%);
-    margin-left: 160px;
-    border-radius: 3px;
-    padding: 5px;
-}
-
-.comment-item[data-depth="9"] {
-    border-left: 4px solid #198754;
-    background: linear-gradient(135deg, #d1e7dd 0%, #a3d977 100%);
-    margin-left: 180px;
-    border-radius: 2px;
-    padding: 4px;
-}
-
-.comment-item[data-depth="10"] {
-    border-left: 4px solid #6c757d;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    margin-left: 200px;
-    border-radius: 2px;
-    padding: 4px;
-}
-
-/* Continue pattern for deeper nesting */
-.comment-item[data-depth]:not([data-depth="0"]) {
-    font-size: 0.95em;
-}
-
-.comment-item[data-depth]:not([data-depth="0"]):not([data-depth="1"]) {
-    font-size: 0.9em;
-}
-
-.comment-item[data-depth="4"], .comment-item[data-depth="5"], 
-.comment-item[data-depth="6"] {
-    font-size: 0.85em;
-}
-
-.comment-item[data-depth="7"], .comment-item[data-depth="8"],
-.comment-item[data-depth="9"], .comment-item[data-depth="10"] {
-    font-size: 0.8em;
-}
-
-/* Reply form styling */
 .reply-form {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border: 2px solid #dee2e6;
-    border-radius: 10px;
-    padding: 20px;
-    margin-top: 15px;
-    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+    margin-top: 0.75rem;
 }
 
-.reply-form textarea {
-    border-radius: 8px;
-    border: 2px solid #ced4da;
-    resize: vertical;
-    transition: border-color 0.3s ease;
-}
-
-.reply-form textarea:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
-}
-
-/* Button styling */
-.comment-actions .btn {
-    border-radius: 6px;
-    transition: all 0.3s ease;
-}
-
-.comment-actions .btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-}
-
-/* Profile image styling */
-.comment-item img {
-    transition: transform 0.3s ease;
-}
-
-.comment-item:hover img {
-    transform: scale(1.05);
-}
-
-/* Depth indicator */
-.comment-item[data-depth]:not([data-depth="0"]):before {
-    content: "↳ ";
-    color: #6c757d;
-    font-weight: bold;
-    margin-right: 5px;
-}
-
-/* Enhanced visual hierarchy */
-.comment-item h6 {
-    margin-bottom: 8px;
-}
-
-.comment-item p {
-    line-height: 1.6;
-    margin-bottom: 10px;
-}
-
-/* Mobile responsiveness */
-@media (max-width: 768px) {
-    .comment-item[data-depth="1"] { margin-left: 10px; }
-    .comment-item[data-depth="2"] { margin-left: 20px; }
-    .comment-item[data-depth="3"] { margin-left: 30px; }
-    .comment-item[data-depth="4"] { margin-left: 40px; }
-    .comment-item[data-depth] { margin-left: calc(40px + (10px * (var(--depth) - 4))); }
+@media (max-width: 576px) {
+    .comment-thread__bubble {
+        border-radius: 16px;
+        padding: 0.75rem;
+    }
+    .comment-thread {
+        margin-left: clamp(0rem, calc(var(--depth, 0) * 0.85rem), 2.5rem);
+    }
+    .comment-thread__children {
+        margin-left: clamp(0.5rem, calc(var(--depth, 0) * 0.15rem + 0.6rem), 1.5rem);
+    }
+    .comment-thread__footer {
+        flex-wrap: wrap;
+        gap: 0.4rem;
+    }
 }
 </style>

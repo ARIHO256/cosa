@@ -164,9 +164,14 @@ urlpatterns = [
     path("alumni/messages/send/", alumni_views.send_message, name='send_message'),
     path("alumni/messages/send/<int:recipient_id>/", alumni_views.send_message, name='send_message_to'),
     path("alumni/messages/view/<int:message_id>/", alumni_views.view_message, name='view_message'),
+    path("alumni/messages/sent/", alumni_views.messages_sent, name='messages_sent'),
+    path("alumni/messages/delete/<int:message_id>/", alumni_views.delete_message, name='delete_message'),
+    path("alumni/messages/bulk-delete/", alumni_views.bulk_delete_messages, name='bulk_delete_messages'),
+    path("alumni/messages/edit/<int:message_id>/", alumni_views.edit_message, name='edit_message'),
     
     path("alumni/feedback/", alumni_views.alumni_feedback, name='alumni_feedback'),
     path("alumni/notifications/", alumni_views.notifications, name='notifications'),
+    path("alumni/notifications/<int:notification_id>/delete/", alumni_views.delete_notification, name='delete_notification'),
     path("alumni/fcmtoken/", alumni_views.alumni_fcmtoken, name='alumni_fcmtoken'),
     
     # Legacy URLs for backward compatibility (can be removed later)

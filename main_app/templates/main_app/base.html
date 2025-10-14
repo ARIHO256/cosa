@@ -94,8 +94,8 @@
             justify-content: space-between;
             max-width: 640px;
             margin: 0 auto;
-            padding: 0.65rem 0.85rem;
-            gap: 0.6rem;
+            padding: 0.55rem 0.7rem;
+            gap: 0.45rem;
         }
 
         .app-brand {
@@ -111,7 +111,7 @@
         .app-header-actions {
             display: inline-flex;
             align-items: center;
-            gap: 0.35rem;
+            gap: 0.2rem;
         }
 
         .app-header-actions:empty {
@@ -120,15 +120,17 @@
 
         .app-header-actions a {
             display: inline-flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 0.35rem;
-            padding: 0.45rem 0.7rem;
-            border-radius: 999px;
+            gap: 0.1rem;
+            padding: 0.28rem 0.32rem;
+            min-width: 48px;
+            border-radius: 16px;
             border: 1px solid var(--app-border);
-            background: rgba(255, 255, 255, 0.68);
+            background: rgba(255, 255, 255, 0.72);
             color: var(--app-text-secondary);
-            font-size: 0.82rem;
+            font-size: 0.6rem;
             text-decoration: none;
             font-weight: 600;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -140,19 +142,19 @@
         }
 
         .app-header-actions a i {
-            font-size: 1rem;
+            font-size: 0.9rem;
         }
 
         .app-header-actions .app-profile-action {
-            padding: 0.3rem 0.7rem 0.3rem 0.45rem;
-            gap: 0.55rem;
-            min-width: 0;
+            padding: 0.26rem 0.32rem;
+            gap: 0.1rem;
+            min-width: 52px;
         }
 
         .app-profile-avatar,
         .app-profile-avatar-placeholder {
-            width: 36px;
-            height: 36px;
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
             object-fit: cover;
             border: 2px solid rgba(255, 255, 255, 0.85);
@@ -164,7 +166,7 @@
             place-items: center;
             background: linear-gradient(135deg, rgba(37, 99, 235, 0.85) 0%, rgba(59, 130, 246, 0.75) 100%);
             color: var(--app-text-inverse);
-            font-size: 1.1rem;
+            font-size: 0.7rem;
         }
 
         .app-profile-avatar-wrapper {
@@ -185,6 +187,15 @@
             gap: 0.45rem;
         }
 
+        .app-header-label,
+        .app-chip-label {
+            display: block;
+            font-size: 0.55rem;
+            line-height: 1.1;
+            text-transform: none;
+            font-weight: 600;
+        }
+
         .app-header-quick-nav {
             display: flex;
             gap: 0.35rem;
@@ -202,18 +213,21 @@
 
         .app-chip {
             display: inline-flex;
+            flex-direction: column;
             align-items: center;
-            gap: 0.32rem;
-            padding: 0.45rem 0.7rem;
-            border-radius: 999px;
+            justify-content: center;
+            gap: 0.1rem;
+            padding: 0.32rem 0.38rem;
+            border-radius: 16px;
             border: 1px solid var(--app-border);
-            background: rgba(255, 255, 255, 0.68);
+            background: rgba(255, 255, 255, 0.72);
             color: var(--app-text-secondary);
-            font-size: 0.8rem;
+            font-size: 0.64rem;
             text-decoration: none;
             white-space: nowrap;
             font-weight: 600;
             transition: transform 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+            min-width: 56px;
         }
 
         .app-chip.active {
@@ -1099,17 +1113,35 @@
             <div class="app-header-actions">
                 {% if user.is_authenticated %}
                     {% if user.user_type == '1' %}
-                        <a href="{% url 'admin_profile' %}"><i class="fas fa-user-cog"></i> Profile</a>
-                        <a href="{% url 'user_logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                        <a href="{% url 'admin_profile' %}">
+                            <i class="fas fa-user-cog"></i>
+                            <span class="app-header-label">Profile</span>
+                        </a>
+                        <a href="{% url 'user_logout' %}">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span class="app-header-label">Logout</span>
+                        </a>
                     {% elif user.user_type == '2' %}
-                        <a href="{% url 'coordinator_profile' %}"><i class="fas fa-user-cog"></i> Profile</a>
-                        <a href="{% url 'user_logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                        <a href="{% url 'coordinator_profile' %}">
+                            <i class="fas fa-user-cog"></i>
+                            <span class="app-header-label">Profile</span>
+                        </a>
+                        <a href="{% url 'user_logout' %}">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span class="app-header-label">Logout</span>
+                        </a>
                     {% else %}
                         <!-- Alumni header profile moved to quick nav -->
                     {% endif %}
                 {% else %}
-                    <a href="{% url 'login_page' %}"><i class="fas fa-sign-in-alt"></i> Log in</a>
-                    <a href="{% url 'alumni_registration' %}"><i class="fas fa-user-plus"></i> Join</a>
+                    <a href="{% url 'login_page' %}">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span class="app-header-label">Log in</span>
+                    </a>
+                    <a href="{% url 'alumni_registration' %}">
+                        <i class="fas fa-user-plus"></i>
+                        <span class="app-header-label">Join</span>
+                    </a>
                 {% endif %}
             </div>
         </div>
@@ -1117,17 +1149,47 @@
         <div class="app-header-quick-nav">
             {% if user.is_authenticated %}
                 {% if user.user_type == '1' %}
-                    <a href="{% url 'manage_coordinators' %}" class="app-chip {% if current == 'manage_coordinators' %}active{% endif %}"><i class="fas fa-user-tie"></i> Coordinators</a>
-                    <a href="{% url 'manage_companies' %}" class="app-chip {% if current == 'manage_companies' %}active{% endif %}"><i class="fas fa-building"></i> Companies</a>
-                    <a href="{% url 'manage_departments' %}" class="app-chip {% if current == 'manage_departments' %}active{% endif %}"><i class="fas fa-layer-group"></i> Departments</a>
-                    <a href="{% url 'manage_degrees' %}" class="app-chip {% if current == 'manage_degrees' %}active{% endif %}"><i class="fas fa-graduation-cap"></i> Programs</a>
-                    <a href="{% url 'system_settings' %}" class="app-chip {% if current == 'system_settings' %}active{% endif %}"><i class="fas fa-sliders-h"></i> Settings</a>
+                    <a href="{% url 'manage_coordinators' %}" class="app-chip {% if current == 'manage_coordinators' %}active{% endif %}">
+                        <i class="fas fa-user-tie"></i>
+                        <span class="app-chip-label">Coordinators</span>
+                    </a>
+                    <a href="{% url 'manage_companies' %}" class="app-chip {% if current == 'manage_companies' %}active{% endif %}">
+                        <i class="fas fa-building"></i>
+                        <span class="app-chip-label">Companies</span>
+                    </a>
+                    <a href="{% url 'manage_departments' %}" class="app-chip {% if current == 'manage_departments' %}active{% endif %}">
+                        <i class="fas fa-layer-group"></i>
+                        <span class="app-chip-label">Departments</span>
+                    </a>
+                    <a href="{% url 'manage_degrees' %}" class="app-chip {% if current == 'manage_degrees' %}active{% endif %}">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span class="app-chip-label">Programs</span>
+                    </a>
+                    <a href="{% url 'system_settings' %}" class="app-chip {% if current == 'system_settings' %}active{% endif %}">
+                        <i class="fas fa-sliders-h"></i>
+                        <span class="app-chip-label">Settings</span>
+                    </a>
                 {% elif user.user_type == '2' %}
-                    <a href="{% url 'manage_jobs' %}" class="app-chip {% if current == 'manage_jobs' %}active{% endif %}"><i class="fas fa-briefcase"></i> Jobs</a>
-                    <a href="{% url 'manage_news' %}" class="app-chip {% if current == 'manage_news' %}active{% endif %}"><i class="fas fa-newspaper"></i> News</a>
-                    <a href="{% url 'manage_donations' %}" class="app-chip {% if current == 'manage_donations' %}active{% endif %}"><i class="fas fa-hand-holding-heart"></i> Donations</a>
-                    <a href="{% url 'manage_mentorships' %}" class="app-chip {% if current == 'manage_mentorships' %}active{% endif %}"><i class="fas fa-lightbulb"></i> Mentorships</a>
-                    <a href="{% url 'send_notification' %}" class="app-chip {% if current == 'send_notification' %}active{% endif %}"><i class="fas fa-bullhorn"></i> Alerts</a>
+                    <a href="{% url 'manage_jobs' %}" class="app-chip {% if current == 'manage_jobs' %}active{% endif %}">
+                        <i class="fas fa-briefcase"></i>
+                        <span class="app-chip-label">Jobs</span>
+                    </a>
+                    <a href="{% url 'manage_news' %}" class="app-chip {% if current == 'manage_news' %}active{% endif %}">
+                        <i class="fas fa-newspaper"></i>
+                        <span class="app-chip-label">News</span>
+                    </a>
+                    <a href="{% url 'manage_donations' %}" class="app-chip {% if current == 'manage_donations' %}active{% endif %}">
+                        <i class="fas fa-hand-holding-heart"></i>
+                        <span class="app-chip-label">Donations</span>
+                    </a>
+                    <a href="{% url 'manage_mentorships' %}" class="app-chip {% if current == 'manage_mentorships' %}active{% endif %}">
+                        <i class="fas fa-lightbulb"></i>
+                        <span class="app-chip-label">Mentorships</span>
+                    </a>
+                    <a href="{% url 'send_notification' %}" class="app-chip {% if current == 'send_notification' %}active{% endif %}">
+                        <i class="fas fa-bullhorn"></i>
+                        <span class="app-chip-label">Alerts</span>
+                    </a>
                 {% else %}
                     <a href="{% url 'alumni_directory' %}" class="app-chip {% if current == 'alumni_directory' %}active{% endif %}"><i class="fas fa-users"></i> Directory</a>
                     <a href="{% url 'events' %}" class="app-chip {% if current == 'events' %}active{% endif %}"><i class="fas fa-calendar-alt"></i> Events</a>

@@ -366,6 +366,28 @@ class MessageForm(FormSettings):
         )
 
 
+class MessageEditForm(FormSettings):
+    class Meta:
+        model = Message
+        fields = ['subject', 'content', 'attachment']
+        widgets = {
+            'content': forms.Textarea(attrs={'rows': 6}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['subject'].required = False
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            'subject',
+            'content',
+            'attachment',
+            FormActions(
+                Submit('submit', 'Save Changes', css_class='btn btn-primary')
+            )
+        )
+
+
 class AdminMessageForm(FormSettings):
     class Meta:
         model = Message

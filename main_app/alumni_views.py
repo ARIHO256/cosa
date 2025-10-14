@@ -1,4 +1,6 @@
 import json
+from datetime import timedelta
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
@@ -513,8 +515,106 @@ def messages_inbox(request):
     context = {
         'messages': message_list,
     }
-    
+
     return render(request, 'alumni_template/messages_inbox.html', context)
+
+
+@login_required
+def messages_sent(request):
+    """List messages the alumni has sent."""
+    if request.user.user_type != '3':
+        return redirect('login_page')
+
+    sent_messages = Message.objects.filter(
+        sender_type='alumni',
+        sender_alumni=request.user.alumni
+    ).select_related(
+        'recipient', 'recipient__admin'
+    ).order_by('-created_at')
+
+    paginator = Paginator(sent_messages, 20)
+    page_number = request.GET.get('page')
+    message_list = paginator.get_page(page_number)
+
+    edit_window_minutes = 10
+    edit_window = timedelta(minutes=edit_window_minutes)
+    now = timezone.now()
+    for msg in message_list:
+        msg.can_edit = (now - msg.created_at) <= edit_window
+        msg.edit_deadline = msg.created_at + edit_window
+
+    context = {
+        'messages': message_list,
+        'edit_window_minutes': edit_window_minutes,
+    }
+
+    return render(request, 'alumni_template/messages_sent.html', context)
+
+
+@login_required
+def delete_message(request, message_id):
+    if request.user.user_type != '3' or request.method != 'POST':
+        return redirect('messages_inbox')
+
+    message_obj = get_object_or_404(
+        Message,
+        id=message_id,
+        recipient=request.user.alumni
+    )
+    message_obj.delete()
+    messages.success(request, 'Message deleted.')
+    return redirect('messages_inbox')
+
+
+@login_required
+def bulk_delete_messages(request):
+    if request.user.user_type != '3' or request.method != 'POST':
+        return redirect('messages_inbox')
+
+    ids = request.POST.getlist('message_ids')
+    if ids:
+        Message.objects.filter(
+            id__in=ids,
+            recipient=request.user.alumni
+        ).delete()
+        messages.success(request, 'Selected messages deleted.')
+    else:
+        messages.info(request, 'No messages selected.')
+    return redirect('messages_inbox')
+
+
+@login_required
+def edit_message(request, message_id):
+    if request.user.user_type != '3':
+        return redirect('login_page')
+
+    message_obj = get_object_or_404(
+        Message,
+        id=message_id,
+        sender_type='alumni',
+        sender_alumni=request.user.alumni
+    )
+
+    edit_window = timedelta(minutes=10)
+    if timezone.now() - message_obj.created_at > edit_window:
+        messages.error(request, 'You can only edit a message within 10 minutes of sending.')
+        return redirect('messages_sent')
+
+    if request.method == 'POST':
+        form = MessageEditForm(request.POST, request.FILES, instance=message_obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Message updated successfully.')
+            return redirect('messages_sent')
+    else:
+        form = MessageEditForm(instance=message_obj)
+
+    context = {
+        'form': form,
+        'message_obj': message_obj,
+        'deadline': message_obj.created_at + edit_window,
+    }
+    return render(request, 'alumni_template/edit_message.html', context)
 
 
 @login_required
@@ -664,6 +764,20 @@ def notifications(request):
     }
     
     return render(request, 'alumni_template/notifications.html', context)
+
+
+@login_required
+def delete_notification(request, notification_id):
+    if request.user.user_type != '3' or request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Unauthorized'}, status=403)
+
+    notification = get_object_or_404(
+        NotificationAlumni,
+        id=notification_id,
+        alumni=request.user.alumni
+    )
+    notification.delete()
+    return JsonResponse({'status': 'success'})
 
 
 @csrf_exempt

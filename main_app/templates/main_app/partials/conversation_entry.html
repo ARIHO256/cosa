@@ -1,15 +1,11 @@
-{% load i18n %}
+{% load i18n conversation_filters %}
 {% with sender_profile=entry.get_sender_profile %}
-<div class="conversation-entry {% if entry.is_from_user(request.user) %}conversation-entry-self{% else %}conversation-entry-peer{% endif %}">
+<div class="conversation-entry {% if entry|is_from:user %}conversation-entry-self{% else %}conversation-entry-peer{% endif %}">
     <div class="conversation-entry-inner">
         <div class="conversation-avatar">
-            {% if sender_profile and sender_profile.profile_pic %}
-                <img src="{{ sender_profile.profile_pic.url }}" alt="{{ entry.get_sender_name }}">
-            {% else %}
-                <span class="conversation-avatar-fallback">
-                    <i class="fas fa-user"></i>
-                </span>
-            {% endif %}
+            <span class="conversation-avatar-fallback">
+                <i class="fas fa-user"></i>
+            </span>
         </div>
         <div class="conversation-bubble">
             <div class="conversation-meta d-flex flex-wrap align-items-center justify-content-between">
@@ -34,10 +30,16 @@
             </div>
             {% if entry.attachment %}
             <div class="conversation-attachment mt-3">
-                <a href="{{ entry.attachment.url }}" class="btn btn-sm btn-outline-primary" target="_blank">
-                    <i class="fas fa-paperclip me-2"></i>
-                    {{ entry.attachment.name|default:"Download attachment" }}
-                </a>
+                {% if entry.attachment|is_image %}
+                    <a href="{{ entry.attachment.url }}" class="conversation-attachment-thumb" target="_blank" rel="noopener">
+                        <img src="{{ entry.attachment.url }}" alt="Attachment preview">
+                    </a>
+                {% else %}
+                    <a href="{{ entry.attachment.url }}" class="btn btn-sm btn-outline-primary" target="_blank" rel="noopener" download>
+                        <i class="fas fa-paperclip me-2"></i>
+                        {{ entry.attachment.name|default:"Download attachment" }}
+                    </a>
+                {% endif %}
             </div>
             {% endif %}
         </div>

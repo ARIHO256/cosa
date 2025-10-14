@@ -1,7 +1,10 @@
 import json
 from datetime import timedelta
 
+from functools import wraps
+
 from django.contrib import messages
+from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render, reverse
@@ -17,13 +20,34 @@ from .models import *
 from .forms import *
 
 
+def alumni_profile_required(view_func):
+    """Ensure the logged-in user has an associated alumni profile."""
+
+    @wraps(view_func)
+    def _wrapped(request, *args, **kwargs):
+        if request.user.user_type != '3':
+            return redirect('login_page')
+
+        try:
+            request.alumni = request.user.alumni
+        except Alumni.DoesNotExist:
+            logout(request)
+            messages.error(
+                request,
+                'Alumni profile not found. Please contact the alumni office to complete your registration.'
+            )
+            return redirect('login_page')
+
+        return view_func(request, *args, **kwargs)
+
+    return _wrapped
+
+
 @login_required
+@alumni_profile_required
 def alumni_home(request):
     """COSA DASHBOARD"""
-    if request.user.user_type != '3':
-        return redirect('login_page')
-    
-    alumni = request.user.alumni
+    alumni = request.alumni
     
     # Get dashboard statistics
     stats = {
@@ -68,12 +92,10 @@ def alumni_home(request):
 
 
 @login_required
+@alumni_profile_required
 def alumni_profile(request):
     """Alumni profile management"""
-    if request.user.user_type != '3':
-        return redirect('login_page')
-    
-    alumni = request.user.alumni
+    alumni = request.alumni
     
     if request.method == 'POST':
         # Handle profile picture upload separately
@@ -101,11 +123,9 @@ def alumni_profile(request):
 
 
 @login_required
+@alumni_profile_required
 def alumni_directory(request):
     """COSA Directory for logged-in users"""
-    if request.user.user_type != '3':
-        return redirect('login_page')
-
     context = _build_alumni_directory_context(request)
     return render(request, 'alumni_template/alumni_directory.html', context)
 
@@ -120,8 +140,8 @@ def _build_alumni_directory_context(request):
     )
     
     # Exclude the logged-in alumni if available
-    if hasattr(request.user, 'alumni'):
-        alumni_list = alumni_list.exclude(id=request.user.alumni.id)
+    if hasattr(request, 'alumni'):
+        alumni_list = alumni_list.exclude(id=request.alumni.id)
     
     # Apply privacy filters based on user's access level
     alumni_list = alumni_list.filter(
@@ -168,11 +188,9 @@ def _build_alumni_directory_context(request):
 
 
 @login_required
+@alumni_profile_required
 def alumni_directory_data(request):
     """AJAX endpoint for alumni directory filters."""
-    if request.user.user_type != '3':
-        return JsonResponse({'error': 'Unauthorized'}, status=403)
-    
     context = _build_alumni_directory_context(request)
     html = render_to_string(
         'alumni_template/partials/alumni_directory_results.html',
@@ -191,32 +209,28 @@ def alumni_directory_data(request):
 
 
 @login_required
+@alumni_profile_required
 def alumni_detail(request, alumni_id):
     """View individual alumni profile"""
-    if request.user.user_type != '3':
-        return redirect('login_page')
-    
     alumni = get_object_or_404(Alumni, id=alumni_id, admin__is_verified=True)
-    
+
     # Check privacy permissions
-    if alumni.privacy_level == 'private' and alumni != request.user.alumni:
+    if alumni.privacy_level == 'private' and alumni != request.alumni:
         messages.error(request, 'This profile is private.')
         return redirect('alumni_directory')
-    
+
     context = {
         'profile_alumni': alumni,
-        'can_contact': alumni.allow_contact and alumni != request.user.alumni,
+        'can_contact': alumni.allow_contact and alumni != request.alumni,
     }
     
     return render(request, 'alumni_template/alumni_detail.html', context)
 
 
 @login_required
+@alumni_profile_required
 def job_board(request):
     """Job board for alumni"""
-    if request.user.user_type != '3':
-        return redirect('login_page')
-    
     jobs = JobPosting.objects.filter(is_active=True).select_related(
         'company', 'posted_by'
     ).order_by('-created_at')
@@ -249,7 +263,7 @@ def job_board(request):
     
     # Get user's applications
     user_applications = JobApplication.objects.filter(
-        applicant=request.user.alumni
+        applicant=request.alumni
     ).values_list('job_id', flat=True)
     
     context = {
@@ -263,11 +277,9 @@ def job_board(request):
 
 
 @login_required
+@alumni_profile_required
 def post_job(request):
     """Post a new job opportunity - Simplified version"""
-    if request.user.user_type != '3':
-        return redirect('login_page')
-    
     companies = Company.objects.all()
     
     # If no companies exist, create a default one
@@ -293,7 +305,7 @@ def post_job(request):
                 job = form.save(commit=False)
                 
                 # Set defaults for simplified form
-                job.posted_by = request.user.alumni
+                job.posted_by = request.alumni
                 job.requirements = "Requirements will be discussed during interview process."
                 job.experience_level = 'mid'  # Default to mid-level
                 job.currency = 'USD'
@@ -329,13 +341,11 @@ def post_job(request):
 
 
 @login_required
+@alumni_profile_required
 def apply_job(request, job_id):
     """Apply for a job"""
-    if request.user.user_type != '3':
-        return redirect('login_page')
-    
     job = get_object_or_404(JobPosting, id=job_id, is_active=True)
-    alumni = request.user.alumni
+    alumni = request.alumni
     
     # Check if already applied
     if JobApplication.objects.filter(job=job, applicant=alumni).exists():
@@ -364,13 +374,11 @@ def apply_job(request, job_id):
 
 
 @login_required
+@alumni_profile_required
 def my_applications(request):
     """View user's job applications"""
-    if request.user.user_type != '3':
-        return redirect('login_page')
-    
     applications = JobApplication.objects.filter(
-        applicant=request.user.alumni
+        applicant=request.alumni
     ).select_related('job', 'job__company').order_by('-application_date')
     
     # Pagination
@@ -386,11 +394,9 @@ def my_applications(request):
 
 
 @login_required
+@alumni_profile_required
 def events(request):
     """View events"""
-    if request.user.user_type != '3':
-        return redirect('login_page')
-    
     events = Event.objects.filter(
         status='upcoming'
     ).select_related('organizer').order_by('start_date')
@@ -407,7 +413,7 @@ def events(request):
     
     # Get user's registrations
     user_registrations = EventRegistration.objects.filter(
-        alumni=request.user.alumni
+        alumni=request.alumni
     ).values_list('event_id', flat=True)
     
     context = {
@@ -420,13 +426,11 @@ def events(request):
 
 
 @login_required
+@alumni_profile_required
 def register_event(request, event_id):
     """Register for an event"""
-    if request.user.user_type != '3':
-        return redirect('login_page')
-    
     event = get_object_or_404(Event, id=event_id)
-    alumni = request.user.alumni
+    alumni = request.alumni
     
     # Check if already registered
     if EventRegistration.objects.filter(event=event, alumni=alumni).exists():
@@ -466,13 +470,11 @@ def register_event(request, event_id):
 
 
 @login_required
+@alumni_profile_required
 def my_events(request):
     """View user's event registrations"""
-    if request.user.user_type != '3':
-        return redirect('login_page')
-    
     registrations = EventRegistration.objects.filter(
-        alumni=request.user.alumni
+        alumni=request.alumni
     ).select_related('event').order_by('-registration_date')
     
     context = {
@@ -485,12 +487,10 @@ def my_events(request):
 
 
 @login_required
+@alumni_profile_required
 def messages_inbox(request):
     """View messages inbox"""
-    if request.user.user_type != '3':
-        return redirect('login_page')
-    
-    alumni = request.user.alumni
+    alumni = request.alumni
 
     # Mark freshly received messages as delivered once inbox is opened
     Message.objects.filter(
@@ -520,14 +520,12 @@ def messages_inbox(request):
 
 
 @login_required
+@alumni_profile_required
 def messages_sent(request):
     """List messages the alumni has sent."""
-    if request.user.user_type != '3':
-        return redirect('login_page')
-
     sent_messages = Message.objects.filter(
         sender_type='alumni',
-        sender_alumni=request.user.alumni
+        sender_alumni=request.alumni
     ).select_related(
         'recipient', 'recipient__admin'
     ).order_by('-created_at')
@@ -552,14 +550,15 @@ def messages_sent(request):
 
 
 @login_required
+@alumni_profile_required
 def delete_message(request, message_id):
-    if request.user.user_type != '3' or request.method != 'POST':
+    if request.method != 'POST':
         return redirect('messages_inbox')
 
     message_obj = get_object_or_404(
         Message,
         id=message_id,
-        recipient=request.user.alumni
+        recipient=request.alumni
     )
     message_obj.delete()
     messages.success(request, 'Message deleted.')
@@ -567,15 +566,16 @@ def delete_message(request, message_id):
 
 
 @login_required
+@alumni_profile_required
 def bulk_delete_messages(request):
-    if request.user.user_type != '3' or request.method != 'POST':
+    if request.method != 'POST':
         return redirect('messages_inbox')
 
     ids = request.POST.getlist('message_ids')
     if ids:
         Message.objects.filter(
             id__in=ids,
-            recipient=request.user.alumni
+            recipient=request.alumni
         ).delete()
         messages.success(request, 'Selected messages deleted.')
     else:
@@ -584,15 +584,14 @@ def bulk_delete_messages(request):
 
 
 @login_required
+@alumni_profile_required
 def edit_message(request, message_id):
-    if request.user.user_type != '3':
-        return redirect('login_page')
 
     message_obj = get_object_or_404(
         Message,
         id=message_id,
         sender_type='alumni',
-        sender_alumni=request.user.alumni
+        sender_alumni=request.alumni
     )
 
     edit_window = timedelta(minutes=10)
@@ -618,11 +617,9 @@ def edit_message(request, message_id):
 
 
 @login_required
+@alumni_profile_required
 def send_message(request, recipient_id=None):
     """Send a message to another alumni"""
-    if request.user.user_type != '3':
-        return redirect('login_page')
-    
     recipient = None
     if recipient_id:
         recipient = get_object_or_404(Alumni, id=recipient_id, allow_contact=True)
@@ -632,7 +629,7 @@ def send_message(request, recipient_id=None):
         if form.is_valid():
             message = form.save(commit=False)
             message.sender_type = 'alumni'
-            message.sender_alumni = request.user.alumni
+            message.sender_alumni = request.alumni
             message.save()
             messages.success(request, 'Message sent successfully!')
             return redirect('messages_inbox')
@@ -651,11 +648,9 @@ def send_message(request, recipient_id=None):
 
 
 @login_required
+@alumni_profile_required
 def view_message(request, message_id):
     """View a specific message"""
-    if request.user.user_type != '3':
-        return redirect('login_page')
-    
     message_queryset = Message.objects.select_related(
         'sender_alumni__admin',
         'sender_admin__admin',
@@ -674,7 +669,7 @@ def view_message(request, message_id):
     message = get_object_or_404(
         message_queryset,
         id=message_id,
-        recipient=request.user.alumni
+        recipient=request.alumni
     )
     
     # Mark as read
@@ -692,7 +687,7 @@ def view_message(request, message_id):
             reply = reply_form.save(commit=False)
             reply.message = message
             reply.sender_type = 'alumni'
-            reply.sender_alumni = request.user.alumni
+            reply.sender_alumni = request.alumni
             reply.sender_admin = None
             reply.sender_coordinator = None
             reply.parent = None  # reserved for future threaded replies
@@ -715,16 +710,14 @@ def view_message(request, message_id):
 
 
 @login_required
+@alumni_profile_required
 def alumni_feedback(request):
     """Submit feedback"""
-    if request.user.user_type != '3':
-        return redirect('login_page')
-    
     if request.method == 'POST':
         form = FeedbackAlumniForm(request.POST)
         if form.is_valid():
             feedback = form.save(commit=False)
-            feedback.alumni = request.user.alumni
+            feedback.alumni = request.alumni
             feedback.save()
             messages.success(request, 'Feedback submitted successfully!')
             return redirect('alumni_home')
@@ -739,13 +732,11 @@ def alumni_feedback(request):
 
 
 @login_required
+@alumni_profile_required
 def notifications(request):
     """View notifications"""
-    if request.user.user_type != '3':
-        return redirect('login_page')
-    
     notifications_list = NotificationAlumni.objects.filter(
-        alumni=request.user.alumni
+        alumni=request.alumni
     ).order_by('-created_at')
     
     # Mark all as read
@@ -767,14 +758,15 @@ def notifications(request):
 
 
 @login_required
+@alumni_profile_required
 def delete_notification(request, notification_id):
-    if request.user.user_type != '3' or request.method != 'POST':
+    if request.method != 'POST':
         return JsonResponse({'status': 'error', 'message': 'Unauthorized'}, status=403)
 
     notification = get_object_or_404(
         NotificationAlumni,
         id=notification_id,
-        alumni=request.user.alumni
+        alumni=request.alumni
     )
     notification.delete()
     return JsonResponse({'status': 'success'})
@@ -783,9 +775,15 @@ def delete_notification(request, notification_id):
 @csrf_exempt
 def alumni_fcmtoken(request):
     """Update FCM token for push notifications"""
-    if request.user.user_type != '3':
+    user = request.user
+    if not user.is_authenticated or getattr(user, 'user_type', None) != '3':
         return JsonResponse({'status': 'error', 'message': 'Unauthorized'})
-    
+
+    try:
+        user.alumni
+    except Alumni.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Alumni profile missing'}, status=400)
+
     if request.method == 'POST':
         fcm_token = request.POST.get('fcm_token')
         if fcm_token:

@@ -10,11 +10,7 @@
 {% block content %}
 <section class="app-section app-section--dashboard">
   <div class="app-section-inner">
-    <div class="app-dashboard">
-      <aside class="app-dashboard__rail">{% block coordinator_rail %}{% endblock %}</aside>
-      <main class="app-dashboard__main">{% block coordinator_content %}{% endblock %}</main>
-      <aside class="app-dashboard__meta">{% block coordinator_meta %}{% endblock %}</aside>
-    </div>
+    {% block coordinator_content %}{% endblock %}
   </div>
 </section>
 {% endblock %}

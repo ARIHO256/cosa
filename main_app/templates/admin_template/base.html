@@ -10,11 +10,7 @@
 {% block content %}
 <section class="app-section app-section--dashboard">
   <div class="app-section-inner">
-    <div class="app-dashboard">
-      <aside class="app-dashboard__rail">{% block admin_rail %}{% endblock %}</aside>
-      <main class="app-dashboard__main">{% block admin_content %}{% endblock %}</main>
-      <aside class="app-dashboard__meta">{% block admin_meta %}{% endblock %}</aside>
-    </div>
+    {% block admin_content %}{% endblock %}
   </div>
 </section>
 {% endblock %}

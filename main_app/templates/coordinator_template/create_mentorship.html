@@ -1,0 +1,216 @@
+{% extends 'coordinator_template/base.html' %}
+{% block title %}Create Mentorship - COSA Coordinator{% endblock %}
+{% block coordinator_content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2"><i class="fas fa-plus me-2"></i>Create New Mentorship</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{% url 'manage_mentorships' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Back to Mentorships
+                    </a>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            {% if messages %}
+            <div class="row mb-4">
+                <div class="col-12">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>{{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header bg-white border-0">
+                            <h5 class="mb-0">Mentorship Program Details</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="POST">
+                                {% csrf_token %}
+                                
+                                <!-- Mentor Selection -->
+                                <div class="mb-4">
+                                    <label class="form-label">Select Mentor <span class="text-danger">*</span></label>
+                                    <select name="mentor" class="form-select" required>
+                                        <option value="">Choose a mentor...</option>
+                                        {% for mentor in mentors %}
+                                        <option value="{{ mentor.id }}">
+                                            {{ mentor.full_name }} 
+                                            {% if mentor.current_company %} - {{ mentor.current_company.name }}{% endif %}
+                                            {% if mentor.job_title %} ({{ mentor.job_title }}){% endif %}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="form-text">Only alumni marked as mentors are available for selection.</div>
+                                </div>
+
+                                <!-- Mentee Selection -->
+                                <div class="mb-4">
+                                    <label class="form-label">Select Mentee <span class="text-danger">*</span></label>
+                                    <select name="mentee" class="form-select" required>
+                                        <option value="">Choose a mentee...</option>
+                                        {% for mentee in mentees %}
+                                        <option value="{{ mentee.id }}">
+                                            {{ mentee.full_name }} 
+                                            {% if mentee.current_company %} - {{ mentee.current_company.name }}{% endif %}
+                                            {% if mentee.job_title %} ({{ mentee.job_title }}){% endif %}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="form-text">All verified alumni are available for selection as mentees.</div>
+                                </div>
+
+                                <!-- Focus Area -->
+                                <div class="mb-4">
+                                    <label class="form-label">Focus Area <span class="text-danger">*</span></label>
+                                    <input type="text" name="focus_area" class="form-control" 
+                                           placeholder="e.g., Career Development, Technical Skills, Leadership" required>
+                                    <div class="form-text">Brief description of what the mentorship will focus on.</div>
+                                </div>
+
+                                <!-- Goals -->
+                                <div class="mb-4">
+                                    <label class="form-label">Goals and Objectives <span class="text-danger">*</span></label>
+                                    <textarea name="goals" class="form-control" rows="4" 
+                                              placeholder="Describe the specific goals and objectives for this mentorship program..." required></textarea>
+                                    <div class="form-text">Be specific about what the mentee hopes to achieve.</div>
+                                </div>
+
+                                <!-- Duration -->
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Duration (months) <span class="text-danger">*</span></label>
+                                        <input type="number" name="duration_months" class="form-control" 
+                                               min="1" max="24" value="6" required>
+                                        <div class="form-text">Recommended: 3-12 months</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Start Date <span class="text-danger">*</span></label>
+                                        <input type="date" name="start_date" class="form-control" required>
+                                        <div class="form-text">When should the mentorship begin?</div>
+                                    </div>
+                                </div>
+
+                                <!-- Submit Buttons -->
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a href="{% url 'manage_mentorships' %}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times me-1"></i>Cancel
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-1"></i>Create Mentorship
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Help Panel -->
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Creating a Mentorship</h6>
+                        </div>
+                        <div class="card-body">
+                            <h6>Guidelines:</h6>
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Choose mentors who are willing and experienced
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Set clear, achievable goals
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Consider 3-6 months for initial programs
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Ensure both parties are committed
+                                </li>
+                            </ul>
+
+                            <h6 class="mt-4">Tips:</h6>
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fas fa-lightbulb text-warning me-2"></i>
+                                    Match based on industry or career goals
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-lightbulb text-warning me-2"></i>
+                                    Set up regular check-ins
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-lightbulb text-warning me-2"></i>
+                                    Be specific about expectations
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Available Mentors Count -->
+                    <div class="card mt-3">
+                        <div class="card-body text-center">
+                            <h4 class="text-primary">{{ mentors|length }}</h4>
+                            <p class="text-muted mb-0">Available Mentors</p>
+                        </div>
+                    </div>
+
+                    <!-- Available Mentees Count -->
+                    <div class="card mt-3">
+                        <div class="card-body text-center">
+                            <h4 class="text-success">{{ mentees|length }}</h4>
+                            <p class="text-muted mb-0">Available Mentees</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-hide alerts after 5 seconds
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(function(alert) {
+        setTimeout(function() {
+            alert.style.opacity = '0';
+            setTimeout(function() {
+                alert.remove();
+            }, 300);
+        }, 5000);
+    });
+
+    // Set default start date to today
+    const startDateInput = document.querySelector('input[name="start_date"]');
+    if (startDateInput && !startDateInput.value) {
+        const today = new Date().toISOString().split('T')[0];
+        startDateInput.value = today;
+    }
+
+    // Form validation
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const mentor = document.querySelector('select[name="mentor"]').value;
+            const mentee = document.querySelector('select[name="mentee"]').value;
+            
+            if (mentor === mentee) {
+                e.preventDefault();
+                alert('Mentor and mentee cannot be the same person.');
+                return false;
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

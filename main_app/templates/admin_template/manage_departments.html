@@ -1,0 +1,158 @@
+{% extends 'admin_template/base.html' %}
+{% load static %}
+{% block title %}Manage Departments - COSA Admin{% endblock %}
+{% block extra_css %}
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 40px 0;
+    }
+    .department-card {
+        border: none;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s ease;
+    }
+    .department-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+</style>
+{% endblock %}
+{% block admin_content %}
+<!-- Page Header -->
+<div class="page-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-6 mb-2">Manage Departments</h1>
+                <p class="lead mb-0">Organize academic departments and programs</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a href="{% url 'add_department' %}" class="btn btn-light btn-lg">
+                    <i class="fas fa-plus me-2"></i>Add Department
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container my-5">
+    {% if departments %}
+    <div class="row">
+        {% for department in departments %}
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card department-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="card-title">{{ department.name }}</h5>
+                            {% if department.code %}
+                            <p class="text-muted mb-2">Code: {{ department.code }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" 
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'edit_department' department.id %}">
+                                        <i class="fas fa-edit me-2"></i>Edit
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="#" 
+                                       onclick="deleteDepartment({{ department.id }}, '{{ department.name }}')">
+                                        <i class="fas fa-trash me-2"></i>Delete
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    {% if department.description %}
+                    <p class="card-text">{{ department.description|truncatewords:20 }}</p>
+                    {% endif %}
+                    
+                    <div class="row text-center mt-3">
+                        <div class="col-6">
+                            <div class="border-end">
+                                <div class="h5 text-primary mb-1">{{ department.degree_set.count }}</div>
+                                <small class="text-muted">Degrees</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="h5 text-success mb-1">{{ department.alumni_count|default:0 }}</div>
+                            <small class="text-muted">Alumni</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-footer bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            {% if department.is_active %}
+                            <span class="badge bg-success">Active</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Inactive</span>
+                            {% endif %}
+                        </small>
+                        <div>
+                            <a href="{% url 'edit_department' department.id %}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    {% else %}
+    <!-- Empty State -->
+    <div class="text-center py-5">
+        <i class="fas fa-building fa-4x text-muted mb-3"></i>
+        <h4 class="text-muted">No Departments Found</h4>
+        <p class="text-muted">Get started by adding your first department.</p>
+        <a href="{% url 'add_department' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Add First Department
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Quick Actions -->
+<div class="bg-light py-4">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h5 class="mb-3">Quick Actions</h5>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{% url 'add_department' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Add Department
+                    </a>
+                    <a href="{% url 'manage_degrees' %}" class="btn btn-outline-info">
+                        <i class="fas fa-graduation-cap me-2"></i>Manage Degrees
+                    </a>
+                    <a href="{% url 'admin_home' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function deleteDepartment(departmentId, departmentName) {
+    if (confirm(`Are you sure you want to delete the department "${departmentName}"? This action cannot be undone.`)) {
+        // In a real implementation, you would make an AJAX call or redirect to a delete URL
+        window.location.href = `/admin/departments/delete/${departmentId}/`;
+    }
+}
+</script>
+{% endblock %}

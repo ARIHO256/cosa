@@ -1,0 +1,200 @@
+{% extends 'alumni_template/base.html' %}
+{% load static %}
+{% block title %}Conversation{% endblock %}
+
+{% block alumni_content %}
+<section class="conversation-header mb-4">
+    <div class="container px-0 d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3">
+        <div>
+            <h1 class="h3 mb-1"><i class="fas fa-comments me-2"></i>Conversation</h1>
+            <p class="text-muted mb-0">Keep the dialogue going with unlimited replies.</p>
+        </div>
+        <a href="{% url 'messages_inbox' %}" class="btn btn-outline-primary btn-pill">
+            <i class="fas fa-arrow-left me-2"></i>Back to Inbox
+        </a>
+    </div>
+</section>
+
+<section class="conversation-surface surface-card">
+    <div class="conversation-thread" id="conversation-thread">
+        {% include 'main_app/partials/conversation_entry.html' with entry=message is_root=True %}
+        {% for reply in replies %}
+            {% include 'main_app/partials/conversation_entry.html' with entry=reply is_root=False %}
+        {% empty %}
+            <div class="conversation-empty text-center text-muted py-4">
+                <i class="fas fa-comments fa-2x mb-2"></i>
+                <p class="mb-0">No replies yet. Be the first to respond.</p>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="conversation-reply mt-5">
+        <h5 class="mb-3"><i class="fas fa-reply me-2 text-primary"></i>Send a reply</h5>
+        <form method="post" enctype="multipart/form-data" class="conversation-reply-form stack-gap-sm">
+            {% csrf_token %}
+            {% if reply_form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {{ reply_form.non_field_errors }}
+                </div>
+            {% endif %}
+            <div>
+                {{ reply_form.content.label_tag }}
+                {{ reply_form.content }}
+                {% for error in reply_form.content.errors %}
+                    <div class="invalid-feedback d-block">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div>
+                {{ reply_form.attachment.label_tag }}
+                {{ reply_form.attachment }}
+                {% for error in reply_form.attachment.errors %}
+                    <div class="invalid-feedback d-block">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary btn-pill">
+                    <i class="fas fa-paper-plane me-2"></i>Send Reply
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .conversation-header .btn-pill {
+        border-radius: 999px;
+        padding: 0.6rem 1.4rem;
+    }
+
+    .conversation-surface {
+        border-radius: 28px;
+        padding: 2rem;
+        box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
+    }
+
+    .conversation-thread {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        max-height: 60vh;
+        overflow-y: auto;
+        padding-right: 0.25rem;
+    }
+
+    .conversation-thread::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .conversation-thread::-webkit-scrollbar-thumb {
+        background: rgba(148, 163, 184, 0.4);
+        border-radius: 999px;
+    }
+
+    .conversation-entry {
+        display: flex;
+        justify-content: flex-start;
+    }
+
+    .conversation-entry-self {
+        justify-content: flex-end;
+    }
+
+    .conversation-entry-inner {
+        display: flex;
+        gap: 0.85rem;
+        max-width: min(540px, 100%);
+    }
+
+    .conversation-entry-self .conversation-entry-inner {
+        flex-direction: row-reverse;
+    }
+
+    .conversation-avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        overflow: hidden;
+        flex-shrink: 0;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+    }
+
+    .conversation-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .conversation-avatar-fallback {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.8), rgba(59, 130, 246, 0.7));
+        color: white;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+    }
+
+    .conversation-bubble {
+        background: rgba(255, 255, 255, 0.92);
+        border-radius: 22px;
+        padding: 1.1rem 1.3rem;
+        border: 1px solid rgba(148, 163, 184, 0.15);
+        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+        width: 100%;
+    }
+
+    .conversation-entry-self .conversation-bubble {
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.16), rgba(59, 130, 246, 0.22));
+        border-color: rgba(59, 130, 246, 0.25);
+    }
+
+    .conversation-name strong {
+        font-size: 1rem;
+    }
+
+    .conversation-role {
+        font-size: 0.65rem;
+        border: 1px solid rgba(148, 163, 184, 0.3);
+    }
+
+    .conversation-text p {
+        margin-bottom: 0.75rem;
+    }
+
+    .conversation-text p:last-child {
+        margin-bottom: 0;
+    }
+
+    .conversation-reply-form .form-control {
+        border-radius: 18px;
+        padding: 0.85rem 1rem;
+    }
+
+    .conversation-reply-form input[type="file"] {
+        padding: 0.4rem 0.6rem;
+        border-radius: 14px;
+    }
+
+    .btn-pill {
+        border-radius: 999px;
+    }
+
+    @media (max-width: 576px) {
+        .conversation-surface {
+            padding: 1.4rem;
+        }
+
+        .conversation-thread {
+            max-height: 65vh;
+        }
+
+        .conversation-bubble {
+            border-radius: 18px;
+        }
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,349 @@
+{% extends 'admin_template/base.html' %}
+{% block title %}Edit Department - COSA Admin{% endblock %}
+{% block admin_content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-edit me-2"></i>Edit Department
+                    </h1>
+                    <p class="text-muted mb-0">Update department information</p>
+                </div>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <a href="{% url 'manage_departments' %}" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Back to Departments
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'admin_home' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'manage_departments' %}">Departments</a></li>
+                    <li class="breadcrumb-item active">Edit {{ department.name }}</li>
+                </ol>
+            </nav>
+
+            <!-- Messages -->
+            {% if messages %}
+            <div class="row mb-4">
+                <div class="col-12">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>{{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="row">
+                <!-- Edit Form -->
+                <div class="col-lg-8">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-building me-2"></i>Department Details
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="POST" id="departmentForm">
+                                {% csrf_token %}
+                                
+                                <!-- Department Name -->
+                                <div class="mb-4">
+                                    <label for="{{ form.name.id_for_label }}" class="form-label">
+                                        <strong>Department Name</strong>
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.name }}
+                                    {% if form.name.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.name.errors %}
+                                                <div>{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">
+                                        Full name of the department (e.g., "Computer Science", "Business Administration")
+                                    </div>
+                                </div>
+
+                                <!-- Department Code -->
+                                <div class="mb-4">
+                                    <label for="{{ form.code.id_for_label }}" class="form-label">
+                                        <strong>Department Code</strong>
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.code }}
+                                    {% if form.code.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.code.errors %}
+                                                <div>{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">
+                                        Short code for the department (e.g., "CS", "BA", "ENG") - Maximum 10 characters
+                                    </div>
+                                </div>
+
+                                <!-- Department Description -->
+                                <div class="mb-4">
+                                    <label for="{{ form.description.id_for_label }}" class="form-label">
+                                        <strong>Description</strong>
+                                    </label>
+                                    {{ form.description }}
+                                    {% if form.description.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.description.errors %}
+                                                <div>{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">
+                                        Optional description of the department's focus areas and activities
+                                    </div>
+                                </div>
+
+                                <!-- Form Actions -->
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-save me-2"></i>Update Department
+                                        </button>
+                                        <a href="{% url 'manage_departments' %}" class="btn btn-outline-secondary ms-2">
+                                            <i class="fas fa-times me-2"></i>Cancel
+                                        </a>
+                                    </div>
+                                    <div>
+                                        <span class="text-muted small">
+                                            <i class="fas fa-info-circle me-1"></i>All fields marked with * are required
+                                        </span>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Department Information -->
+                <div class="col-lg-4">
+                    <!-- Current Department Info -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-info text-white">
+                            <h6 class="card-title mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Current Information
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-borderless table-sm">
+                                <tr>
+                                    <td><strong>Name:</strong></td>
+                                    <td>{{ department.name }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Code:</strong></td>
+                                    <td><span class="badge bg-primary">{{ department.code }}</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Status:</strong></td>
+                                    <td>
+                                        {% if department.is_active %}
+                                        <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Created:</strong></td>
+                                    <td>{{ department.created_at|date:"M d, Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Updated:</strong></td>
+                                    <td>{{ department.updated_at|date:"M d, Y" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Related Statistics -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-success text-white">
+                            <h6 class="card-title mb-0">
+                                <i class="fas fa-chart-pie me-2"></i>Department Statistics
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="border-end">
+                                        <h4 class="text-primary mb-1">{{ department.degree_set.count }}</h4>
+                                        <small class="text-muted">Degree{{ department.degree_set.count|pluralize }}</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <h4 class="text-success mb-1">{{ department.alumni_count|default:0 }}</h4>
+                                    <small class="text-muted">Alumni</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Guidelines -->
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-warning text-dark">
+                            <h6 class="card-title mb-0">
+                                <i class="fas fa-lightbulb me-2"></i>Guidelines
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled mb-0">
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Use clear, descriptive names
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Keep codes short and memorable
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Avoid special characters in codes
+                                </li>
+                                <li class="mb-0">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Ensure names and codes are unique
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Form validation
+    const form = document.getElementById('departmentForm');
+    const nameField = document.getElementById('{{ form.name.id_for_label }}');
+    const codeField = document.getElementById('{{ form.code.id_for_label }}');
+
+    // Add Bootstrap classes to form fields
+    nameField.classList.add('form-control');
+    codeField.classList.add('form-control');
+    
+    {% if form.description %}
+    const descriptionField = document.getElementById('{{ form.description.id_for_label }}');
+    descriptionField.classList.add('form-control');
+    descriptionField.setAttribute('rows', '4');
+    {% endif %}
+
+    // Real-time validation
+    nameField.addEventListener('input', function() {
+        validateField(this, this.value.trim().length >= 2, 'Department name must be at least 2 characters');
+    });
+
+    codeField.addEventListener('input', function() {
+        const value = this.value.trim().toUpperCase();
+        this.value = value;
+        validateField(this, value.length >= 2 && value.length <= 10, 'Code must be 2-10 characters');
+    });
+
+    function validateField(field, isValid, errorMessage) {
+        const feedback = field.parentNode.querySelector('.invalid-feedback');
+        
+        if (isValid) {
+            field.classList.remove('is-invalid');
+            field.classList.add('is-valid');
+            if (feedback) feedback.remove();
+        } else {
+            field.classList.remove('is-valid');
+            field.classList.add('is-invalid');
+            
+            if (!feedback) {
+                const div = document.createElement('div');
+                div.className = 'invalid-feedback';
+                div.textContent = errorMessage;
+                field.parentNode.appendChild(div);
+            }
+        }
+    }
+
+    // Form submission
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        // Validate required fields
+        if (nameField.value.trim().length < 2) {
+            validateField(nameField, false, 'Department name is required');
+            isValid = false;
+        }
+        
+        if (codeField.value.trim().length < 2) {
+            validateField(codeField, false, 'Department code is required');
+            isValid = false;
+        }
+
+        if (!isValid) {
+            e.preventDefault();
+            // Scroll to first error
+            const firstError = document.querySelector('.is-invalid');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstError.focus();
+            }
+        } else {
+            // Show loading state
+            const submitBtn = form.querySelector('button[type="submit"]');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Updating...';
+            submitBtn.disabled = true;
+        }
+    });
+
+    // Warn about unsaved changes
+    let originalData = new FormData(form);
+    let hasChanges = false;
+
+    form.addEventListener('input', function() {
+        const currentData = new FormData(form);
+        hasChanges = false;
+        
+        for (let [key, value] of currentData.entries()) {
+            if (originalData.get(key) !== value) {
+                hasChanges = true;
+                break;
+            }
+        }
+    });
+
+    window.addEventListener('beforeunload', function(e) {
+        if (hasChanges) {
+            e.preventDefault();
+            e.returnValue = '';
+            return 'You have unsaved changes. Are you sure you want to leave?';
+        }
+    });
+
+    // Auto-hide alerts after 5 seconds
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(function(alert) {
+        setTimeout(function() {
+            alert.style.opacity = '0';
+            setTimeout(function() {
+                alert.remove();
+            }, 300);
+        }, 5000);
+    });
+});
+</script>
+{% endblock %}

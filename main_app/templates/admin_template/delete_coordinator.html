@@ -1,0 +1,152 @@
+{% extends 'admin_template/base.html' %}
+{% load static %}
+{% block title %}Delete Coordinator - COSA Admin{% endblock %}
+{% block extra_css %}
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: white;
+        padding: 40px 0;
+    }
+    .delete-card {
+        border: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+    }
+    .warning-section {
+        background-color: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+{% block admin_content %}
+<!-- Page Header -->
+<div class="page-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-6 mb-2">Delete Coordinator</h1>
+                <p class="lead mb-0">Permanently remove coordinator account</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a href="{% url 'manage_coordinators' %}" class="btn btn-light">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Coordinators
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card delete-card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Confirm Deletion</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Warning Section -->
+                    <div class="warning-section">
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="fas fa-exclamation-triangle fa-2x text-warning me-3"></i>
+                            <div>
+                                <h6 class="mb-1">Warning: This action cannot be undone!</h6>
+                                <p class="mb-0 text-muted">Deleting this coordinator will permanently remove their account and all associated data.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Coordinator Information -->
+                    <div class="row mb-4">
+                        <div class="col-md-4 text-center">
+                            {% if coordinator.admin.profile_pic %}
+                            <img src="{{ coordinator.admin.profile_pic.url }}" alt="Profile Picture" 
+                                 class="rounded-circle mb-3" width="100" height="100">
+                            {% else %}
+                            <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" 
+                                 style="width: 100px; height: 100px;">
+                                <i class="fas fa-user fa-2x text-muted"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-8">
+                            <h4>{{ coordinator.admin.get_full_name }}</h4>
+                            <p class="text-muted mb-2">{{ coordinator.admin.email }}</p>
+                            <div class="row">
+                                <div class="col-6">
+                                    <small class="text-muted">Department:</small><br>
+                                    <strong>{{ coordinator.department|default:"Not specified" }}</strong>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted">Employee ID:</small><br>
+                                    <strong>{{ coordinator.employee_id|default:"Not specified" }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Impact Assessment -->
+                    <div class="alert alert-warning">
+                        <h6><i class="fas fa-info-circle me-2"></i>What will be deleted:</h6>
+                        <ul class="mb-0">
+                            <li>Coordinator account and profile</li>
+                            <li>{{ coordinator.event_set.count }} events organized by this coordinator</li>
+                            <li>{{ coordinator.news_set.count }} news articles authored</li>
+                            <li>All associated notifications and messages</li>
+                            <li>Login credentials and access permissions</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Confirmation Form -->
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="confirm_delete" required>
+                                <label class="form-check-label" for="confirm_delete">
+                                    I understand that this action is permanent and cannot be undone
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="deletion_reason" class="form-label">Reason for deletion (optional)</label>
+                            <textarea class="form-control" id="deletion_reason" name="deletion_reason" rows="3" 
+                                      placeholder="Please provide a reason for this deletion..."></textarea>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'manage_coordinators' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-danger" id="deleteBtn" disabled>
+                                <i class="fas fa-trash me-2"></i>Delete Coordinator
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Enable delete button only when checkbox is checked
+document.getElementById('confirm_delete').addEventListener('change', function() {
+    const deleteBtn = document.getElementById('deleteBtn');
+    deleteBtn.disabled = !this.checked;
+});
+
+// Final confirmation before deletion
+document.querySelector('form').addEventListener('submit', function(e) {
+    if (!confirm('Are you absolutely sure you want to delete {{ coordinator.admin.get_full_name }}? This action cannot be undone.')) {
+        e.preventDefault();
+    }
+});
+</script>
+{% endblock %}

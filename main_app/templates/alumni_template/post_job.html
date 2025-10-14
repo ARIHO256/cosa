@@ -1,0 +1,644 @@
+{% extends 'alumni_template/base.html' %}
+{% load static %}
+{% block title %}Post a Job - COSA Alumni{% endblock %}
+{% block extra_css %}
+<style>
+  .post-job-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 40px 0;
+  }
+  .form-section {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .form-card {
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+  }
+  .preview-card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    position: sticky;
+    top: 100px;
+  }
+  .job-badge {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+  }
+  .char-counter {
+    font-size: 0.8rem;
+    color: #6c757d;
+  }
+  .required-field {
+    color: #dc3545;
+  }
+  .help-text {
+    font-size: 0.875rem;
+    color: #6c757d;
+    margin-top: 0.25rem;
+  }
+</style>
+{% endblock %}
+{% block alumni_content %}
+<!-- Post Job Header -->
+<div class="post-job-header">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h1 class="display-6 mb-2">Post a Job</h1>
+        <p class="lead mb-0">Share career opportunities with fellow alumni</p>
+      </div>
+      <div class="col-md-4 text-md-end">
+        <a href="{% url 'job_board' %}" class="btn btn-light">
+          <i class="fas fa-arrow-left me-2"></i>Back to Job Board
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container my-5">
+  <div class="row">
+    <!-- Job Posting Form -->
+    <div class="col-lg-8">
+      <div class="card form-card">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0"><i class="fas fa-briefcase me-2"></i>Job Details</h5>
+        </div>
+        <div class="card-body">
+          <form method="post" id="jobForm">
+            {% csrf_token %}
+
+            <!-- Basic Information -->
+            <div class="form-section">
+              <h6 class="mb-3">
+                <i class="fas fa-info-circle me-2"></i>Basic Information
+              </h6>
+
+              <div class="mb-3">
+                <label for="title" class="form-label"
+                  >Job Title <span class="required-field">*</span></label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="title"
+                  name="title"
+                  required
+                  placeholder="e.g., Senior Software Engineer"
+                />
+                <div class="help-text">Be specific and descriptive</div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="job_type" class="form-label"
+                    >Job Type <span class="required-field">*</span></label
+                  >
+                  <select
+                    class="form-select"
+                    id="job_type"
+                    name="job_type"
+                    required
+                  >
+                    <option value="">Select Job Type</option>
+                    <option value="full_time">Full-time</option>
+                    <option value="part_time">Part-time</option>
+                    <option value="contract">Contract</option>
+                    <option value="internship">Internship</option>
+                    <option value="freelance">Freelance</option>
+                  </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="experience_level" class="form-label"
+                    >Experience Level
+                    <span class="required-field">*</span></label
+                  >
+                  <select
+                    class="form-select"
+                    id="experience_level"
+                    name="experience_level"
+                    required
+                  >
+                    <option value="">Select Experience Level</option>
+                    <option value="entry">Entry Level (0-2 years)</option>
+                    <option value="mid">Mid Level (3-5 years)</option>
+                    <option value="senior">Senior Level (6+ years)</option>
+                    <option value="executive">Executive Level</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="location" class="form-label"
+                    >Location <span class="required-field">*</span></label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="location"
+                    name="location"
+                    required
+                    placeholder="e.g., Kampala Uganda, NY or Remote"
+                  />
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="salary_range" class="form-label"
+                    >Salary Range</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="salary_range"
+                    name="salary_range"
+                    placeholder="e.g., $80,000 - $120,000"
+                  />
+                  <div class="help-text">Optional but recommended</div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-check mb-3">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="is_remote"
+                      name="is_remote"
+                    />
+                    <label class="form-check-label" for="is_remote">
+                      Remote work available
+                    </label>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-check mb-3">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="is_urgent"
+                      name="is_urgent"
+                    />
+                    <label class="form-check-label" for="is_urgent">
+                      Urgent hiring
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Company Information -->
+            <div class="form-section">
+              <h6 class="mb-3">
+                <i class="fas fa-building me-2"></i>Company Information
+              </h6>
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="company_name" class="form-label"
+                    >Company Name <span class="required-field">*</span></label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="company_name"
+                    name="company_name"
+                    required
+                    placeholder="Your company name"
+                  />
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="company_website" class="form-label"
+                    >Company Website</label
+                  >
+                  <input
+                    type="url"
+                    class="form-control"
+                    id="company_website"
+                    name="company_website"
+                    placeholder="https://company.com"
+                  />
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="company_description" class="form-label"
+                  >Company Description</label
+                >
+                <textarea
+                  class="form-control"
+                  id="company_description"
+                  name="company_description"
+                  rows="3"
+                  placeholder="Brief description of your company..."
+                ></textarea>
+                <div class="char-counter">
+                  <span id="company_desc_count">0</span>/500 characters
+                </div>
+              </div>
+            </div>
+
+            <!-- Job Description -->
+            <div class="form-section">
+              <h6 class="mb-3">
+                <i class="fas fa-file-alt me-2"></i>Job Description
+              </h6>
+
+              <div class="mb-3">
+                <label for="description" class="form-label"
+                  >Job Description <span class="required-field">*</span></label
+                >
+                <textarea
+                  class="form-control"
+                  id="description"
+                  name="description"
+                  rows="6"
+                  required
+                  placeholder="Describe the role, responsibilities, and what you're looking for..."
+                ></textarea>
+                <div class="char-counter">
+                  <span id="description_count">0</span>/2000 characters
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="requirements" class="form-label"
+                  >Requirements</label
+                >
+                <textarea
+                  class="form-control"
+                  id="requirements"
+                  name="requirements"
+                  rows="4"
+                  placeholder="List the required qualifications, skills, and experience..."
+                ></textarea>
+                <div class="char-counter">
+                  <span id="requirements_count">0</span>/1500 characters
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="benefits" class="form-label"
+                  >Benefits & Perks</label
+                >
+                <textarea
+                  class="form-control"
+                  id="benefits"
+                  name="benefits"
+                  rows="3"
+                  placeholder="Health insurance, retirement plans, flexible hours, etc..."
+                ></textarea>
+                <div class="char-counter">
+                  <span id="benefits_count">0</span>/1000 characters
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="skills_required" class="form-label"
+                  >Required Skills</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="skills_required"
+                  name="skills_required"
+                  placeholder="Python, JavaScript, Project Management, etc."
+                />
+                <div class="help-text">Separate skills with commas</div>
+              </div>
+            </div>
+
+            <!-- Application Details -->
+            <div class="form-section">
+              <h6 class="mb-3">
+                <i class="fas fa-calendar-alt me-2"></i>Application Details
+              </h6>
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="application_deadline" class="form-label"
+                    >Application Deadline
+                    <span class="required-field">*</span></label
+                  >
+                  <input
+                    type="date"
+                    class="form-control"
+                    id="application_deadline"
+                    name="application_deadline"
+                    required
+                  />
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="contact_email" class="form-label"
+                    >Contact Email</label
+                  >
+                  <input
+                    type="email"
+                    class="form-control"
+                    id="contact_email"
+                    name="contact_email"
+                    placeholder="hr@company.com"
+                  />
+                  <div class="help-text">Leave blank to use your email</div>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="application_instructions" class="form-label"
+                  >Application Instructions</label
+                >
+                <textarea
+                  class="form-control"
+                  id="application_instructions"
+                  name="application_instructions"
+                  rows="3"
+                  placeholder="Special instructions for applicants..."
+                ></textarea>
+                <div class="help-text">
+                  Any specific requirements or steps for applying
+                </div>
+              </div>
+            </div>
+
+            <!-- Terms and Conditions -->
+            <div class="form-section">
+              <h6 class="mb-3">
+                <i class="fas fa-shield-alt me-2"></i>Terms & Conditions
+              </h6>
+
+              <div class="form-check mb-3">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="terms_accepted"
+                  name="terms_accepted"
+                  required
+                />
+                <label class="form-check-label" for="terms_accepted">
+                  I confirm that this job posting is legitimate and complies
+                  with COSA's posting guidelines
+                  <span class="required-field">*</span>
+                </label>
+              </div>
+
+              <div class="form-check mb-3">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="contact_permission"
+                  name="contact_permission"
+                />
+                <label class="form-check-label" for="contact_permission">
+                  Allow COSA coordinators to contact me about this posting
+                </label>
+              </div>
+
+              <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Posting Guidelines:</strong>
+                <ul class="mb-0 mt-2">
+                  <li>Job must be a legitimate opportunity</li>
+                  <li>No discriminatory language or requirements</li>
+                  <li>Salary information is encouraged for transparency</li>
+                  <li>Postings are reviewed before publication</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex justify-content-between">
+              <a href="{% url 'job_board' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-times me-2"></i>Cancel
+              </a>
+              <div>
+                <button
+                  type="button"
+                  class="btn btn-outline-primary me-2"
+                  onclick="previewJob()"
+                >
+                  <i class="fas fa-eye me-2"></i>Preview
+                </button>
+                <button type="submit" class="btn btn-primary">
+                  <i class="fas fa-paper-plane me-2"></i>Post Job
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Preview/Help Sidebar -->
+    <div class="col-lg-4">
+      <!-- Job Preview -->
+      <div class="card preview-card mb-4">
+        <div class="card-header bg-info text-white">
+          <h6 class="mb-0"><i class="fas fa-eye me-2"></i>Live Preview</h6>
+        </div>
+        <div class="card-body" id="jobPreview">
+          <div class="text-muted text-center py-4">
+            <i class="fas fa-briefcase fa-2x mb-2"></i>
+            <p class="mb-0">
+              Fill out the form to see a preview of your job posting
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Posting Tips -->
+      <div class="card preview-card mb-4">
+        <div class="card-header bg-success text-white">
+          <h6 class="mb-0">
+            <i class="fas fa-lightbulb me-2"></i>Posting Tips
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="small">
+            <div class="mb-3">
+              <strong>Write a Clear Title</strong>
+              <p class="mb-1">
+                Be specific about the role and level (e.g., "Senior React
+                Developer" vs "Developer")
+              </p>
+            </div>
+
+            <div class="mb-3">
+              <strong>Include Salary Range</strong>
+              <p class="mb-1">
+                Transparent salary information attracts better candidates
+              </p>
+            </div>
+
+            <div class="mb-3">
+              <strong>Detail Requirements</strong>
+              <p class="mb-1">
+                List both required and preferred qualifications clearly
+              </p>
+            </div>
+
+            <div class="mb-0">
+              <strong>Highlight Benefits</strong>
+              <p class="mb-0">Mention unique perks and company culture</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contact Info -->
+      <div class="card preview-card">
+        <div class="card-header bg-warning text-dark">
+          <h6 class="mb-0">
+            <i class="fas fa-question-circle me-2"></i>Need Help?
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="small">
+            <p class="mb-2">Having trouble posting your job?</p>
+            <div class="d-grid gap-2">
+              <a
+                href="{% url 'contact_us' %}"
+                class="btn btn-outline-primary btn-sm"
+              >
+                <i class="fas fa-envelope me-1"></i>Contact Support
+              </a>
+              <a href="#" class="btn btn-outline-info btn-sm">
+                <i class="fas fa-book me-1"></i>Posting Guide
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Character counters
+  function setupCharCounter(textareaId, counterId, maxLength) {
+    const textarea = document.getElementById(textareaId);
+    const counter = document.getElementById(counterId);
+
+    if (textarea && counter) {
+      textarea.addEventListener("input", function () {
+        const currentLength = this.value.length;
+        counter.textContent = currentLength;
+
+        if (currentLength > maxLength) {
+          counter.style.color = "#dc3545";
+          this.value = this.value.substring(0, maxLength);
+          counter.textContent = maxLength;
+        } else {
+          counter.style.color = "#6c757d";
+        }
+      });
+    }
+  }
+
+  // Setup character counters
+  setupCharCounter("company_description", "company_desc_count", 500);
+  setupCharCounter("description", "description_count", 2000);
+  setupCharCounter("requirements", "requirements_count", 1500);
+  setupCharCounter("benefits", "benefits_count", 1000);
+
+  // Live preview functionality
+  function updatePreview() {
+    const title = document.getElementById("title").value;
+    const company = document.getElementById("company_name").value;
+    const location = document.getElementById("location").value;
+    const jobType = document.getElementById("job_type").value;
+    const salary = document.getElementById("salary_range").value;
+    const description = document.getElementById("description").value;
+
+    const preview = document.getElementById("jobPreview");
+
+    if (title || company || location) {
+      preview.innerHTML = `
+            <div class="mb-3">
+                <h6 class="mb-1">${title || "Job Title"}</h6>
+                <p class="text-muted small mb-2">${
+                  company || "Company Name"
+                }</p>
+                <div class="mb-2">
+                    ${
+                      jobType
+                        ? `<span class="badge bg-primary me-1">${jobType
+                            .replace("_", " ")
+                            .toUpperCase()}</span>`
+                        : ""
+                    }
+                    ${
+                      location
+                        ? `<small class="text-muted"><i class="fas fa-map-marker-alt me-1"></i>${location}</small>`
+                        : ""
+                    }
+                </div>
+                ${
+                  salary
+                    ? `<small class="text-success"><i class="fas fa-dollar-sign me-1"></i>${salary}</small>`
+                    : ""
+                }
+            </div>
+            ${
+              description
+                ? `<p class="small">${description.substring(0, 100)}${
+                    description.length > 100 ? "..." : ""
+                  }</p>`
+                : ""
+            }
+        `;
+    } else {
+      preview.innerHTML = `
+            <div class="text-muted text-center py-4">
+                <i class="fas fa-briefcase fa-2x mb-2"></i>
+                <p class="mb-0">Fill out the form to see a preview</p>
+            </div>
+        `;
+    }
+  }
+
+  // Setup live preview
+  document
+    .querySelectorAll(
+      "#title, #company_name, #location, #job_type, #salary_range, #description"
+    )
+    .forEach(function (element) {
+      element.addEventListener("input", updatePreview);
+      element.addEventListener("change", updatePreview);
+    });
+
+  // Preview modal function
+  function previewJob() {
+    // You could implement a modal preview here
+    alert("Preview functionality would show a full preview of the job posting");
+  }
+
+  // Set minimum date for application deadline
+  document.addEventListener("DOMContentLoaded", function () {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const deadlineInput = document.getElementById("application_deadline");
+    deadlineInput.min = tomorrow.toISOString().split("T")[0];
+  });
+
+  // Form validation
+  document.getElementById("jobForm").addEventListener("submit", function (e) {
+    const termsAccepted = document.getElementById("terms_accepted").checked;
+
+    if (!termsAccepted) {
+      e.preventDefault();
+      alert("Please accept the terms and conditions to post your job.");
+      return false;
+    }
+
+    // Additional validation can be added here
+  });
+</script>
+{% endblock %}

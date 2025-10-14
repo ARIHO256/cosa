@@ -1,0 +1,177 @@
+{% extends 'admin_template/base.html' %}
+{% block title %}Delete Department - System Administrator{% endblock %}
+{% block admin_content %}
+<div class="container-fluid">
+  <div class="row">
+    <div
+        class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom"
+      >
+        <h1 class="h2"><i class="fas fa-trash me-2"></i>Delete Department</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+          <a
+            href="{% url 'manage_departments' %}"
+            class="btn btn-outline-secondary"
+          >
+            <i class="fas fa-arrow-left me-1"></i>Back to Departments
+          </a>
+        </div>
+      </div>
+
+      <!-- Messages -->
+      {% if messages %}
+      <div class="row mb-4">
+        <div class="col-12">
+          {% for message in messages %}
+          <div
+            class="alert alert-{{ message.tags }} alert-dismissible fade show"
+            role="alert"
+          >
+            <i class="fas fa-check-circle me-2"></i>{{ message }}
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="alert"
+            ></button>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+              <h5 class="mb-0">
+                <i class="fas fa-exclamation-triangle me-2"></i>Confirm
+                Department Deletion
+              </h5>
+            </div>
+            <div class="card-body">
+              <div class="alert alert-warning" role="alert">
+                <h6 class="alert-heading">
+                  <i class="fas fa-warning me-2"></i>Warning!
+                </h6>
+                <p class="mb-0">
+                  You are about to permanently delete the department
+                  <strong>"{{ department.name }}"</strong>. This action cannot
+                  be undone.
+                </p>
+              </div>
+
+              <div class="row mb-4">
+                <div class="col-md-6">
+                  <h6>Department Details:</h6>
+                  <table class="table table-borderless">
+                    <tr>
+                      <td><strong>Name:</strong></td>
+                      <td>{{ department.name }}</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Code:</strong></td>
+                      <td>{{ department.code }}</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Status:</strong></td>
+                      <td>
+                        <span
+                          class="badge {% if department.is_active %}bg-success{% else %}bg-secondary{% endif %}"
+                        >
+                          {{ department.is_active|yesno:'Active,Inactive' }}
+                        </span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>Created:</strong></td>
+                      <td>{{ department.created_at|date:"M d, Y" }}</td>
+                    </tr>
+                  </table>
+                </div>
+                <div class="col-md-6">
+                  {% if department.description %}
+                  <h6>Description:</h6>
+                  <p class="text-muted">{{ department.description }}</p>
+                  {% endif %}
+                </div>
+              </div>
+
+              <!-- Associated Degrees Check -->
+              {% if department.degree_set.exists %}
+              <div class="alert alert-danger" role="alert">
+                <h6 class="alert-heading">
+                  <i class="fas fa-ban me-2"></i>Cannot Delete Department
+                </h6>
+                <p class="mb-2">
+                  This department cannot be deleted because it has associated
+                  egree Programs :
+                </p>
+                <ul class="mb-0">
+                  {% for degree in department.degree_set.all %}
+                  <li>{{ degree.name }} ({{ degree.degree_type }})</li>
+                  {% endfor %}
+                </ul>
+                <hr />
+                <p class="mb-0">
+                  Please delete or reassign these egree Programs before deleting
+                  the department.
+                </p>
+              </div>
+              {% else %}
+              <div class="alert alert-info" role="alert">
+                <h6 class="alert-heading">
+                  <i class="fas fa-info-circle me-2"></i>Safe to Delete
+                </h6>
+                <p class="mb-0">
+                  This department has no associated egree Programs and can be
+                  safely deleted.
+                </p>
+              </div>
+              {% endif %}
+
+              <!-- Action Buttons -->
+              <div class="d-flex justify-content-end gap-2">
+                <a
+                  href="{% url 'manage_departments' %}"
+                  class="btn btn-outline-secondary"
+                >
+                  <i class="fas fa-times me-1"></i>Cancel
+                </a>
+                {% if not department.degree_set.exists %}
+                <form method="POST" class="d-inline">
+                  {% csrf_token %}
+                  <button
+                    type="submit"
+                    class="btn btn-danger"
+                    onclick="return confirm('Are you absolutely sure you want to delete this department? This action cannot be undone.')"
+                  >
+                    <i class="fas fa-trash me-1"></i>Delete Department
+                  </button>
+                </form>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+{% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Auto-hide alerts after 5 seconds
+    const alerts = document.querySelectorAll(".alert");
+    alerts.forEach(function (alert) {
+      if (!alert.classList.contains("alert-danger")) {
+        // Don't auto-hide error alerts
+        setTimeout(function () {
+          alert.style.opacity = "0";
+          setTimeout(function () {
+            alert.remove();
+          }, 300);
+        }, 5000);
+      }
+    });
+  });
+</script>
+{% endblock %}

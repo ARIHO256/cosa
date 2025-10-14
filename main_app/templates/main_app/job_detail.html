@@ -1,0 +1,449 @@
+{% extends 'main_app/base.html' %}
+{% load static %}
+
+{% block title %}{{ job.title }} at {{ job.company.name }} - COSA Jobs{% endblock %}
+
+{% block extra_css %}
+<style>
+    .job-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 60px 0;
+    }
+    .job-meta {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+    .job-content {
+        font-size: 1.1rem;
+        line-height: 1.7;
+    }
+    .job-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        margin-right: 10px;
+        margin-bottom: 10px;
+    }
+    .job-type-full-time { background-color: #e8f5e8; color: #388e3c; }
+    .job-type-part-time { background-color: #fff3e0; color: #f57c00; }
+    .job-type-contract { background-color: #e3f2fd; color: #1976d2; }
+    .job-type-internship { background-color: #f3e5f5; color: #7b1fa2; }
+    .job-type-freelance { background-color: #fce4ec; color: #c2185b; }
+    
+    .experience-entry { background-color: #e8f5e8; color: #388e3c; }
+    .experience-mid { background-color: #fff3e0; color: #f57c00; }
+    .experience-senior { background-color: #e3f2fd; color: #1976d2; }
+    .experience-executive { background-color: #f3e5f5; color: #7b1fa2; }
+    
+    .company-card {
+        border: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .apply-card {
+        position: sticky;
+        top: 100px;
+    }
+    .back-button {
+        position: fixed;
+        top: 50%;
+        left: 20px;
+        transform: translateY(-50%);
+        z-index: 1000;
+    }
+    @media (max-width: 768px) {
+        .back-button {
+            position: static;
+            transform: none;
+            margin-bottom: 20px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Back Button -->
+<div class="back-button d-none d-lg-block">
+    <a href="{% url 'public_job_board' %}" class="btn btn-primary btn-lg rounded-circle" 
+       title="Back to Jobs" data-bs-toggle="tooltip">
+        <i class="fas fa-arrow-left"></i>
+    </a>
+</div>
+
+<!-- Job Header -->
+<div class="job-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <!-- Mobile Back Button -->
+                <div class="d-lg-none mb-3">
+                    <a href="{% url 'public_job_board' %}" class="btn btn-outline-light">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Jobs
+                    </a>
+                </div>
+                
+                <div class="d-flex align-items-center mb-3">
+                    {% if job.company.logo %}
+                    <img src="{{ job.company.logo.url }}" alt="{{ job.company.name }}" 
+                         class="rounded me-3" width="60" height="60">
+                    {% else %}
+                    <div class="bg-light rounded d-flex align-items-center justify-content-center me-3" 
+                         style="width: 60px; height: 60px;">
+                        <i class="fas fa-building text-muted"></i>
+                    </div>
+                    {% endif %}
+                    <div>
+                        <h2 class="mb-1">{{ job.company.name }}</h2>
+                        {% if job.company.is_verified %}
+                        <span class="badge bg-success">
+                            <i class="fas fa-check-circle me-1"></i>Verified Company
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <h1 class="display-5 fw-bold mb-4">{{ job.title }}</h1>
+                
+                <div class="job-meta">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-2">
+                                <i class="fas fa-map-marker-alt me-2"></i>
+                                <strong>Location:</strong> {{ job.location }}
+                            </div>
+                            <div class="mb-2">
+                                <i class="fas fa-briefcase me-2"></i>
+                                <strong>Type:</strong> {{ job.get_job_type_display }}
+                            </div>
+                            <div class="mb-2">
+                                <i class="fas fa-layer-group me-2"></i>
+                                <strong>Experience:</strong> {{ job.get_experience_level_display }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            {% if job.salary_range %}
+                            <div class="mb-2">
+                                <i class="fas fa-dollar-sign me-2"></i>
+                                <strong>Salary:</strong> {{ job.salary_range }}
+                            </div>
+                            {% endif %}
+                            <div class="mb-2">
+                                <i class="fas fa-calendar me-2"></i>
+                                <strong>Posted:</strong> {{ job.created_at|date:"M d, Y" }}
+                            </div>
+                            <div class="mb-2">
+                                <i class="fas fa-clock me-2"></i>
+                                <strong>Deadline:</strong> {{ job.application_deadline|date:"M d, Y" }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container my-5">
+    <div class="row">
+        <!-- Job Content -->
+        <div class="col-lg-8">
+            <!-- Job Badges -->
+            <div class="mb-4">
+                <span class="job-badge job-type-{{ job.job_type }}">{{ job.get_job_type_display }}</span>
+                <span class="job-badge experience-{{ job.experience_level }}">{{ job.get_experience_level_display }}</span>
+                {% if job.is_remote %}
+                <span class="job-badge" style="background-color: #e1f5fe; color: #0277bd;">
+                    <i class="fas fa-home me-1"></i>Remote
+                </span>
+                {% endif %}
+                {% if job.is_urgent %}
+                <span class="job-badge" style="background-color: #ffebee; color: #d32f2f;">
+                    <i class="fas fa-exclamation-triangle me-1"></i>Urgent
+                </span>
+                {% endif %}
+            </div>
+            
+            <!-- Job Description -->
+            <div class="job-content">
+                <h3 class="mb-3">Job Description</h3>
+                <div class="mb-4">
+                    {{ job.description|safe }}
+                </div>
+                
+                {% if job.requirements %}
+                <h3 class="mb-3">Requirements</h3>
+                <div class="mb-4">
+                    {{ job.requirements|safe }}
+                </div>
+                {% endif %}
+                
+                {% if job.benefits %}
+                <h3 class="mb-3">Benefits</h3>
+                <div class="mb-4">
+                    {{ job.benefits|safe }}
+                </div>
+                {% endif %}
+                
+                {% if job.skills_required %}
+                <h3 class="mb-3">Required Skills</h3>
+                <div class="mb-4">
+                    {% load math_filters %}
+                    {% for skill in job.skills_required|split_string:',' %}
+                    <span class="badge bg-secondary me-2 mb-2">{{ skill }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- Application Instructions -->
+                {% if job.application_instructions %}
+                <div class="alert alert-info">
+                    <h5><i class="fas fa-info-circle me-2"></i>Application Instructions</h5>
+                    {{ job.application_instructions|safe }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Apply Card -->
+            <div class="apply-card">
+                <div class="card company-card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-paper-plane me-2"></i>Apply for this Job</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if user.is_authenticated and user.user_type == '3' %}
+                            {% if has_applied %}
+                            <div class="alert alert-success mb-3">
+                                <i class="fas fa-check-circle me-2"></i>
+                                You have already applied for this position.
+                            </div>
+                            <a href="{% url 'my_applications' %}" class="btn btn-outline-primary w-100">
+                                View My Applications
+                            </a>
+                            {% else %}
+                            <div class="mb-3">
+                                <small class="text-muted">
+                                    Deadline: {{ job.application_deadline|date:"F d, Y" }}
+                                </small>
+                            </div>
+                            <a href="{% url 'apply_job' job.id %}" class="btn btn-primary w-100 btn-lg">
+                                <i class="fas fa-paper-plane me-2"></i>Apply Now
+                            </a>
+                            {% endif %}
+                        {% else %}
+                        <p class="text-muted mb-3">Please log in as an alumni to apply for this job.</p>
+                        <a href="{% url 'login_page' %}" class="btn btn-primary w-100">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login to Apply
+                        </a>
+                        <div class="text-center mt-2">
+                            <small>
+                                <a href="{% url 'alumni_registration' %}" class="text-decoration-none">
+                                    Not registered? Join now
+                                </a>
+                            </small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Company Info -->
+                <div class="card company-card mb-4">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0"><i class="fas fa-building me-2"></i>About {{ job.company.name }}</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if job.company.logo %}
+                        <div class="text-center mb-3">
+                            <img src="{{ job.company.logo.url }}" alt="{{ job.company.name }}" 
+                                 class="img-fluid rounded" style="max-height: 100px;">
+                        </div>
+                        {% endif %}
+                        
+                        {% if job.company.description %}
+                        <p class="small">{{ job.company.description|truncatewords:30 }}</p>
+                        {% endif %}
+                        
+                        <div class="small text-muted">
+                            {% if job.company.industry %}
+                            <div class="mb-1">
+                                <i class="fas fa-industry me-2"></i>{{ job.company.industry }}
+                            </div>
+                            {% endif %}
+                            {% if job.company.location %}
+                            <div class="mb-1">
+                                <i class="fas fa-map-marker-alt me-2"></i>{{ job.company.location }}
+                            </div>
+                            {% endif %}
+                            {% if job.company.website %}
+                            <div class="mb-1">
+                                <i class="fas fa-globe me-2"></i>
+                                <a href="{{ job.company.website }}" target="_blank" class="text-decoration-none">
+                                    Visit Website
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Job Details -->
+                <div class="card company-card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Job Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="small">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Job ID:</span>
+                                <span>#{{ job.id }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Posted by:</span>
+                                <span>{{ job.posted_by.admin.get_full_name }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Applications:</span>
+                                <span>{{ job.jobapplication_set.count }} received</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Status:</span>
+                                <span class="badge bg-success">Active</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Share Job -->
+                <div class="card company-card mb-4">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0"><i class="fas fa-share-alt me-2"></i>Share Job</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button onclick="shareJob('linkedin')" class="btn btn-outline-primary btn-sm">
+                                <i class="fab fa-linkedin-in me-2"></i>LinkedIn
+                            </button>
+                            <button onclick="shareJob('twitter')" class="btn btn-outline-info btn-sm">
+                                <i class="fab fa-twitter me-2"></i>Twitter
+                            </button>
+                            <button onclick="shareJob('facebook')" class="btn btn-outline-primary btn-sm">
+                                <i class="fab fa-facebook-f me-2"></i>Facebook
+                            </button>
+                            <button onclick="copyJobLink()" class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-link me-2"></i>Copy Link
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Similar Jobs -->
+                <div class="card company-card">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0"><i class="fas fa-search me-2"></i>Similar Jobs</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="small">
+                            <a href="{% url 'public_job_board' %}?job_type={{ job.job_type }}" 
+                               class="d-block text-decoration-none mb-2">
+                                More {{ job.get_job_type_display }} jobs
+                            </a>
+                            <a href="{% url 'public_job_board' %}?experience_level={{ job.experience_level }}" 
+                               class="d-block text-decoration-none mb-2">
+                                More {{ job.get_experience_level_display }} level jobs
+                            </a>
+                            <a href="{% url 'public_job_board' %}?location={{ job.location }}" 
+                               class="d-block text-decoration-none mb-2">
+                                More jobs in {{ job.location }}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Like and Comment Section -->
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            {% include 'main_app/like_comment_section.html' %}
+        </div>
+    </div>
+</div>
+
+<!-- Navigation -->
+<div class="bg-light py-4">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="{% url 'public_job_board' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Jobs
+                    </a>
+                    <div class="text-center">
+                        <small class="text-muted">Posted on {{ job.created_at|date:"F d, Y" }}</small>
+                    </div>
+                    <a href="{% url 'public_job_board' %}" class="btn btn-primary">
+                        More Jobs <i class="fas fa-arrow-right ms-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function shareJob(platform) {
+    const url = encodeURIComponent(window.location.href);
+    const title = encodeURIComponent('{{ job.title|escapejs }} at {{ job.company.name|escapejs }}');
+    
+    let shareUrl;
+    switch(platform) {
+        case 'linkedin':
+            shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${url}`;
+            break;
+        case 'twitter':
+            shareUrl = `https://twitter.com/intent/tweet?url=${url}&text=${title}`;
+            break;
+        case 'facebook':
+            shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+            break;
+    }
+    
+    if (shareUrl) {
+        window.open(shareUrl, '_blank', 'width=600,height=400');
+    }
+}
+
+function copyJobLink() {
+    navigator.clipboard.writeText(window.location.href).then(function() {
+        const btn = event.target.closest('button');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check me-2"></i>Copied!';
+        btn.classList.remove('btn-outline-secondary');
+        btn.classList.add('btn-success');
+        
+        setTimeout(function() {
+            btn.innerHTML = originalText;
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-outline-secondary');
+        }, 2000);
+    });
+}
+
+// Initialize tooltips
+document.addEventListener('DOMContentLoaded', function() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
+{% endblock %}

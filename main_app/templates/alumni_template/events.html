@@ -1,0 +1,120 @@
+{% extends 'alumni_template/base.html' %}
+{% block title %}Events - COSA Alumni{% endblock %}
+{% block alumni_content %}
+<section class="app-hero mb-4">
+    <div class="container d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3">
+        <div>
+            <h1>Alumni Events</h1>
+            <p>Connect, learn, and grow with upcoming meetups, webinars, and reunions.</p>
+        </div>
+        <a href="{% url 'my_events' %}" class="btn btn-light hero-rect-btn">
+            <i class="fas fa-calendar-check me-2"></i>My events
+        </a>
+    </div>
+</section>
+
+<section class="container stack-gap">
+    <div class="surface-card surface-card--flush">
+        <form method="get" class="filter-form">
+            <div class="filter-form__group filter-form__group--wide">
+                <label for="event_type" class="form-label">Event type</label>
+                <select name="event_type" id="event_type" class="form-select form-control-rect">
+                    <option value="">All types</option>
+                    {% for type_code, type_name in event_types %}
+                        <option value="{{ type_code }}" {% if request.GET.event_type == type_code %}selected{% endif %}>{{ type_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-form__actions">
+                <button type="submit" class="btn btn-primary flex-grow-1">
+                    <i class="fas fa-filter me-2"></i>Filter
+                </button>
+                <a href="{% url 'events' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+
+    {% if events %}
+        <div class="stack-gap">
+            {% for event in events %}
+            <article class="alumni-card">
+                <div class="card-body stack-gap-sm">
+                    <div class="d-flex gap-3 align-items-start">
+                        <div class="text-center" style="min-width:70px;">
+                            <div class="badge bg-primary text-white d-block mb-1">{{ event.start_date|date:"M" }}</div>
+                            <div class="h4 mb-0">{{ event.start_date|date:"d" }}</div>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h4 class="mb-1"><a href="{% url 'event_detail' event.id %}" class="text-decoration-none">{{ event.title }}</a></h4>
+                                    <div class="d-flex flex-wrap gap-2 mb-2">
+                                        <span class="badge bg-primary">{{ event.get_event_type_display }}</span>
+                                        {% if event.is_virtual %}<span class="badge bg-info">Virtual</span>{% endif %}
+                                        {% if event.is_free %}<span class="badge bg-success">Free</span>{% endif %}
+                                    </div>
+                                </div>
+                                {% if event.id not in user_registrations %}
+                                    <a href="{% url 'register_event' event.id %}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-calendar-plus me-1"></i>Register
+                                    </a>
+                                {% else %}
+                                    <span class="badge bg-success align-self-start"><i class="fas fa-check me-1"></i>Registered</span>
+                                {% endif %}
+                            </div>
+                            <div class="text-muted small mb-2"><i class="fas fa-clock me-1"></i>{{ event.start_time|time:"g:i A" }}{% if event.end_time %} - {{ event.end_time|time:"g:i A" }}{% endif %}</div>
+                            <div class="text-muted small mb-2"><i class="fas fa-map-marker-alt me-1"></i>{{ event.location }}</div>
+                            <div class="text-muted small"><i class="fas fa-user me-1"></i>{{ event.organizer.admin.get_full_name }}</div>
+                        </div>
+                    </div>
+                    <p class="mb-0 text-muted">{{ event.description|truncatewords:24 }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted small"><i class="fas fa-users me-1"></i>{{ event.eventregistration_set.count }} registered{% if event.max_attendees %} / {{ event.max_attendees }}{% endif %}</span>
+                        <a href="{% url 'event_detail' event.id %}" class="btn btn-outline-primary btn-sm"><i class="fas fa-eye me-1"></i>Details</a>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+
+        {% if events.has_other_pages %}
+            <nav aria-label="Events pagination">
+                <ul class="pagination justify-content-center">
+                    {% if events.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page=1{% if request.GET.event_type %}&event_type={{ request.GET.event_type }}{% endif %}"><i class="fas fa-angle-double-left"></i></a></li>
+                        <li class="page-item"><a class="page-link" href="?page={{ events.previous_page_number }}{% if request.GET.event_type %}&event_type={{ request.GET.event_type }}{% endif %}"><i class="fas fa-angle-left"></i></a></li>
+                    {% endif %}
+                    <li class="page-item active"><span class="page-link">{{ events.number }} / {{ events.paginator.num_pages }}</span></li>
+                    {% if events.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ events.next_page_number }}{% if request.GET.event_type %}&event_type={{ request.GET.event_type }}{% endif %}"><i class="fas fa-angle-right"></i></a></li>
+                        <li class="page-item"><a class="page-link" href="?page={{ events.paginator.num_pages }}{% if request.GET.event_type %}&event_type={{ request.GET.event_type }}{% endif %}"><i class="fas fa-angle-double-right"></i></a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="surface-card text-center py-5">
+            <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
+            <h5 class="mb-2">No events found</h5>
+            {% if request.GET.event_type %}
+                <p class="text-muted mb-3">No events match your current filter. Try something else.</p>
+                <a href="{% url 'events' %}" class="btn btn-outline-primary">Clear filters</a>
+            {% else %}
+                <p class="text-muted">Check back later for upcoming activities.</p>
+            {% endif %}
+        </div>
+    {% endif %}
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-select, .form-control {
+        border-radius: 1rem;
+        border: 1.5px solid var(--app-border);
+        background: rgba(255, 255, 255, 0.95);
+    }
+</style>
+{% endblock %}

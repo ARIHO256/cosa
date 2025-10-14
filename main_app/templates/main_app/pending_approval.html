@@ -1,0 +1,274 @@
+{% extends 'main_app/base.html' %} {% load static %} {% block title %}Account
+Pending Approval - COSA Alumni{% endblock %} {% block extra_css %}
+<style>
+  .pending-header {
+    background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+    color: white;
+    padding: 80px 0;
+  }
+  .status-card {
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+  }
+  .timeline-item {
+    border-left: 3px solid #e9ecef;
+    padding-left: 20px;
+    margin-bottom: 30px;
+    position: relative;
+  }
+  .timeline-item::before {
+    content: "";
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #28a745;
+    position: absolute;
+    left: -7px;
+    top: 5px;
+  }
+  .timeline-item.current::before {
+    background-color: #ffc107;
+    animation: pulse 2s infinite;
+  }
+  .timeline-item.pending::before {
+    background-color: #6c757d;
+  }
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7);
+    }
+    70% {
+      box-shadow: 0 0 0 10px rgba(255, 193, 7, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(255, 193, 7, 0);
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<!-- Pending Header -->
+<div class="pending-header">
+  <div class="container text-center">
+    <i class="fas fa-clock fa-4x mb-4"></i>
+    <h1 class="display-4 fw-bold mb-3">Account Under Review</h1>
+    <p class="lead">
+      Your COSA alumni registration is being reviewed by our administrators
+    </p>
+  </div>
+</div>
+
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <!-- Status Card -->
+      <div class="card status-card mb-5">
+        <div class="card-body text-center p-5">
+          <div class="mb-4">
+            <i class="fas fa-user-clock fa-3x text-warning"></i>
+          </div>
+          <h3 class="mb-3">Thank You for Registering!</h3>
+          <p class="lead text-muted mb-4">
+            Your alumni account has been successfully created and is currently
+            under review. Our administrators will verify your information and
+            approve your account soon.
+          </p>
+
+          <div class="alert alert-warning" role="alert">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>What happens next?</strong> You'll receive an email
+            notification once your account is approved.
+          </div>
+        </div>
+      </div>
+
+      <!-- Registration Timeline -->
+      <div class="card status-card mb-5">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">
+            <i class="fas fa-list-ol me-2"></i>Registration Process
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="timeline-item">
+            <h6 class="text-success">✅ Registration Submitted</h6>
+            <p class="text-muted mb-0">
+              You've successfully submitted your alumni registration with all
+              required information.
+            </p>
+            <small class="text-muted"
+              >{{ user.date_joined|date:"M d, Y g:i A" }}</small
+            >
+          </div>
+
+          <div class="timeline-item current">
+            <h6 class="text-warning">⏳ Under Administrator Review</h6>
+            <p class="text-muted mb-0">
+              Our team is verifying your academic credentials and alumni status.
+            </p>
+            <small class="text-muted">Currently in progress</small>
+          </div>
+
+          <div class="timeline-item pending">
+            <h6 class="text-muted">⏸️ Account Approval</h6>
+            <p class="text-muted mb-0">
+              Once verified, you'll receive full access to the COSA alumni
+              platform.
+            </p>
+            <small class="text-muted">Pending review completion</small>
+          </div>
+
+          <div class="timeline-item pending">
+            <h6 class="text-muted">🎉 Welcome to COSA</h6>
+            <p class="text-muted mb-0">
+              Access your COSA DASHBOARD, connect with peers, and explore
+              opportunities.
+            </p>
+            <small class="text-muted">After approval</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- What You Can Do -->
+      <div class="card status-card mb-5">
+        <div class="card-header bg-info text-white">
+          <h5 class="mb-0">
+            <i class="fas fa-lightbulb me-2"></i>While You Wait
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <div class="d-flex align-items-start">
+                <i class="fas fa-eye fa-2x text-primary me-3 mt-1"></i>
+                <div>
+                  <h6>Explore Public Content</h6>
+                  <p class="text-muted mb-0">
+                    Browse our public alumni directory and job board to see what
+                    COSA offers.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <div class="d-flex align-items-start">
+                <i class="fas fa-calendar-alt fa-2x text-success me-3 mt-1"></i>
+                <div>
+                  <h6>Check Upcoming Events</h6>
+                  <p class="text-muted mb-0">
+                    View upcoming alumni events and mark your calendar for after
+                    approval.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <div class="d-flex align-items-start">
+                <i class="fas fa-envelope fa-2x text-warning me-3 mt-1"></i>
+                <div>
+                  <h6>Contact Support</h6>
+                  <p class="text-muted mb-0">
+                    Have questions? Our support team is here to help during the
+                    review process.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <div class="d-flex align-items-start">
+                <i class="fas fa-share-alt fa-2x text-info me-3 mt-1"></i>
+                <div>
+                  <h6>Spread the Word</h6>
+                  <p class="text-muted mb-0">
+                    Tell fellow alumni about COSA and encourage them to join the
+                    network.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contact Information -->
+      <div class="card status-card">
+        <div class="card-header bg-secondary text-white">
+          <h5 class="mb-0">
+            <i class="fas fa-question-circle me-2"></i>Need Help?
+          </h5>
+        </div>
+        <div class="card-body">
+          <p class="mb-3">
+            If you have questions about your registration or need assistance,
+            please don't hesitate to contact us:
+          </p>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="d-flex align-items-center mb-3">
+                <i class="fas fa-envelope text-primary me-3"></i>
+                <div>
+                  <strong>Email Support</strong><br />
+                  <a href="mailto:support@cosa.edu">support@cosa.edu</a>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="d-flex align-items-center mb-3">
+                <i class="fas fa-phone text-success me-3"></i>
+                <div>
+                  <strong>Phone Support</strong><br />
+                  <span class="text-muted">+256762415872</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="text-center mt-4">
+            <a
+              href="{% url 'contact_us' %}"
+              class="btn btn-outline-primary me-3"
+            >
+              <i class="fas fa-phone me-2"></i>Contact Support
+            </a>
+            <a href="{% url 'login_page' %}" class="btn btn-outline-secondary">
+              <i class="fas fa-sign-in-alt me-2"></i>Back to Login
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Public Links -->
+<div class="bg-light py-4">
+  <div class="container">
+    <div class="row text-center">
+      <div class="col-12">
+        <h5 class="mb-3">Explore COSA While You Wait</h5>
+        <div class="d-flex justify-content-center flex-wrap gap-2">
+          <a
+            href="{% url 'public_alumni_directory' %}"
+            class="btn btn-outline-primary"
+          >
+            <i class="fas fa-users me-2"></i>Alumni Directory
+          </a>
+          <a
+            href="{% url 'public_job_board' %}"
+            class="btn btn-outline-success"
+          >
+            <i class="fas fa-briefcase me-2"></i>Job Board
+          </a>
+          <a href="{% url 'public_events' %}" class="btn btn-outline-info">
+            <i class="fas fa-calendar me-2"></i>Events
+          </a>
+          <a href="{% url 'public_news' %}" class="btn btn-outline-warning">
+            <i class="fas fa-newspaper me-2"></i>News
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,619 @@
+{% extends 'coordinator_template/base.html' %}
+{% block title %}Manage Donations - COSA Coordinator{% endblock %}
+{% block coordinator_content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <i class="fas fa-heart me-2"></i>Manage Donations
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="fas fa-download me-1"></i>Export
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-file-csv me-2"></i>CSV</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-file-excel me-2"></i>Excel</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-file-pdf me-2"></i>Donation Report</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            {% if messages %}
+            <div class="row mb-4">
+                <div class="col-12">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>{{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body text-center">
+                            <h4 class="mb-2">${{ total_amount|floatformat:2|default:"0.00" }}</h4>
+                            <small>Total Raised</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body text-center">
+                            <h4 class="mb-2">{{ donations.paginator.count|default:0 }}</h4>
+                            <small>Total Donations</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-dark">
+                        <div class="card-body text-center">
+                            <h4 class="mb-2">{{ pending_count|default:0 }}</h4>
+                            <small>Pending</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body text-center">
+                            <h4 class="mb-2">{{ this_month_count|default:0 }}</h4>
+                            <small>This Month</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters and Search -->
+            <div class="row mb-4">
+                <div class="col-md-9">
+                    <div class="card">
+                        <div class="card-body py-2">
+                            <form method="GET" class="d-flex align-items-center">
+                                <div class="me-2">
+                                    <input type="search" name="search" class="form-control form-control-sm" 
+                                           placeholder="Search donations..." value="{{ request.GET.search }}">
+                                </div>
+                                <div class="me-2">
+                                    <select name="status" class="form-select form-select-sm">
+                                        <option value="">All Status</option>
+                                        {% for status_code, status_name in payment_statuses %}
+                                        <option value="{{ status_code }}" {% if request.GET.status == status_code %}selected{% endif %}>{{ status_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="me-2">
+                                    <select name="type" class="form-select form-select-sm">
+                                        <option value="">All Types</option>
+                                        {% for type_code, type_name in donation_types %}
+                                        <option value="{{ type_code }}" {% if request.GET.type == type_code %}selected{% endif %}>{{ type_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-sm me-2">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                                {% if request.GET.search or request.GET.status or request.GET.type %}
+                                <a href="{% url 'manage_donations' %}" class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-times"></i>
+                                </a>
+                                {% endif %}
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 text-end">
+                    <small class="text-muted">
+                        Showing {{ donations|length }} donation{{ donations|length|pluralize }}
+                    </small>
+                </div>
+            </div>
+
+            <!-- Donations List -->
+            {% if donations %}
+            <div class="row">
+                {% for donation in donations %}
+                <div class="col-lg-6 col-xl-4 mb-4">
+                    <div class="card h-100 shadow-sm donation-card">
+                        <!-- Card Header -->
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    {% if not donation.is_anonymous and donation.donor.admin.profile_picture %}
+                                    <img src="{{ donation.donor.admin.profile_picture.url }}" 
+                                         class="rounded-circle" width="40" height="40" alt="Donor">
+                                    {% else %}
+                                    <div class="rounded-circle bg-success d-flex align-items-center justify-content-center" 
+                                         style="width: 40px; height: 40px;">
+                                        {% if donation.is_anonymous %}
+                                        <i class="fas fa-user-secret text-white"></i>
+                                        {% else %}
+                                        <span class="text-white fw-bold">
+                                            {{ donation.donor.admin.first_name|first }}{{ donation.donor.admin.last_name|first }}
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">
+                                        {% if donation.is_anonymous %}
+                                        Anonymous Donor
+                                        {% else %}
+                                        {{ donation.donor.admin.first_name }} {{ donation.donor.admin.last_name }}
+                                        {% endif %}
+                                    </h6>
+                                    {% if not donation.is_anonymous %}
+                                    <small class="text-muted">{{ donation.donor.student_id }}</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                {% if donation.payment_status == 'completed' %}
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check-circle me-1"></i>Completed
+                                </span>
+                                {% elif donation.payment_status == 'pending' %}
+                                <span class="badge bg-warning text-dark">
+                                    <i class="fas fa-clock me-1"></i>Pending
+                                </span>
+                                {% elif donation.payment_status == 'failed' %}
+                                <span class="badge bg-danger">
+                                    <i class="fas fa-times-circle me-1"></i>Failed
+                                </span>
+                                {% elif donation.payment_status == 'refunded' %}
+                                <span class="badge bg-secondary">
+                                    <i class="fas fa-undo me-1"></i>Refunded
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Card Body -->
+                        <div class="card-body">
+                            <!-- Donation Amount -->
+                            <div class="text-center mb-3">
+                                <h3 class="text-success mb-1">{{ donation.currency }} {{ donation.amount|floatformat:2 }}</h3>
+                                <span class="badge 
+                                    {% if donation.donation_type == 'general' %}bg-secondary
+                                    {% elif donation.donation_type == 'scholarship' %}bg-primary
+                                    {% elif donation.donation_type == 'infrastructure' %}bg-info
+                                    {% elif donation.donation_type == 'research' %}bg-success
+                                    {% elif donation.donation_type == 'emergency' %}bg-danger
+                                    {% else %}bg-dark{% endif %}">
+                                    {{ donation.get_donation_type_display }}
+                                </span>
+                            </div>
+
+                            <!-- Public Message -->
+                            {% if donation.public_message %}
+                            <div class="mb-3">
+                                <div class="alert alert-light border-start border-success border-4">
+                                    <h6 class="alert-heading">
+                                        <i class="fas fa-quote-left me-2"></i>Message:
+                                    </h6>
+                                    <p class="mb-0 fst-italic">{{ donation.public_message|truncatewords:15 }}</p>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Payment Details -->
+                            {% if donation.payment_method %}
+                            <div class="mb-3">
+                                <small class="text-muted">Payment Method:</small>
+                                <div><strong>{{ donation.payment_method }}</strong></div>
+                            </div>
+                            {% endif %}
+
+                            {% if donation.transaction_id %}
+                            <div class="mb-3">
+                                <small class="text-muted">Transaction ID:</small>
+                                <div><code>{{ donation.transaction_id|truncatechars:20 }}</code></div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Campaign -->
+                            {% if donation.campaign %}
+                            <div class="mb-3">
+                                <small class="text-muted">Campaign:</small>
+                                <div><strong>{{ donation.campaign }}</strong></div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Timestamps -->
+                            <div class="row text-center mb-3">
+                                <div class="col-6">
+                                    <small class="text-muted">Donated</small>
+                                    <div><strong>{{ donation.created_at|date:"M d, Y" }}</strong></div>
+                                    <div><small>{{ donation.created_at|time:"g:i A" }}</small></div>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted">Updated</small>
+                                    <div><strong>{{ donation.updated_at|date:"M d, Y" }}</strong></div>
+                                    <div><small>{{ donation.updated_at|time:"g:i A" }}</small></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card Actions -->
+                        <div class="card-footer bg-transparent">
+                            <div class="btn-group w-100" role="group">
+                                <button type="button" class="btn btn-sm btn-info" 
+                                        data-bs-toggle="modal" data-bs-target="#donationModal{{ donation.id }}">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                {% if donation.payment_status == 'pending' %}
+                                <button type="button" class="btn btn-sm btn-success" 
+                                        onclick="markCompleted({{ donation.id }})">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-danger" 
+                                        onclick="markFailed({{ donation.id }})">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                                {% elif donation.payment_status == 'completed' %}
+                                <button type="button" class="btn btn-sm btn-warning" 
+                                        onclick="refundDonation({{ donation.id }})">
+                                    <i class="fas fa-undo"></i>
+                                </button>
+                                {% endif %}
+                                {% if not donation.is_anonymous %}
+                                <button type="button" class="btn btn-sm btn-outline-primary" 
+                                        onclick="contactDonor('{{ donation.donor.admin.email }}')">
+                                    <i class="fas fa-envelope"></i>
+                                </button>
+                                {% endif %}
+                                <button type="button" class="btn btn-sm btn-outline-secondary" 
+                                        onclick="generateReceipt({{ donation.id }})">
+                                    <i class="fas fa-receipt"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if donations.has_other_pages %}
+            <nav aria-label="Donations pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if donations.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}">First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ donations.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}">Previous</a>
+                    </li>
+                    {% endif %}
+
+                    <li class="page-item active">
+                        <span class="page-link">Page {{ donations.number }} of {{ donations.paginator.num_pages }}</span>
+                    </li>
+
+                    {% if donations.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ donations.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}">Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ donations.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}">Last</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+            {% else %}
+            <!-- No Donations State -->
+            <div class="text-center py-5">
+                <i class="fas fa-heart fa-4x text-muted mb-4"></i>
+                <h3>No Donations Found</h3>
+                <p class="text-muted mb-4">
+                    {% if request.GET.search or request.GET.status or request.GET.type %}
+                    No donations match your current filters. <a href="{% url 'manage_donations' %}">Clear filters</a>
+                    {% else %}
+                    No donations have been received yet. Alumni can make donations through their dashboard.
+                    {% endif %}
+                </p>
+                <a href="{% url 'coordinator_home' %}" class="btn btn-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Donation Details Modals -->
+{% for donation in donations %}
+<!-- View Donation Modal -->
+<div class="modal fade" id="donationModal{{ donation.id }}" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-heart me-2"></i>Donation Details
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <!-- Donor Information -->
+                        <div class="d-flex align-items-center mb-4">
+                            {% if not donation.is_anonymous and donation.donor.admin.profile_picture %}
+                            <img src="{{ donation.donor.admin.profile_picture.url }}" 
+                                 class="rounded-circle me-3" width="60" height="60" alt="Donor">
+                            {% else %}
+                            <div class="rounded-circle bg-success d-flex align-items-center justify-content-center me-3" 
+                                 style="width: 60px; height: 60px;">
+                                {% if donation.is_anonymous %}
+                                <i class="fas fa-user-secret text-white fa-2x"></i>
+                                {% else %}
+                                <span class="text-white fw-bold h5 mb-0">
+                                    {{ donation.donor.admin.first_name|first }}{{ donation.donor.admin.last_name|first }}
+                                </span>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            <div>
+                                <h5 class="mb-1">
+                                    {% if donation.is_anonymous %}
+                                    Anonymous Donor
+                                    {% else %}
+                                    {{ donation.donor.admin.first_name }} {{ donation.donor.admin.last_name }}
+                                    {% endif %}
+                                </h5>
+                                {% if not donation.is_anonymous %}
+                                <p class="mb-1 text-muted">{{ donation.donor.student_id }}</p>
+                                <p class="mb-0 text-muted">{{ donation.donor.admin.email }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Donation Amount -->
+                        <div class="text-center mb-4">
+                            <h2 class="text-success">{{ donation.currency }} {{ donation.amount|floatformat:2 }}</h2>
+                            <span class="badge bg-primary fs-6">{{ donation.get_donation_type_display }}</span>
+                        </div>
+
+                        <!-- Public Message -->
+                        {% if donation.public_message %}
+                        <h6>Public Message</h6>
+                        <div class="border p-3 bg-light mb-4">
+                            <i class="fas fa-quote-left text-muted me-2"></i>
+                            <em>{{ donation.public_message }}</em>
+                        </div>
+                        {% endif %}
+
+                        <!-- Notes -->
+                        {% if donation.notes %}
+                        <h6>Internal Notes</h6>
+                        <div class="border p-3 bg-warning bg-opacity-10 mb-4">
+                            {{ donation.notes|linebreaks }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <h6>Donation Details</h6>
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Amount:</strong></td>
+                                <td>{{ donation.currency }} {{ donation.amount|floatformat:2 }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Type:</strong></td>
+                                <td>{{ donation.get_donation_type_display }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Status:</strong></td>
+                                <td>
+                                    {% if donation.payment_status == 'completed' %}
+                                    <span class="badge bg-success">Completed</span>
+                                    {% elif donation.payment_status == 'pending' %}
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                    {% elif donation.payment_status == 'failed' %}
+                                    <span class="badge bg-danger">Failed</span>
+                                    {% elif donation.payment_status == 'refunded' %}
+                                    <span class="badge bg-secondary">Refunded</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% if donation.payment_method %}
+                            <tr>
+                                <td><strong>Payment Method:</strong></td>
+                                <td>{{ donation.payment_method }}</td>
+                            </tr>
+                            {% endif %}
+                            {% if donation.transaction_id %}
+                            <tr>
+                                <td><strong>Transaction ID:</strong></td>
+                                <td><code>{{ donation.transaction_id }}</code></td>
+                            </tr>
+                            {% endif %}
+                            {% if donation.campaign %}
+                            <tr>
+                                <td><strong>Campaign:</strong></td>
+                                <td>{{ donation.campaign }}</td>
+                            </tr>
+                            {% endif %}
+                            <tr>
+                                <td><strong>Anonymous:</strong></td>
+                                <td>
+                                    {% if donation.is_anonymous %}
+                                    <span class="badge bg-secondary">Yes</span>
+                                    {% else %}
+                                    <span class="badge bg-info">No</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Donated:</strong></td>
+                                <td>{{ donation.created_at|date:"M d, Y g:i A" }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Last Updated:</strong></td>
+                                <td>{{ donation.updated_at|date:"M d, Y g:i A" }}</td>
+                            </tr>
+                        </table>
+
+                        <h6>Quick Actions</h6>
+                        <div class="d-grid gap-2">
+                            {% if donation.payment_status == 'pending' %}
+                            <button class="btn btn-success btn-sm" onclick="markCompleted({{ donation.id }})">
+                                <i class="fas fa-check me-2"></i>Mark Completed
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="markFailed({{ donation.id }})">
+                                <i class="fas fa-times me-2"></i>Mark Failed
+                            </button>
+                            {% elif donation.payment_status == 'completed' %}
+                            <button class="btn btn-warning btn-sm" onclick="refundDonation({{ donation.id }})">
+                                <i class="fas fa-undo me-2"></i>Process Refund
+                            </button>
+                            {% endif %}
+                            
+                            <button class="btn btn-outline-secondary btn-sm" onclick="generateReceipt({{ donation.id }})">
+                                <i class="fas fa-receipt me-2"></i>Generate Receipt
+                            </button>
+                            
+                            {% if not donation.is_anonymous %}
+                            <button class="btn btn-primary btn-sm" onclick="contactDonor('{{ donation.donor.admin.email }}')">
+                                <i class="fas fa-envelope me-2"></i>Email Donor
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="generateReceipt({{ donation.id }})">
+                    <i class="fas fa-receipt me-2"></i>Generate Receipt
+                </button>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+
+{% endblock %}
+{% block extra_css %}
+<style>
+.donation-card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.donation-card:hover {
+    transform: translateY(-2px);
+}
+
+.badge {
+    font-size: 0.75em;
+}
+
+.border-start {
+    border-left: 0.25rem solid !important;
+}
+
+.border-4 {
+    border-width: 0.25rem !important;
+}
+
+.fst-italic {
+    font-style: italic !important;
+}
+</style>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-hide alerts after 5 seconds
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(function(alert) {
+        setTimeout(function() {
+            alert.style.opacity = '0';
+            setTimeout(function() {
+                alert.remove();
+            }, 300);
+        }, 5000);
+    });
+});
+
+// Mark donation as completed
+function markCompleted(donationId) {
+    if (confirm('Are you sure you want to mark this donation as completed?')) {
+        // Create a form and submit it
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/coordinator/donations/complete/' + donationId + '/';
+        
+        // Get CSRF token
+        const csrfToken = '{{ csrf_token }}';
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken;
+        
+        form.appendChild(csrfInput);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Mark donation as failed
+function markFailed(donationId) {
+    if (confirm('Are you sure you want to mark this donation as failed?')) {
+        // Create a form and submit it
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/coordinator/donations/failed/' + donationId + '/';
+        
+        // Get CSRF token
+        const csrfToken = '{{ csrf_token }}';
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken;
+        
+        form.appendChild(csrfInput);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Process refund
+function refundDonation(donationId) {
+    if (confirm('Are you sure you want to process a refund for this donation?')) {
+        // Create a form and submit it
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/coordinator/donations/refund/' + donationId + '/';
+        
+        // Get CSRF token
+        const csrfToken = '{{ csrf_token }}';
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken;
+        
+        form.appendChild(csrfInput);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Contact donor via email
+function contactDonor(email) {
+    window.location.href = 'mailto:' + email + '?subject=Thank you for your donation to COSA';
+}
+
+// Generate receipt
+function generateReceipt(donationId) {
+    window.open('/coordinator/donations/receipt/' + donationId + '/', '_blank');
+}
+</script>
+{% endblock %}

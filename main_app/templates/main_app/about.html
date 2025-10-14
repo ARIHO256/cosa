@@ -1,0 +1,251 @@
+{% extends 'main_app/base.html' %}
+{% load static %}
+
+{% block title %}About COSA - Alumni Management System{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 80px 0;
+        margin-bottom: 50px;
+    }
+    .feature-card {
+        transition: transform 0.3s ease;
+        border: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    }
+    .stats-section {
+        background-color: #f8f9fa;
+        padding: 60px 0;
+    }
+    .stat-card {
+        text-align: center;
+        padding: 30px;
+    }
+    .stat-number {
+        font-size: 3rem;
+        font-weight: bold;
+        color: #667eea;
+    }
+    .mission-section {
+        padding: 80px 0;
+        background: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">About COSA</h1>
+                <p class="lead mb-4">
+                    COSA (College of Science Alumni) Management System is a comprehensive platform designed to connect, 
+                    engage, and empower our alumni community. We bridge the gap between past, present, and future 
+                    generations of scholars.
+                </p>
+                <a href="{% url 'alumni_registration' %}" class="btn btn-light btn-lg">Join Our Community</a>
+            </div>
+            <div class="col-lg-6">
+                <img src="{% static 'img/about-hero.jpg' %}" alt="COSA Community" class="img-fluid rounded shadow">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mission Section -->
+<div class="mission-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="display-5 mb-4">Our Mission</h2>
+                <p class="lead text-muted mb-5">
+                    To create a vibrant, connected alumni community that fosters lifelong relationships, 
+                    professional growth, and meaningful contributions to society. We believe in the power 
+                    of our network to create opportunities, share knowledge, and make a positive impact.
+                </p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card feature-card h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="mb-3">
+                            <i class="fas fa-users fa-3x text-primary"></i>
+                        </div>
+                        <h5 class="card-title">Connect</h5>
+                        <p class="card-text">
+                            Build meaningful connections with fellow alumni across different graduation years, 
+                            departments, and career paths.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card feature-card h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="mb-3">
+                            <i class="fas fa-briefcase fa-3x text-success"></i>
+                        </div>
+                        <h5 class="card-title">Career Growth</h5>
+                        <p class="card-text">
+                            Access exclusive job opportunities, mentorship programs, and professional 
+                            development resources from our network.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card feature-card h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="mb-3">
+                            <i class="fas fa-heart fa-3x text-danger"></i>
+                        </div>
+                        <h5 class="card-title">Give Back</h5>
+                        <p class="card-text">
+                            Support current students and the institution through mentoring, donations, 
+                            and sharing your expertise.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Section -->
+<div class="stats-section">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-card">
+                    <div class="stat-number">{{ stats.total_alumni|default:"500+" }}</div>
+                    <h6 class="text-muted">Active Alumni</h6>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-card">
+                    <div class="stat-number">{{ stats.total_companies|default:"200+" }}</div>
+                    <h6 class="text-muted">Partner Companies</h6>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-card">
+                    <div class="stat-number">{{ stats.active_jobs|default:"50+" }}</div>
+                    <h6 class="text-muted">Active Job Postings</h6>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-card">
+                    <div class="stat-number">{{ stats.upcoming_events|default:"10+" }}</div>
+                    <h6 class="text-muted">Upcoming Events</h6>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-12 text-center mb-5">
+            <h2 class="display-5">What COSA Offers</h2>
+            <p class="lead text-muted">Comprehensive tools and resources for our alumni community</p>
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card feature-card h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-search fa-2x text-primary me-3"></i>
+                        <h5 class="card-title mb-0">COSA Directory</h5>
+                    </div>
+                    <p class="card-text">
+                        Search and connect with alumni by graduation year, department, location, 
+                        or industry. Find mentors, collaborators, and friends.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="card feature-card h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-calendar-alt fa-2x text-info me-3"></i>
+                        <h5 class="card-title mb-0">Events & Networking</h5>
+                    </div>
+                    <p class="card-text">
+                        Stay updated with alumni events, reunions, professional workshops, 
+                        and networking opportunities both online and offline.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="card feature-card h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-handshake fa-2x text-warning me-3"></i>
+                        <h5 class="card-title mb-0">Mentorship Programs</h5>
+                    </div>
+                    <p class="card-text">
+                        Participate in structured mentorship programs as a mentor or mentee. 
+                        Share knowledge and accelerate career growth.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="card feature-card h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-donate fa-2x text-success me-3"></i>
+                        <h5 class="card-title mb-0">Giving Back</h5>
+                    </div>
+                    <p class="card-text">
+                        Support scholarships, research projects, and institutional development 
+                        through our secure donation platform.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Call to Action -->
+<div class="bg-primary text-white py-5">
+    <div class="container text-center">
+        <h2 class="mb-4">Ready to Join Our Community?</h2>
+        <p class="lead mb-4">
+            Connect with fellow alumni, advance your career, and make a difference.
+        </p>
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+            <a href="{% url 'alumni_registration' %}" class="btn btn-light btn-lg">
+                <i class="fas fa-user-plus me-2"></i>Register Now
+            </a>
+            <a href="{% url 'public_alumni_directory' %}" class="btn btn-outline-light btn-lg">
+                <i class="fas fa-users me-2"></i>Browse Alumni
+            </a>
+            <a href="{% url 'contact_us' %}" class="btn btn-outline-light btn-lg">
+                <i class="fas fa-envelope me-2"></i>Contact Us
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

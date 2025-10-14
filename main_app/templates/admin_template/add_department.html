@@ -1,0 +1,265 @@
+{% extends 'admin_template/base.html' %}
+{% load static %}
+{% block title %}Add Department - COSA Admin{% endblock %}
+{% block extra_css %}
+<style>
+  .page-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 40px 0;
+  }
+  .form-card {
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+  }
+  .form-section {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .required-field {
+    color: #dc3545;
+  }
+</style>
+{% endblock %}
+{% block admin_content %}
+<!-- Page Header -->
+<div class="page-header">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h1 class="display-6 mb-2">Add New Department</h1>
+        <p class="lead mb-0">Create a new academic department</p>
+      </div>
+      <div class="col-md-4 text-md-end">
+        <a href="{% url 'manage_departments' %}" class="btn btn-light">
+          <i class="fas fa-arrow-left me-2"></i>Back to Departments
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card form-card">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">
+            <i class="fas fa-building me-2"></i>Department Information
+          </h5>
+        </div>
+        <div class="card-body">
+          <form method="post">
+            {% csrf_token %}
+
+            <!-- Basic Information -->
+            <div class="form-section">
+              <h6 class="mb-3">
+                <i class="fas fa-info-circle me-2"></i>Basic Information
+              </h6>
+
+              <div class="mb-3">
+                <label for="name" class="form-label"
+                  >Department Name <span class="required-field">*</span></label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="name"
+                  name="name"
+                  required
+                  placeholder="e.g., Computer Science"
+                />
+                {{ form.name.errors }}
+              </div>
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="code" class="form-label">Department Code</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="code"
+                    name="code"
+                    placeholder="e.g., CS"
+                    maxlength="10"
+                  />
+                  <div class="form-text">
+                    Short code for the department (optional)
+                  </div>
+                  {{ form.code.errors }}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="is_active" class="form-label">Status</label>
+                  <select class="form-select" id="is_active" name="is_active">
+                    <option value="true" selected>Active</option>
+                    <option value="false">Inactive</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea
+                  class="form-control"
+                  id="description"
+                  name="description"
+                  rows="4"
+                  placeholder="Brief description of the department..."
+                ></textarea>
+                {{ form.description.errors }}
+              </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="form-section">
+              <h6 class="mb-3">
+                <i class="fas fa-phone me-2"></i>Contact Information
+              </h6>
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="head_of_department" class="form-label"
+                    >Head of Department</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="head_of_department"
+                    name="head_of_department"
+                    placeholder="Dr. John Smith"
+                  />
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="contact_email" class="form-label"
+                    >Contact Email</label
+                  >
+                  <input
+                    type="email"
+                    class="form-control"
+                    id="contact_email"
+                    name="contact_email"
+                    placeholder="dept@university.edu"
+                  />
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="phone_number" class="form-label"
+                    >Phone Number</label
+                  >
+                  <input
+                    type="tel"
+                    class="form-control"
+                    id="phone_number"
+                    name="phone_number"
+                    placeholder="+256 753753909"
+                  />
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="office_location" class="form-label"
+                    >Office Location</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="office_location"
+                    name="office_location"
+                    placeholder="Building A, Room 101"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Additional Information -->
+            <div class="form-section">
+              <h6 class="mb-3">
+                <i class="fas fa-cogs me-2"></i>Additional Information
+              </h6>
+
+              <div class="mb-3">
+                <label for="website" class="form-label"
+                  >Department Website</label
+                >
+                <input
+                  type="url"
+                  class="form-control"
+                  id="website"
+                  name="website"
+                  placeholder="https://cs.university.edu"
+                />
+              </div>
+
+              <div class="mb-3">
+                <label for="established_year" class="form-label"
+                  >Established Year</label
+                >
+                <input
+                  type="number"
+                  class="form-control"
+                  id="established_year"
+                  name="established_year"
+                  min="1800"
+                  max="2024"
+                  placeholder="1985"
+                />
+              </div>
+            </div>
+
+            <!-- Preview -->
+            <div class="alert alert-info">
+              <h6><i class="fas fa-eye me-2"></i>Preview</h6>
+              <p class="mb-0">
+                Once created, this department will be available for:
+              </p>
+              <ul class="mb-0 mt-2">
+                <li>Creating egree Programs</li>
+                <li>Organizing alumni by department</li>
+                <li>Generating department-specific reports</li>
+                <li>Coordinator assignments</li>
+              </ul>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex justify-content-between">
+              <a
+                href="{% url 'manage_departments' %}"
+                class="btn btn-outline-secondary"
+              >
+                <i class="fas fa-times me-2"></i>Cancel
+              </a>
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Create Department
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Auto-generate department code from name
+  document.getElementById("name").addEventListener("input", function () {
+    const name = this.value;
+    const codeField = document.getElementById("code");
+
+    if (name && !codeField.value) {
+      // Generate code from first letters of words
+      const words = name.split(" ");
+      let code = "";
+      words.forEach((word) => {
+        if (word.length > 0) {
+          code += word.charAt(0).toUpperCase();
+        }
+      });
+      codeField.value = code.substring(0, 10); // Limit to 10 characters
+    }
+  });
+</script>
+{% endblock %}

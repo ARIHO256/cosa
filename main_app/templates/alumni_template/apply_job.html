@@ -1,0 +1,158 @@
+{% extends 'alumni_template/base.html' %}
+{% block title %}Apply for {{ job.title }}{% endblock %}
+{% block alumni_content %}
+<section class="app-hero mb-4">
+    <div class="container d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3">
+        <div>
+            <h1>Apply for {{ job.title }}</h1>
+            <p class="mb-0">Submit your application directly to {{ job.company.name }}.</p>
+        </div>
+        <a href="{% url 'job_detail' job.id %}" class="btn btn-light"><i class="fas fa-arrow-left me-2"></i>Back to job</a>
+    </div>
+</section>
+
+<section class="container stack-gap">
+    <div class="surface-card stack-gap-sm">
+        <h5 class="mb-3"><i class="fas fa-paper-plane me-2 text-primary"></i>Job application</h5>
+        <form method="post" enctype="multipart/form-data" class="stack-gap-sm">
+            {% csrf_token %}
+
+            <div class="surface-card stack-gap-sm">
+                <h6 class="mb-1"><i class="fas fa-user me-2"></i>Personal information</h6>
+                <div class="alert alert-info"><i class="fas fa-info-circle me-2"></i>This will be shared with the employer.</div>
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <label class="form-label">Full name</label>
+                        <input type="text" class="form-control" value="{{ request.user.get_full_name }}" readonly>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" value="{{ request.user.email }}" readonly>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label">Phone</label>
+                        <input type="tel" class="form-control" value="{{ request.user.phone_number|default:'Not provided' }}" readonly>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label">Location</label>
+                        <input type="text" class="form-control" value="{{ request.user.alumni.current_city|default:'Not provided' }}" readonly>
+                    </div>
+                </div>
+            </div>
+
+            <div class="surface-card stack-gap-sm">
+                <h6 class="mb-1"><i class="fas fa-file-alt me-2"></i>Application documents</h6>
+                <div>
+                    <label for="resume" class="form-label">Resume/CV <span class="text-danger">*</span></label>
+                    <input type="file" class="form-control" id="resume" name="resume" accept=".pdf,.doc,.docx" required>
+                    <small class="text-muted">Accepted: PDF, DOC, DOCX (max 5MB)</small>
+                </div>
+                <div>
+                    <label for="cover_letter" class="form-label">Cover letter <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="cover_letter" name="cover_letter" rows="5" placeholder="Introduce yourself and explain why you’re a great fit." required></textarea>
+                </div>
+            </div>
+
+            <div class="surface-card stack-gap-sm">
+                <h6 class="mb-1"><i class="fas fa-briefcase me-2"></i>Experience</h6>
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <label for="current_role" class="form-label">Current role</label>
+                        <input type="text" class="form-control" id="current_role" name="current_role" value="{{ job_application.current_role|default:'' }}" placeholder="e.g., Product Manager">
+                    </div>
+                    <div class="col-sm-6">
+                        <label for="current_employer" class="form-label">Current employer</label>
+                        <input type="text" class="form-control" id="current_employer" name="current_employer" value="{{ job_application.current_employer|default:'' }}" placeholder="Company name">
+                    </div>
+                    <div class="col-12">
+                        <label for="experience_summary" class="form-label">Summary</label>
+                        <textarea class="form-control" id="experience_summary" name="experience_summary" rows="4" placeholder="Highlight relevant achievements.">{{ job_application.experience_summary|default:'' }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="surface-card stack-gap-sm">
+                <h6 class="mb-1"><i class="fas fa-link me-2"></i>Links & preferences</h6>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label for="portfolio_link" class="form-label">Portfolio or LinkedIn</label>
+                        <input type="url" class="form-control" id="portfolio_link" name="portfolio_link" value="{{ job_application.portfolio_link|default:'' }}" placeholder="https://linkedin.com/in/yourprofile">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="availability" class="form-label">Availability</label>
+                        <select class="form-select" id="availability" name="availability">
+                            <option value="">Select availability</option>
+                            <option value="immediate">Immediate</option>
+                            <option value="2_weeks">2 weeks notice</option>
+                            <option value="1_month">1 month notice</option>
+                            <option value="2_months">2 months notice</option>
+                            <option value="negotiable">Negotiable</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="salary_expectation" class="form-label">Salary expectation</label>
+                        <input type="text" class="form-control" id="salary_expectation" name="salary_expectation" value="{{ job_application.salary_expectation|default:'' }}" placeholder="e.g., $80,000 - $100,000 or negotiable">
+                    </div>
+                </div>
+            </div>
+
+            {% if job.application_questions %}
+            <div class="surface-card stack-gap-sm">
+                <h6 class="mb-1"><i class="fas fa-question-circle me-2"></i>Additional questions</h6>
+                <div class="alert alert-warning">
+                    <strong>Employer questions:</strong>
+                    <div class="mt-2">{{ job.application_questions|safe }}</div>
+                </div>
+                <textarea class="form-control" id="additional_answers" name="additional_answers" rows="6" placeholder="Answer the employer questions here."></textarea>
+            </div>
+            {% endif %}
+
+            <div class="surface-card stack-gap-sm">
+                <h6 class="mb-1"><i class="fas fa-shield-alt me-2"></i>Consent</h6>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="terms_accepted" required>
+                    <label class="form-check-label" for="terms_accepted">I confirm all information is accurate <span class="text-danger">*</span></label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="contact_permission">
+                    <label class="form-check-label" for="contact_permission">I consent to be contacted about this application</label>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'job_detail' job.id %}" class="btn btn-outline-secondary"><i class="fas fa-times me-2"></i>Cancel</a>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane me-2"></i>Submit application</button>
+            </div>
+        </form>
+    </div>
+
+    <aside class="surface-card stack-gap-sm">
+        <h5 class="mb-2"><i class="fas fa-briefcase me-2 text-info"></i>Job details</h5>
+        <div class="stack-gap-sm">
+            <div>
+                <strong>{{ job.title }}</strong>
+                <p class="text-muted mb-0">{{ job.company.name }}</p>
+            </div>
+            <div class="small text-muted"><i class="fas fa-map-marker-alt me-1"></i>{{ job.location }}</div>
+            {% if job.salary_range %}
+                <div class="small text-muted"><i class="fas fa-dollar-sign me-1"></i>{{ job.salary_range }}</div>
+            {% endif %}
+            <div class="small text-muted"><i class="fas fa-calendar me-1"></i>Posted {{ job.created_at|timesince }} ago</div>
+            <div class="d-flex flex-wrap gap-2">
+                <span class="badge bg-primary">{{ job.get_job_type_display }}</span>
+                <span class="badge bg-secondary">{{ job.get_experience_level_display }}</span>
+                {% if job.is_remote %}<span class="badge bg-info text-dark">Remote</span>{% endif %}
+                {% if job.is_urgent %}<span class="badge bg-danger">Urgent</span>{% endif %}
+            </div>
+            {% if job.skills_required %}
+                <div class="d-flex flex-wrap gap-2">
+                    {% for skill in job.skills_required|slice:":6" %}
+                        <span class="badge bg-light text-dark">{{ skill.strip }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <p class="text-muted mb-0">{{ job.description|striptags|truncatewords:36 }}</p>
+        </div>
+    </aside>
+</section>
+{% endblock %}

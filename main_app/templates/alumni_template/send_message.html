@@ -1,0 +1,53 @@
+{% extends 'alumni_template/base.html' %}
+{% load crispy_forms_tags %}
+{% block title %}Send Message - COSA Alumni{% endblock %}
+{% block alumni_content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <i class="fas fa-paper-plane me-2"></i>Send Message
+                </h1>
+                <a href="{% url 'messages_inbox' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Inbox
+                </a>
+            </div>
+
+            <!-- Messages -->
+            {% if messages %}
+            <div class="row">
+                <div class="col-12">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Send Message Form -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-paper-plane me-2"></i>Compose Message
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if recipient %}
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Sending message to: <strong>{{ recipient.admin.get_full_name }}</strong>
+                            </div>
+                            {% endif %}
+                            
+                            <form method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                {% crispy form %}
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+{% endblock %}

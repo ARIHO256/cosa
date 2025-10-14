@@ -1,0 +1,46 @@
+{% load i18n %}
+{% with sender_profile=entry.get_sender_profile %}
+<div class="conversation-entry {% if entry.is_from_user(request.user) %}conversation-entry-self{% else %}conversation-entry-peer{% endif %}">
+    <div class="conversation-entry-inner">
+        <div class="conversation-avatar">
+            {% if sender_profile and sender_profile.profile_pic %}
+                <img src="{{ sender_profile.profile_pic.url }}" alt="{{ entry.get_sender_name }}">
+            {% else %}
+                <span class="conversation-avatar-fallback">
+                    <i class="fas fa-user"></i>
+                </span>
+            {% endif %}
+        </div>
+        <div class="conversation-bubble">
+            <div class="conversation-meta d-flex flex-wrap align-items-center justify-content-between">
+                <div class="conversation-name">
+                    <strong>{{ entry.get_sender_name }}</strong>
+                    <span class="badge rounded-pill bg-light text-muted ms-2 conversation-role">{{ entry.get_sender_role }}</span>
+                    {% if sender_profile and sender_profile.email %}
+                        <span class="text-muted small ms-2 d-inline-block">{{ sender_profile.email }}</span>
+                    {% endif %}
+                </div>
+                <span class="conversation-time text-muted small">
+                    <i class="fas fa-clock me-1"></i>{{ entry.created_at|timesince }} {% trans "ago" %}
+                </span>
+            </div>
+            {% if is_root and entry.subject %}
+            <div class="conversation-subject mt-2">
+                <h5 class="mb-1">{{ entry.subject }}</h5>
+            </div>
+            {% endif %}
+            <div class="conversation-text mt-2">
+                {{ entry.content|linebreaks }}
+            </div>
+            {% if entry.attachment %}
+            <div class="conversation-attachment mt-3">
+                <a href="{{ entry.attachment.url }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                    <i class="fas fa-paperclip me-2"></i>
+                    {{ entry.attachment.name|default:"Download attachment" }}
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endwith %}

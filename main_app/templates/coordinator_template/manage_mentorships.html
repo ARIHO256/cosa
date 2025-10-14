@@ -1,0 +1,322 @@
+{% extends 'coordinator_template/base.html' %}
+{% block title %}Manage Mentorships - COSA Coordinator{% endblock %}
+{% block coordinator_content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2"><i class="fas fa-handshake me-2"></i>Manage Mentorships</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <a href="{% url 'create_mentorship' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-1"></i>Create New Mentorship
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            {% if messages %}
+            <div class="row mb-4">
+                <div class="col-12">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>{{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Filters and Search -->
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-body py-2">
+                            <form method="GET" class="d-flex align-items-center">
+                                <div class="me-2">
+                                    <input type="search" name="search" class="form-control form-control-sm" 
+                                           placeholder="Search mentorships..." value="{{ request.GET.search }}">
+                                </div>
+                                <div class="me-2">
+                                    <select name="status" class="form-select form-select-sm">
+                                        <option value="">All Status</option>
+                                        {% for status_code, status_name in program_statuses %}
+                                        <option value="{{ status_code }}" {% if request.GET.status == status_code %}selected{% endif %}>
+                                            {{ status_name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-sm me-2">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                                {% if request.GET.search or request.GET.status %}
+                                <a href="{% url 'manage_mentorships' %}" class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-times"></i>
+                                </a>
+                                {% endif %}
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <small class="text-muted">
+                        Showing {{ mentorships|length }} mentorship{{ mentorships|length|pluralize }}
+                    </small>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body text-center">
+                            <h4 class="mb-2">{{ mentorships|length }}</h4>
+                            <small>Total Programs</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body text-center">
+                            <h4 class="mb-2">{{ active_count|default:0 }}</h4>
+                            <small>Active</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body text-center">
+                            <h4 class="mb-2">{{ completed_count|default:0 }}</h4>
+                            <small>Completed</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-dark">
+                        <div class="card-body text-center">
+                            <h4 class="mb-2">{{ paused_count|default:0 }}</h4>
+                            <small>Paused</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mentorships List -->
+            {% if mentorships %}
+            <div class="row">
+                {% for mentorship in mentorships %}
+                <div class="col-lg-6 col-xl-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex align-items-start mb-3">
+                                <div class="flex-grow-1">
+                                    <h5 class="card-title mb-1">{{ mentorship.focus_area }}</h5>
+                                    <p class="text-muted mb-1">{{ mentorship.mentor.full_name }} → {{ mentorship.mentee.full_name }}</p>
+                                </div>
+                                <span class="badge 
+                                    {% if mentorship.status == 'active' %}bg-success
+                                    {% elif mentorship.status == 'completed' %}bg-info
+                                    {% elif mentorship.status == 'paused' %}bg-warning
+                                    {% else %}bg-secondary{% endif %}">
+                                    {{ mentorship.get_status_display }}
+                                </span>
+                            </div>
+
+                            <div class="mb-3">
+                                <h6 class="text-muted mb-2">Goals</h6>
+                                <p class="text-truncate-3">{{ mentorship.goals|truncatewords:15 }}</p>
+                            </div>
+
+                            <div class="mt-auto">
+                                <div class="row text-center mb-3">
+                                    <div class="col-6">
+                                        <small class="text-muted">Duration</small>
+                                        <div><strong>{{ mentorship.duration_months }} months</strong></div>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">Started</small>
+                                        <div><strong>{{ mentorship.start_date|date:"M d, Y" }}</strong></div>
+                                    </div>
+                                </div>
+
+                                {% if mentorship.end_date %}
+                                <div class="mb-3">
+                                    <small class="text-muted">End Date</small>
+                                    <div><strong>{{ mentorship.end_date|date:"M d, Y" }}</strong></div>
+                                </div>
+                                {% endif %}
+
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        <i class="far fa-calendar me-1"></i>{{ mentorship.created_at|date:"M d, Y" }}
+                                    </small>
+                                    <div class="btn-group btn-group-sm">
+                                        <button type="button" class="btn btn-outline-info" 
+                                                data-bs-toggle="modal" data-bs-target="#mentorshipModal{{ mentorship.id }}">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-warning">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if mentorships.has_other_pages %}
+            <nav aria-label="Mentorships pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if mentorships.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ mentorships.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">Previous</a>
+                    </li>
+                    {% endif %}
+
+                    <li class="page-item active">
+                        <span class="page-link">Page {{ mentorships.number }} of {{ mentorships.paginator.num_pages }}</span>
+                    </li>
+
+                    {% if mentorships.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ mentorships.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ mentorships.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">Last</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+            {% else %}
+            <!-- No Mentorships State -->
+            <div class="text-center py-5">
+                <i class="fas fa-handshake fa-4x text-muted mb-4"></i>
+                <h3>No Mentorships Found</h3>
+                <p class="text-muted mb-4">
+                    {% if request.GET.search or request.GET.status %}
+                    No mentorships match your current filters. <a href="{% url 'manage_mentorships' %}">Clear filters</a>
+                    {% else %}
+                    You haven't created any mentorship programs yet. Start connecting alumni!
+                    {% endif %}
+                </p>
+                <a href="{% url 'create_mentorship' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus me-2"></i>Create Your First Mentorship
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Mentorship Details Modals -->
+{% for mentorship in mentorships %}
+<div class="modal fade" id="mentorshipModal{{ mentorship.id }}" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-handshake me-2"></i>{{ mentorship.focus_area }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Mentor</h6>
+                        <p><strong>{{ mentorship.mentor.full_name }}</strong></p>
+                        <p class="text-muted">{{ mentorship.mentor.current_company.name|default:'-' }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Mentee</h6>
+                        <p><strong>{{ mentorship.mentee.full_name }}</strong></p>
+                        <p class="text-muted">{{ mentorship.mentee.current_company.name|default:'-' }}</p>
+                    </div>
+                </div>
+                
+                <h6>Goals</h6>
+                <p>{{ mentorship.goals }}</p>
+                
+                <h6>Program Details</h6>
+                <table class="table table-borderless">
+                    <tr>
+                        <td><strong>Status:</strong></td>
+                        <td>
+                            <span class="badge 
+                                {% if mentorship.status == 'active' %}bg-success
+                                {% elif mentorship.status == 'completed' %}bg-info
+                                {% elif mentorship.status == 'paused' %}bg-warning
+                                {% else %}bg-secondary{% endif %}">
+                                {{ mentorship.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Duration:</strong></td>
+                        <td>{{ mentorship.duration_months }} months</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Start Date:</strong></td>
+                        <td>{{ mentorship.start_date|date:"M d, Y" }}</td>
+                    </tr>
+                    {% if mentorship.end_date %}
+                    <tr>
+                        <td><strong>End Date:</strong></td>
+                        <td>{{ mentorship.end_date|date:"M d, Y" }}</td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-warning">
+                    <i class="fas fa-edit me-2"></i>Edit Program
+                </button>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+
+{% endblock %}
+{% block extra_css %}
+<style>
+.text-truncate-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.mentorship-card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.mentorship-card:hover {
+    transform: translateY(-2px);
+}
+</style>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-hide alerts after 5 seconds
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(function(alert) {
+        setTimeout(function() {
+            alert.style.opacity = '0';
+            setTimeout(function() {
+                alert.remove();
+            }, 300);
+        }, 5000);
+    });
+});
+</script>
+{% endblock %}

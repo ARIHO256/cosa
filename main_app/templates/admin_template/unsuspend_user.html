@@ -1,0 +1,102 @@
+{% extends 'admin_template/base.html' %}
+{% load crispy_forms_tags %}
+{% block title %}Unsuspend User Account{% endblock %}
+{% block admin_content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-check-circle me-2"></i>
+                        Unsuspend User Account
+                    </h3>
+                    <div class="card-tools">
+                        <a href="{% url 'manage_alumni' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Back to Alumni Management
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- User Information -->
+                    <div class="alert alert-info">
+                        <h5 class="alert-heading">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Unsuspending Account
+                        </h5>
+                        <p class="mb-2">You are about to unsuspend the following account:</p>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Name:</strong> {{ user.get_full_name }}<br>
+                                <strong>Email:</strong> {{ user.email }}<br>
+                                <strong>User Type:</strong> {{ user.get_user_type_display }}
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Current Status:</strong> 
+                                <span class="badge bg-danger">Suspended</span><br>
+                                <strong>Suspended Since:</strong> {{ user.suspended_at|date:"F d, Y \a\t g:i A" }}<br>
+                                {% if user.suspension_expires_at %}
+                                    <strong>Expires:</strong> {{ user.suspension_expires_at|date:"F d, Y \a\t g:i A" }}
+                                {% else %}
+                                    <strong>Type:</strong> Permanent Suspension
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        {% if user.suspension_reason %}
+                            <div class="mt-3">
+                                <strong>Suspension Reason:</strong>
+                                <p class="mt-1 mb-0 p-2 bg-light rounded">{{ user.suspension_reason }}</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Unsuspension Form -->
+                    <form method="post">
+                        {% csrf_token %}
+                        {% crispy form %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card-header {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+}
+
+.card-header .card-title {
+    margin: 0;
+    font-weight: 600;
+}
+
+.card-header .card-tools .btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.card-header .card-tools .btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.alert-info {
+    border-left: 4px solid #17a2b8;
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+}
+
+.alert-heading {
+    color: #0c5460;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+}
+</style>
+{% endblock %}

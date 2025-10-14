@@ -1,0 +1,114 @@
+{% extends 'main_app/base.html' %}
+{% block title %}News & Announcements - COSA Alumni{% endblock %}
+{% block content %}
+<section class="app-hero mb-4">
+    <div class="container stack-gap-sm">
+        <div class="d-flex align-items-center gap-3">
+            <div>
+                <h1>News & Announcements</h1>
+                <p class="mb-0">Stories, achievements, and updates from the COSA community.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="container stack-gap">
+    {% if featured_news %}
+    <div class="surface-card stack-gap-sm">
+        <h5 class="mb-2">Featured</h5>
+        <div class="row g-3">
+            {% for article in featured_news %}
+            <div class="col-12 col-md-4">
+                <article class="alumni-card h-100">
+                    <div class="card-body stack-gap-sm">
+                        <span class="badge bg-primary align-self-start">{{ article.get_category_display }}</span>
+                        <h4 class="mb-1">{{ article.title }}</h4>
+                        <p class="text-muted mb-2">{{ article.meta_description|default:article.content|truncatewords:22 }}</p>
+                        <div class="d-flex justify-content-between align-items-center small text-muted">
+                            <span>{{ article.publish_date|date:"M d, Y" }}</span>
+                            <a href="{% url 'news_detail' article.slug %}" class="btn btn-sm btn-outline-light text-primary">Read</a>
+                        </div>
+                    </div>
+                </article>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="surface-card stack-gap-sm">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-12 col-sm-6">
+                <label for="category" class="form-label">Filter by category</label>
+                <select name="category" id="category" class="form-select">
+                    <option value="">All categories</option>
+                    {% for category_code, category_name in categories %}
+                        <option value="{{ category_code }}" {% if request.GET.category == category_code %}selected{% endif %}>{{ category_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-12 col-sm-6 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1"><i class="fas fa-filter me-2"></i>Filter</button>
+                <a href="{% url 'public_news' %}" class="btn btn-outline-secondary"><i class="fas fa-times"></i></a>
+            </div>
+        </form>
+    </div>
+
+    {% if news %}
+        <div class="stack-gap">
+            {% for article in news %}
+            <article class="alumni-card">
+                <div class="row g-0 align-items-stretch">
+                    {% if article.featured_image %}
+                    <div class="col-md-4">
+                        <img src="{{ article.featured_image.url }}" alt="{{ article.title }}" class="img-fluid rounded-start h-100" style="object-fit:cover;">
+                    </div>
+                    {% endif %}
+                    <div class="col">
+                        <div class="card-body stack-gap-sm">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <span class="badge bg-light text-dark">{{ article.get_category_display }}</span>
+                                <small class="text-muted">{{ article.publish_date|date:"M d, Y" }}</small>
+                            </div>
+                            <h4 class="mb-1"><a href="{% url 'news_detail' article.slug %}" class="text-decoration-none">{{ article.title }}</a></h4>
+                            <p class="text-muted mb-0">{{ article.meta_description|default:article.content|truncatewords:26 }}</p>
+                            <div class="d-flex justify-content-between align-items-center small text-muted">
+                                <span><i class="fas fa-user me-1"></i>{{ article.author.admin.get_full_name }}</span>
+                                <a href="{% url 'news_detail' article.slug %}" class="btn btn-outline-primary btn-sm">Read more</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+
+        {% if news.has_other_pages %}
+        <nav aria-label="News pagination">
+            <ul class="pagination justify-content-center">
+                {% if news.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page=1{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}"><i class="fas fa-angle-double-left"></i></a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ news.previous_page_number }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}"><i class="fas fa-angle-left"></i></a></li>
+                {% endif %}
+                <li class="page-item active"><span class="page-link">{{ news.number }} / {{ news.paginator.num_pages }}</span></li>
+                {% if news.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ news.next_page_number }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}"><i class="fas fa-angle-right"></i></a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ news.paginator.num_pages }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}"><i class="fas fa-angle-double-right"></i></a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    {% else %}
+        <div class="surface-card text-center py-5">
+            <i class="fas fa-newspaper fa-3x text-muted mb-3"></i>
+            <h5 class="mb-2">No news found</h5>
+            {% if request.GET.category %}
+                <p class="text-muted">Try a different category.</p>
+                <a href="{% url 'public_news' %}" class="btn btn-outline-primary">Clear filter</a>
+            {% else %}
+                <p class="text-muted">Check back soon for the latest updates.</p>
+            {% endif %}
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

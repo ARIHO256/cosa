@@ -1,0 +1,66 @@
+{% extends 'admin_template/base.html' %}
+{% load crispy_forms_tags %}
+{% block title %}Send Message to Alumni{% endblock %}
+{% block admin_content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-envelope me-2"></i>
+                        Send Message to Alumni
+                    </h3>
+                    <div class="card-tools">
+                        <a href="{% url 'admin_messages_inbox' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Back to Inbox
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if recipient %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Sending message to <strong>{{ recipient.full_name }}</strong> ({{ recipient.student_id }})
+                        </div>
+                    {% endif %}
+                    
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {% crispy form %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.card-header .card-title {
+    margin: 0;
+    font-weight: 600;
+}
+
+.card-header .card-tools .btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.card-header .card-tools .btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.alert-info {
+    border-left: 4px solid #17a2b8;
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+}
+</style>
+{% endblock %}

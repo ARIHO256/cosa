@@ -1,0 +1,390 @@
+{% extends 'admin_template/base.html' %}
+{% block title %}Manage Degrees - COSA Admin{% endblock %}
+{% block admin_content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <i class="fas fa-certificate me-2"></i>Manage egree Programs 
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <a href="{% url 'add_degree' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-1"></i>Add New Level
+                        </a>
+                        <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="fas fa-download me-1"></i>Export
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-file-csv me-2"></i>CSV</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-file-excel me-2"></i>Excel</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            {% if messages %}
+            <div class="row mb-4">
+                <div class="col-12">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>{{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Filters -->
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-body py-2">
+                            <form method="GET" class="d-flex align-items-center">
+                                <div class="me-2">
+                                    <input type="search" name="search" class="form-control form-control-sm" 
+                                           placeholder="Search degrees..." value="{{ request.GET.search }}">
+                                </div>
+                                <div class="me-2">
+                                    <select name="degree_type" class="form-select form-select-sm">
+                                        <option value="">All Types</option>
+                                        <option value="Bachelor" {% if request.GET.degree_type == 'Bachelor' %}selected{% endif %}>Bachelor's</option>
+                                        <option value="Master" {% if request.GET.degree_type == 'Master' %}selected{% endif %}>Master's</option>
+                                        <option value="PhD" {% if request.GET.degree_type == 'PhD' %}selected{% endif %}>PhD</option>
+                                        <option value="Diploma" {% if request.GET.degree_type == 'Diploma' %}selected{% endif %}>Diploma</option>
+                                        <option value="Certificate" {% if request.GET.degree_type == 'Certificate' %}selected{% endif %}>Certificate</option>
+                                    </select>
+                                </div>
+                                <div class="me-2">
+                                    <select name="department" class="form-select form-select-sm">
+                                        <option value="">All Departments</option>
+                                        {% for dept in departments %}
+                                        <option value="{{ dept.id }}" {% if request.GET.department == dept.id|stringformat:"s" %}selected{% endif %}>
+                                            {{ dept.name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-sm me-2">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                                {% if request.GET.search or request.GET.degree_type or request.GET.department %}
+                                <a href="{% url 'manage_degrees' %}" class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-times"></i>
+                                </a>
+                                {% endif %}
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <small class="text-muted">
+                        Showing {{ degrees|length }} level program{{ degrees|length|pluralize }}
+                    </small>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body text-center">
+                            <h4 class="mb-2">{{ degrees|length }}</h4>
+                            <small>Total Programs</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body text-center">
+                            <h4 class="mb-2">{{ degree_types_count|default:0 }}</h4>
+                            <small>Current Educations</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body text-center">
+                            <h4 class="mb-2">{{ departments_count|default:0 }}</h4>
+                            <small>Departments</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-dark">
+                        <div class="card-body text-center">
+                            <h4 class="mb-2">{{ active_degrees_count|default:0 }}</h4>
+                            <small>Active Programs</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Degrees Table -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-graduation-cap me-2"></i>egree Programs 
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if degrees %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Level</th>
+                                    <th>Type</th>
+                                    <th>Department</th>
+                                    <th>Duration</th>
+                                    <th>Status</th>
+                                    <th>Alumni Count</th>
+                                    <th>Created</th>
+                                    <th class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% regroup degrees by department as department_list %}
+                                {% for department_group in department_list %}
+                                    <!-- Department Header -->
+                                    <tr class="table-secondary">
+                                        <td colspan="8">
+                                            <strong>
+                                                <i class="fas fa-building me-2"></i>{{ department_group.grouper.name }}
+                                                <span class="badge bg-secondary ms-2">{{ department_group.list|length }} program{{ department_group.list|length|pluralize }}</span>
+                                            </strong>
+                                        </td>
+                                    </tr>
+                                    <!-- Degrees in Department -->
+                                    {% for level in department_group.list %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="me-3">
+                                                    <i class="fas fa-certificate fa-2x text-primary"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-1">{{ level.name }}</h6>
+                                                    <small class="text-muted">{{ level }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge 
+                                                {% if level.degree_type == 'Bachelor' %}bg-primary
+                                                {% elif level.degree_type == 'Master' %}bg-success
+                                                {% elif level.degree_type == 'PhD' %}bg-danger
+                                                {% elif level.degree_type == 'Diploma' %}bg-info
+                                                {% else %}bg-secondary{% endif %}">
+                                                {{ level.get_degree_type_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="text-muted">{{ level.department.code }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-light text-dark">
+                                                {{ level.duration_years }} year{{ level.duration_years|pluralize }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if level.is_active %}
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check-circle me-1"></i>Active
+                                            </span>
+                                            {% else %}
+                                            <span class="badge bg-secondary">
+                                                <i class="fas fa-pause-circle me-1"></i>Inactive
+                                            </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="text-muted">{{ level.alumni_count|default:0 }}</span>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">{{ level.created_at|date:"M d, Y" }}</small>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group" role="group">
+                                                <a href="{% url 'edit_degree' level.id %}" class="btn btn-sm btn-warning" 
+                                                   title="Edit Level">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="{% url 'delete_degree' level.id %}" class="btn btn-sm btn-danger" 
+                                                   title="Delete Level" onclick="return confirm('Are you sure you want to delete this level program?')">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-certificate fa-3x text-muted mb-3"></i>
+                        <h5>No egree Programs  Found</h5>
+                        <p class="text-muted">
+                            {% if request.GET.search or request.GET.degree_type or request.GET.department %}
+                            No degrees match your current filters. <a href="{% url 'manage_degrees' %}">Clear filters</a>
+                            {% else %}
+                            No egree Programs  have been created yet.
+                            {% endif %}
+                        </p>
+                        <a href="{% url 'add_degree' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Add First Level
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modals for each level -->
+{% for level in degrees %}
+<!-- View Level Modal -->
+<div class="modal fade" id="degreeModal{{ level.id }}" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-certificate me-2"></i>{{ level }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h6>Program Information</h6>
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Program Name:</strong></td>
+                                <td>{{ level.name }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Current Education:</strong></td>
+                                <td>{{ level.get_degree_type_display }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Department:</strong></td>
+                                <td>{{ level.department.name }} ({{ level.department.code }})</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Duration:</strong></td>
+                                <td>{{ level.duration_years }} year{{ level.duration_years|pluralize }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Status:</strong></td>
+                                <td>
+                                    {% if level.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Inactive</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Created:</strong></td>
+                                <td>{{ level.created_at|date:"M d, Y g:i A" }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Last Updated:</strong></td>
+                                <td>{{ level.updated_at|date:"M d, Y g:i A" }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="card">
+                            <div class="card-body">
+                                <h3 class="text-primary">{{ level.alumni_count|default:0 }}</h3>
+                                <p class="text-muted mb-0">Alumni Graduated</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-warning" data-bs-dismiss="modal" 
+                        data-bs-toggle="modal" data-bs-target="#editModal{{ level.id }}">
+                    <i class="fas fa-edit me-2"></i>Edit Program
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Level Modal (placeholder) -->
+<div class="modal fade" id="editModal{{ level.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-warning">
+                    <i class="fas fa-edit me-2"></i>Edit Level
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Editing functionality will be available soon.</p>
+                <p class="text-muted">For now, egree Programs  can be managed through the Django admin interface.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Level Modal -->
+<div class="modal fade" id="deleteModal{{ level.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Delete Level
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong>{{ level }}</strong>?</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-warning me-2"></i>
+                    This action cannot be undone. All alumni records associated with this level will be affected.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="#" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>Delete Program
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+
+{% endblock %}
+{% block extra_js %}
+<script>
+// Auto-hide alerts after 5 seconds
+document.addEventListener('DOMContentLoaded', function() {
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(function(alert) {
+        setTimeout(function() {
+            alert.style.opacity = '0';
+            setTimeout(function() {
+                alert.remove();
+            }, 300);
+        }, 5000);
+    });
+});
+</script>
+{% endblock %}

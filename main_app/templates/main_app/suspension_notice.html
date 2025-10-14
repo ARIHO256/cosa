@@ -1,0 +1,169 @@
+{% extends 'main_app/base.html' %}
+
+{% block title %}Account Suspended - COSA{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-danger shadow-lg">
+                <div class="card-header bg-danger text-white text-center">
+                    <i class="fas fa-ban fa-3x mb-3"></i>
+                    <h2 class="mb-0">Account Suspended</h2>
+                </div>
+                <div class="card-body p-5">
+                    <div class="alert alert-warning" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Your COSA account has been suspended.</strong>
+                    </div>
+                    
+                    <div class="suspension-details">
+                        <h4 class="text-danger mb-4">
+                            <i class="fas fa-info-circle me-2"></i>Suspension Details
+                        </h4>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="suspension-info-item">
+                                    <label class="fw-bold text-muted">Suspension Reason:</label>
+                                    <p class="mt-1">{{ user.suspension_reason|default:"No reason provided" }}</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="suspension-info-item">
+                                    <label class="fw-bold text-muted">Suspended On:</label>
+                                    <p class="mt-1">{{ user.suspended_at|date:"F d, Y \a\t g:i A" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="suspension-info-item">
+                                    <label class="fw-bold text-muted">Suspended By:</label>
+                                    <p class="mt-1">{{ user.suspended_by.get_full_name|default:"System Administrator" }}</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="suspension-info-item">
+                                    <label class="fw-bold text-muted">Suspension Type:</label>
+                                    <p class="mt-1">
+                                        {% if user.suspension_expires_at %}
+                                            <span class="badge bg-warning">Temporary</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Permanent</span>
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if user.suspension_expires_at %}
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <div class="suspension-info-item">
+                                    <label class="fw-bold text-muted">Expires On:</label>
+                                    <p class="mt-1">
+                                        {{ user.suspension_expires_at|date:"F d, Y \a\t g:i A" }}
+                                        <small class="text-muted">
+                                            ({{ user.suspension_expires_at|timeuntil }} remaining)
+                                        </small>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="restrictions-notice">
+                        <h5 class="text-danger mb-3">
+                            <i class="fas fa-lock me-2"></i>Account Restrictions
+                        </h5>
+                        <div class="list-group">
+                            <div class="list-group-item">
+                                <i class="fas fa-times-circle text-danger me-2"></i>
+                                Cannot access alumni directory
+                            </div>
+                            <div class="list-group-item">
+                                <i class="fas fa-times-circle text-danger me-2"></i>
+                                Cannot view job postings
+                            </div>
+                            <div class="list-group-item">
+                                <i class="fas fa-times-circle text-danger me-2"></i>
+                                Cannot post jobs or comments
+                            </div>
+                            <div class="list-group-item">
+                                <i class="fas fa-times-circle text-danger me-2"></i>
+                                Cannot send or receive messages
+                            </div>
+                            <div class="list-group-item">
+                                <i class="fas fa-times-circle text-danger me-2"></i>
+                                Cannot update profile information
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-info mt-5">
+                        <div class="alert alert-info">
+                            <h6 class="alert-heading">
+                                <i class="fas fa-question-circle me-2"></i>Need Help?
+                            </h6>
+                            <p class="mb-2">If you believe this suspension is in error or have questions about your account status, please contact the COSA administration:</p>
+                            <ul class="mb-0">
+                                <li><strong>Email:</strong> admin@cosa.org</li>
+                                <li><strong>Phone:</strong> +1 (555) 123-4567</li>
+                                <li><strong>Office Hours:</strong> Monday - Friday, 9:00 AM - 5:00 PM</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <a href="{% url 'logout' %}" class="btn btn-outline-danger">
+                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.suspension-info-item {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    border-left: 4px solid #dc3545;
+}
+
+.suspension-info-item label {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.suspension-info-item p {
+    margin-bottom: 0;
+    font-size: 1.1rem;
+    color: #495057;
+}
+
+.list-group-item {
+    border: none;
+    border-bottom: 1px solid #dee2e6;
+    padding: 0.75rem 0;
+}
+
+.list-group-item:last-child {
+    border-bottom: none;
+}
+
+.card {
+    border-radius: 1rem;
+}
+
+.card-header {
+    border-radius: 1rem 1rem 0 0 !important;
+}
+</style>
+{% endblock %}

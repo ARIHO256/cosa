@@ -1,0 +1,180 @@
+{% extends 'main_app/base.html' %}
+{% block title %}COSA Members - COSA{% endblock %}
+{% block content %}
+<section class="app-hero mb-4">
+    <div class="container stack-gap-sm">
+        <div class="d-flex align-items-center gap-3">
+            <div>
+                <h1>COSA Members</h1>
+                <p class="mb-0">Reconnect, find mentors, and celebrate alumni achievements together.</p>
+            </div>
+        </div>
+        <div class="app-hero-meta">
+            <div class="app-hero-stat">
+                <h4 id="directory-total-count">{{ total_count }}</h4>
+                <span>Members found</span>
+            </div>
+            <div class="app-hero-stat">
+                <h4 id="directory-total-pages">{{ alumni.paginator.num_pages }}</h4>
+                <span>Total pages</span>
+            </div>
+            <div class="app-hero-stat">
+                <h4>50+</h4>
+                <span>Countries represented</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="container stack-gap">
+    <div class="surface-card stack-gap-sm">
+        <form method="get" id="directory-filter-form" data-endpoint="{% url 'public_alumni_directory_data' %}" class="row g-3 align-items-end">
+            <div class="col-12 col-lg-6">
+                {{ form.search.label_tag }}
+                {{ form.search }}
+            </div>
+            <div class="col-6 col-lg-3">
+                {{ form.graduation_year.label_tag }}
+                {{ form.graduation_year }}
+            </div>
+            <div class="col-6 col-lg-3">
+                {{ form.degree.label_tag }}
+                {{ form.degree }}
+            </div>
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="form-check mt-3">
+                    {{ form.is_mentor }}
+                    {{ form.is_mentor.label_tag }}
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="form-check mt-3">
+                    {{ form.willing_to_hire }}
+                    {{ form.willing_to_hire.label_tag }}
+                </div>
+            </div>
+            <div class="col-md-4 col-lg-3">
+                <button type="submit" class="btn btn-primary w-100"><i class="fas fa-search me-2"></i>Search</button>
+            </div>
+        </form>
+    </div>
+
+    <div id="directory-results">
+        {% include 'main_app/partials/public_alumni_directory_results.html' %}
+    </div>
+</section>
+
+{% if not user.is_authenticated %}
+<section class="surface-card text-center py-5">
+    <i class="fas fa-users fa-2x text-primary mb-3"></i>
+    <h5 class="mb-2">Join the COSA network</h5>
+    <p class="text-muted mb-3">Create an account to browse full profiles and connect directly.</p>
+    <div class="d-flex flex-column flex-sm-row justify-content-center gap-2">
+        <a href="{% url 'alumni_registration' %}" class="btn btn-primary"><i class="fas fa-user-plus me-2"></i>Register</a>
+        <a href="{% url 'login_page' %}" class="btn btn-outline-primary"><i class="fas fa-sign-in-alt me-2"></i>Login</a>
+    </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    const form = document.getElementById('directory-filter-form');
+    const resultsContainer = document.getElementById('directory-results');
+    if (!form || !resultsContainer) { return; }
+
+    const endpoint = form.dataset.endpoint;
+    const totalCountEl = document.getElementById('directory-total-count');
+    const totalPagesEl = document.getElementById('directory-total-pages');
+    const urlParams = new URLSearchParams(window.location.search);
+    let currentPage = parseInt(urlParams.get('page') || '1', 10);
+    if (!Number.isFinite(currentPage) || currentPage < 1) {
+        currentPage = 1;
+    }
+
+    let currentController = null;
+    const debounceDelay = 300;
+    let debounceTimer;
+
+    function setLoading(isLoading) {
+        resultsContainer.classList.toggle('loading', isLoading);
+    }
+
+    function buildParams(pageOverride) {
+        const params = new URLSearchParams();
+        const formData = new FormData(form);
+
+        formData.forEach((value, key) => {
+            const trimmed = typeof value === 'string' ? value.trim() : value;
+            if (!trimmed) return;
+            params.append(key, trimmed);
+        });
+
+        if (typeof pageOverride === 'number') {
+            currentPage = pageOverride;
+        }
+        if (currentPage > 1) {
+            params.set('page', currentPage);
+        }
+        return params;
+    }
+
+    async function fetchDirectory(options = {}) {
+        const params = buildParams(options.page);
+        const queryString = params.toString();
+
+        if (currentController) {
+            currentController.abort();
+        }
+
+        const controller = new AbortController();
+        currentController = controller;
+        setLoading(true);
+
+        try {
+            const response = await fetch(`${endpoint}${queryString ? `?${queryString}` : ''}`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                signal: controller.signal
+            });
+            if (!response.ok) throw new Error(`Request failed: ${response.status}`);
+            const html = await response.text();
+            resultsContainer.innerHTML = html;
+
+            const totalCountAttr = resultsContainer.querySelector('[data-total-count]');
+            const totalPagesAttr = resultsContainer.querySelector('[data-total-pages]');
+            if (totalCountAttr && totalCountEl) totalCountEl.textContent = totalCountAttr.dataset.totalCount;
+            if (totalPagesAttr && totalPagesEl) totalPagesEl.textContent = totalPagesAttr.dataset.totalPages;
+        } catch (error) {
+            if (error.name !== 'AbortError') {
+                console.error('Directory fetch failed', error);
+            }
+        } finally {
+            if (currentController === controller) {
+                currentController = null;
+            }
+            setLoading(false);
+        }
+    }
+
+    form.addEventListener('input', () => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => fetchDirectory({ page: 1 }), debounceDelay);
+    });
+
+    form.addEventListener('submit', event => {
+        event.preventDefault();
+        fetchDirectory({ page: 1 });
+    });
+
+    resultsContainer.addEventListener('click', event => {
+        const link = event.target.closest('[data-page]');
+        if (!link) return;
+        event.preventDefault();
+        const nextPage = parseInt(link.dataset.page, 10);
+        if (!Number.isFinite(nextPage)) return;
+        fetchDirectory({ page: nextPage });
+    });
+})();
+</script>
+{% endblock %}

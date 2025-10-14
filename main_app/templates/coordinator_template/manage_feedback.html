@@ -1,0 +1,524 @@
+{% extends 'coordinator_template/base.html' %}
+{% block title %}Manage Feedback - COSA Coordinator{% endblock %}
+{% block coordinator_content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <i class="fas fa-comments me-2"></i>Manage Alumni Feedback
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="fas fa-download me-1"></i>Export
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-file-csv me-2"></i>CSV</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-file-excel me-2"></i>Excel</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-file-pdf me-2"></i>PDF Report</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            {% if messages %}
+            <div class="row mb-4">
+                <div class="col-12">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>{{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body text-center">
+                            <h4 class="mb-2">{{ feedback.paginator.count|default:0 }}</h4>
+                            <small>Total Feedback</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-dark">
+                        <div class="card-body text-center">
+                            <h4 class="mb-2">{{ pending_count|default:0 }}</h4>
+                            <small>Pending</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body text-center">
+                            <h4 class="mb-2">{{ resolved_count|default:0 }}</h4>
+                            <small>Resolved</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body text-center">
+                            <h4 class="mb-2">{{ this_week_count|default:0 }}</h4>
+                            <small>This Week</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters and Search -->
+            <div class="row mb-4">
+                <div class="col-md-9">
+                    <div class="card">
+                        <div class="card-body py-2">
+                            <form method="GET" class="d-flex align-items-center">
+                                <div class="me-2">
+                                    <input type="search" name="search" class="form-control form-control-sm" 
+                                           placeholder="Search feedback..." value="{{ request.GET.search }}">
+                                </div>
+                                <div class="me-2">
+                                    <select name="status" class="form-select form-select-sm">
+                                        <option value="">All Status</option>
+                                        <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>Pending</option>
+                                        <option value="resolved" {% if request.GET.status == 'resolved' %}selected{% endif %}>Resolved</option>
+                                    </select>
+                                </div>
+                                <div class="me-2">
+                                    <select name="type" class="form-select form-select-sm">
+                                        <option value="">All Types</option>
+                                        {% for type_code, type_name in feedback_types %}
+                                        <option value="{{ type_code }}" {% if request.GET.type == type_code %}selected{% endif %}>{{ type_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-sm me-2">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                                {% if request.GET.search or request.GET.status or request.GET.type %}
+                                <a href="{% url 'manage_feedback' %}" class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-times"></i>
+                                </a>
+                                {% endif %}
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 text-end">
+                    <small class="text-muted">
+                        Showing {{ feedback|length }} feedback{{ feedback|length|pluralize }}
+                    </small>
+                    {% if rating_summary.total_rated %}
+                    <div class="mt-2 text-end">
+                        <small class="text-muted d-block">
+                            Average rating {{ rating_summary.average_rating }}/5 ({{ rating_summary.total_rated }} responses)
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Feedback List -->
+            {% if feedback %}
+            <div class="row">
+                {% for fb in feedback %}
+                <div class="col-lg-6 mb-4">
+                    <div class="card h-100 shadow-sm feedback-card">
+                        <!-- Card Header -->
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    {% if fb.alumni.admin.profile_picture %}
+                                    <img src="{{ fb.alumni.admin.profile_picture.url }}" 
+                                         class="rounded-circle" width="40" height="40" alt="Alumni">
+                                    {% else %}
+                                    <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center" 
+                                         style="width: 40px; height: 40px;">
+                                        <span class="text-white fw-bold">
+                                            {{ fb.alumni.admin.first_name|first }}{{ fb.alumni.admin.last_name|first }}
+                                        </span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">{{ fb.alumni.admin.first_name }} {{ fb.alumni.admin.last_name }}</h6>
+                                    <small class="text-muted">{{ fb.alumni.student_id }}</small>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                {% if fb.is_resolved %}
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check-circle me-1"></i>Resolved
+                                </span>
+                                {% else %}
+                                <span class="badge bg-warning text-dark">
+                                    <i class="fas fa-clock me-1"></i>Pending
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Card Body -->
+                        <div class="card-body">
+                            <!-- Feedback Type and Subject -->
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h5 class="card-title mb-0">{{ fb.subject }}</h5>
+                                    <span class="badge 
+                                        {% if fb.feedback_type == 'general' %}bg-secondary
+                                        {% elif fb.feedback_type == 'technical' %}bg-danger
+                                        {% elif fb.feedback_type == 'feature_request' %}bg-info
+                                        {% elif fb.feedback_type == 'complaint' %}bg-warning text-dark
+                                        {% elif fb.feedback_type == 'suggestion' %}bg-success
+                                        {% else %}bg-dark{% endif %}">
+                                        {{ fb.get_feedback_type_display }}
+                                    </span>
+                                </div>
+                                {% if fb.rating %}
+                                <div class="feedback-rating mb-2">
+                                    {% for _ in '12345'|make_list %}
+                                        <i class="{% if forloop.counter <= fb.rating %}fas{% else %}far{% endif %} fa-star text-warning"></i>
+                                    {% endfor %}
+                                    <small class="text-muted ms-2">{{ fb.rating }}/5</small>
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Feedback Content -->
+                            <div class="mb-3">
+                                <p class="card-text">{{ fb.feedback|truncatewords:30 }}</p>
+                            </div>
+
+                            <!-- Reply Section -->
+                            {% if fb.reply %}
+                            <div class="mb-3">
+                                <div class="alert alert-light border-start border-primary border-4">
+                                    <h6 class="alert-heading">
+                                        <i class="fas fa-reply me-2"></i>Coordinator Reply:
+                                    </h6>
+                                    <p class="mb-0">{{ fb.reply|truncatewords:20 }}</p>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Timestamps -->
+                            <div class="row text-center mb-3">
+                                <div class="col-6">
+                                    <small class="text-muted">Submitted</small>
+                                    <div><strong>{{ fb.created_at|date:"M d, Y" }}</strong></div>
+                                    <div><small>{{ fb.created_at|time:"g:i A" }}</small></div>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted">
+                                        {% if fb.is_resolved %}Last Updated{% else %}Received{% endif %}
+                                    </small>
+                                    <div><strong>{{ fb.updated_at|date:"M d, Y" }}</strong></div>
+                                    <div><small>{{ fb.updated_at|time:"g:i A" }}</small></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card Actions -->
+                        <div class="card-footer bg-transparent">
+                            <div class="btn-group w-100" role="group">
+                                <button type="button" class="btn btn-sm btn-info" 
+                                        data-bs-toggle="modal" data-bs-target="#feedbackModal{{ fb.id }}">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                {% if not fb.is_resolved %}
+                                <a href="{% url 'reply_feedback' fb.id %}" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-reply"></i>
+                                </a>
+                                <button type="button" class="btn btn-sm btn-success" 
+                                        onclick="markResolved({{ fb.id }})">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                {% else %}
+                                <a href="{% url 'reply_feedback' fb.id %}" class="btn btn-sm btn-secondary">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button type="button" class="btn btn-sm btn-warning" 
+                                        onclick="markPending({{ fb.id }})">
+                                    <i class="fas fa-undo"></i>
+                                </button>
+                                {% endif %}
+                                <button type="button" class="btn btn-sm btn-outline-primary" 
+                                        onclick="contactAlumni('{{ fb.alumni.admin.email }}')">
+                                    <i class="fas fa-envelope"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if feedback.has_other_pages %}
+            <nav aria-label="Feedback pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if feedback.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}">First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ feedback.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}">Previous</a>
+                    </li>
+                    {% endif %}
+
+                    <li class="page-item active">
+                        <span class="page-link">Page {{ feedback.number }} of {{ feedback.paginator.num_pages }}</span>
+                    </li>
+
+                    {% if feedback.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ feedback.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}">Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ feedback.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}">Last</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+            {% else %}
+            <!-- No Feedback State -->
+            <div class="text-center py-5">
+                <i class="fas fa-comments fa-4x text-muted mb-4"></i>
+                <h3>No Feedback Found</h3>
+                <p class="text-muted mb-4">
+                    {% if request.GET.search or request.GET.status or request.GET.type %}
+                    No feedback matches your current filters. <a href="{% url 'manage_feedback' %}">Clear filters</a>
+                    {% else %}
+                    No alumni feedback has been submitted yet. Alumni can submit feedback through their dashboard.
+                    {% endif %}
+                </p>
+                <a href="{% url 'coordinator_home' %}" class="btn btn-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Feedback Details Modals -->
+{% for fb in feedback %}
+<!-- View Feedback Modal -->
+<div class="modal fade" id="feedbackModal{{ fb.id }}" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-comments me-2"></i>{{ fb.subject }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <!-- Alumni Information -->
+                        <div class="d-flex align-items-center mb-4">
+                            {% if fb.alumni.admin.profile_picture %}
+                            <img src="{{ fb.alumni.admin.profile_picture.url }}" 
+                                 class="rounded-circle me-3" width="60" height="60" alt="Alumni">
+                            {% else %}
+                            <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center me-3" 
+                                 style="width: 60px; height: 60px;">
+                                <span class="text-white fw-bold h5 mb-0">
+                                    {{ fb.alumni.admin.first_name|first }}{{ fb.alumni.admin.last_name|first }}
+                                </span>
+                            </div>
+                            {% endif %}
+                            <div>
+                                <h5 class="mb-1">{{ fb.alumni.admin.first_name }} {{ fb.alumni.admin.last_name }}</h5>
+                                <p class="mb-1 text-muted">{{ fb.alumni.student_id }}</p>
+                                <p class="mb-0 text-muted">{{ fb.alumni.admin.email }}</p>
+                            </div>
+                        </div>
+
+                        <!-- Feedback Details -->
+                        <h6>Feedback Content</h6>
+                        <div class="border p-3 bg-light mb-4">
+                            {{ fb.feedback|linebreaks }}
+                        </div>
+
+                        {% if fb.reply %}
+                        <h6>Coordinator Reply</h6>
+                        <div class="border p-3 bg-primary bg-opacity-10 mb-4">
+                            {{ fb.reply|linebreaks }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <h6>Feedback Details</h6>
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Type:</strong></td>
+                                <td>{{ fb.get_feedback_type_display }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Rating:</strong></td>
+                                <td>
+                                    {% if fb.rating %}
+                                        {% for _ in '12345'|make_list %}
+                                            <i class="{% if forloop.counter <= fb.rating %}fas{% else %}far{% endif %} fa-star text-warning"></i>
+                                        {% endfor %}
+                                        <span class="ms-1">{{ fb.rating }}/5</span>
+                                    {% else %}
+                                        <span class="text-muted">No rating provided</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Status:</strong></td>
+                                <td>
+                                    {% if fb.is_resolved %}
+                                    <span class="badge bg-success">Resolved</span>
+                                    {% else %}
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Submitted:</strong></td>
+                                <td>{{ fb.created_at|date:"M d, Y g:i A" }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Last Updated:</strong></td>
+                                <td>{{ fb.updated_at|date:"M d, Y g:i A" }}</td>
+                            </tr>
+                        </table>
+
+                        <h6>Quick Actions</h6>
+                        <div class="d-grid gap-2">
+                            {% if not fb.is_resolved %}
+                            <button class="btn btn-success btn-sm" onclick="markResolved({{ fb.id }})">
+                                <i class="fas fa-check me-2"></i>Mark Resolved
+                            </button>
+                            {% else %}
+                            <button class="btn btn-warning btn-sm" onclick="markPending({{ fb.id }})">
+                                <i class="fas fa-undo me-2"></i>Mark Pending
+                            </button>
+                            {% endif %}
+                            
+                            <button class="btn btn-primary btn-sm" onclick="contactAlumni('{{ fb.alumni.admin.email }}')">
+                                <i class="fas fa-envelope me-2"></i>Email Alumni
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="{% url 'reply_feedback' fb.id %}" class="btn btn-warning">
+                    <i class="fas fa-reply me-2"></i>Reply to Feedback
+                </a>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+
+{% endblock %}
+{% block extra_css %}
+<style>
+.feedback-card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.feedback-card:hover {
+    transform: translateY(-2px);
+}
+
+.badge {
+    font-size: 0.75em;
+}
+
+.feedback-rating i {
+    margin-right: 0.15rem;
+}
+
+.modal-body .border {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.alert-light {
+    background-color: #f8f9fa;
+}
+
+.border-start {
+    border-left: 0.25rem solid !important;
+}
+
+.border-4 {
+    border-width: 0.25rem !important;
+}
+</style>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-hide alerts after 5 seconds
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(function(alert) {
+        setTimeout(function() {
+            alert.style.opacity = '0';
+            setTimeout(function() {
+                alert.remove();
+            }, 300);
+        }, 5000);
+    });
+});
+
+// Mark feedback as resolved
+function markResolved(feedbackId) {
+    if (confirm('Are you sure you want to mark this feedback as resolved?')) {
+        // Create a form and submit it
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{% url "resolve_feedback" 0 %}'.replace('0', feedbackId);
+        
+        // Get CSRF token
+        const csrfToken = '{{ csrf_token }}';
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken;
+        
+        form.appendChild(csrfInput);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Mark feedback as pending
+function markPending(feedbackId) {
+    if (confirm('Are you sure you want to mark this feedback as pending?')) {
+        // Create a form and submit it
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{% url "pending_feedback" 0 %}'.replace('0', feedbackId);
+        
+        // Get CSRF token
+        const csrfToken = '{{ csrf_token }}';
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken;
+        
+        form.appendChild(csrfInput);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Contact alumni via email
+function contactAlumni(email) {
+    window.location.href = 'mailto:' + email + '?subject=Re: Your COSA Feedback';
+}
+</script>
+{% endblock %}

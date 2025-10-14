@@ -1,0 +1,125 @@
+{% extends 'admin_template/base.html' %}
+{% block title %}Messages - System Administrator{% endblock %}
+{% block admin_content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2"><i class="fas fa-envelope me-2"></i>Messages</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{% url 'admin_send_message' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>Send Message
+                    </a>
+                </div>
+            </div>
+
+            <!-- Messages List -->
+            {% if messages %}
+            <div class="card">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Recipient</th>
+                                    <th>Subject</th>
+                                    <th>Status</th>
+                                    <th>Sent</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for message in messages %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3">
+                                                {% if message.recipient.admin.profile_pic %}
+                                                    <img src="{{ message.recipient.admin.profile_pic.url }}" class="rounded-circle" width="36" height="36" alt="{{ message.recipient.full_name }}">
+                                                {% else %}
+                                                    <i class="fas fa-user-circle fa-2x text-muted"></i>
+                                                {% endif %}
+                                            </div>
+                                            <div>
+                                                <div class="fw-semibold">{{ message.recipient.full_name }}</div>
+                                                <small class="text-muted">{{ message.recipient.admin.email }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold">{{ message.subject }}</div>
+                                        <small class="text-muted">{{ message.content|truncatewords:10 }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if message.status == 'read' %}bg-success
+                                            {% elif message.status == 'delivered' %}bg-info
+                                            {% else %}bg-warning{% endif %}">
+                                            {{ message.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ message.created_at|date:"M d, Y g:i A" }}</small>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'admin_view_message' message.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            {% if messages.has_other_pages %}
+            <nav aria-label="Messages pagination" class="mt-3">
+                <ul class="pagination justify-content-center">
+                    {% if messages.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1">First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ messages.previous_page_number }}">Previous</a>
+                    </li>
+                    {% endif %}
+
+                    <li class="page-item active">
+                        <span class="page-link">Page {{ messages.number }} of {{ messages.paginator.num_pages }}</span>
+                    </li>
+
+                    {% if messages.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ messages.next_page_number }}">Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ messages.paginator.num_pages }}">Last</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+            {% else %}
+            <!-- No Messages State -->
+            <div class="text-center py-5">
+                <i class="fas fa-cogs fa-4x text-muted mb-4"></i>
+                <h3>System Administration</h3>
+                <p class="text-muted mb-4">
+                    As a system administrator, you manage the Citizens Secondary School COSA system through the dashboard and various management tools.
+                </p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="{% url 'admin_home' %}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                    </a>
+                    <a href="{% url 'manage_alumni' %}" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-graduation-cap me-2"></i>Manage Alumni
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,179 @@
+{% extends 'admin_template/base.html' %}
+{% load static %}
+{% block title %}Add Coordinator - COSA Admin{% endblock %}
+{% block extra_css %}
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 40px 0;
+    }
+    .form-card {
+        border: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+    }
+    .form-section {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .required-field {
+        color: #dc3545;
+    }
+</style>
+{% endblock %}
+{% block admin_content %}
+<!-- Page Header -->
+<div class="page-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-6 mb-2">Add New Coordinator</h1>
+                <p class="lead mb-0">Create a new alumni coordinator account</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a href="{% url 'manage_coordinators' %}" class="btn btn-light">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Coordinators
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card form-card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-user-plus me-2"></i>Coordinator Information</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- Personal Information -->
+                        <div class="form-section">
+                            <h6 class="mb-3"><i class="fas fa-user me-2"></i>Personal Information</h6>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="first_name" class="form-label">First Name <span class="required-field">*</span></label>
+                                    <input type="text" class="form-control" id="first_name" name="first_name" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="last_name" class="form-label">Last Name <span class="required-field">*</span></label>
+                                    <input type="text" class="form-control" id="last_name" name="last_name" required>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="email" class="form-label">Email Address <span class="required-field">*</span></label>
+                                    <input type="email" class="form-control" id="email" name="email" required>
+                                    <div class="form-text">This will be used for login</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="phone_number" class="form-label">Phone Number</label>
+                                    <input type="tel" class="form-control" id="phone_number" name="phone_number">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="address" class="form-label">Address</label>
+                                <textarea class="form-control" id="address" name="address" rows="3"></textarea>
+                            </div>
+                        </div>
+                        
+                        <!-- Account Information -->
+                        <div class="form-section">
+                            <h6 class="mb-3"><i class="fas fa-key me-2"></i>Account Information</h6>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="password" class="form-label">Password <span class="required-field">*</span></label>
+                                    <input type="password" class="form-control" id="password" name="password" required>
+                                    <div class="form-text">Minimum 8 characters</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="confirm_password" class="form-label">Confirm Password <span class="required-field">*</span></label>
+                                    <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Professional Information -->
+                        <div class="form-section">
+                            <h6 class="mb-3"><i class="fas fa-building me-2"></i>Professional Information</h6>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="department" class="form-label">Department</label>
+                                    <input type="text" class="form-control" id="department" name="department" 
+                                           placeholder="e.g., Alumni Relations">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="employee_id" class="form-label">Employee ID</label>
+                                    <input type="text" class="form-control" id="employee_id" name="employee_id">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Permissions -->
+                        <div class="form-section">
+                            <h6 class="mb-3"><i class="fas fa-shield-alt me-2"></i>Permissions & Access</h6>
+                            
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Coordinator Permissions:</strong>
+                                <ul class="mb-0 mt-2">
+                                    <li>Manage alumni profiles and verifications</li>
+                                    <li>Create and manage events</li>
+                                    <li>Publish news and announcements</li>
+                                    <li>Oversee job postings and applications</li>
+                                    <li>Handle feedback and communications</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'manage_coordinators' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-user-plus me-2"></i>Create Coordinator
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Password confirmation validation
+document.getElementById('confirm_password').addEventListener('input', function() {
+    const password = document.getElementById('password').value;
+    const confirmPassword = this.value;
+    
+    if (password && confirmPassword && password !== confirmPassword) {
+        this.setCustomValidity('Passwords do not match');
+        this.classList.add('is-invalid');
+    } else {
+        this.setCustomValidity('');
+        this.classList.remove('is-invalid');
+    }
+});
+
+// Email validation
+document.getElementById('email').addEventListener('blur', function() {
+    const email = this.value;
+    if (email) {
+        // You could add AJAX email availability check here
+    }
+});
+</script>
+{% endblock %}

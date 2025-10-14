@@ -1,0 +1,73 @@
+# =========================
+# Core
+# =========================
+Django>=4.2,<6
+gunicorn>=21.2
+whitenoise>=6.6
+dj-database-url>=2.1
+python-dotenv>=1.0
+
+# If you ever switch to Postgres, uncomment:
+# psycopg2-binary>=2.9
+
+# =========================
+# MySQL driver
+# Prefer pure-Python PyMySQL to avoid OS build deps on Render
+# =========================
+pymysql>=1.1
+
+# If you prefer mysqlclient (compiled), comment out PyMySQL above
+# and uncomment the next line. You'll also need system packages:
+#   apt-get install -y build-essential default-libmysqlclient-dev pkg-config
+# mysqlclient>=2.2
+
+# =========================
+# Utilities
+# =========================
+Pillow>=10.0
+requests>=2.31
+django-extensions>=3.2
+django-filter>=24.2
+django-cors-headers>=4.3
+
+# =========================
+# Forms & styling
+# =========================
+django-crispy-forms>=2.3
+crispy-bootstrap4>=2024.1
+
+# =========================
+# REST API
+# =========================
+djangorestframework>=3.15
+
+# =========================
+# Auth (maintained stack)
+# =========================
+dj-rest-auth>=6.0
+django-allauth>=0.63
+social-auth-app-django>=5.4
+python3-openid>=3.2
+requests-oauthlib>=2.0
+
+# =========================
+# Storage / AWS
+# =========================
+django-storages>=1.14
+boto3>=1.34
+
+# =========================
+# Background jobs
+# =========================
+celery>=5.3
+redis>=5.0
+
+# =========================
+# Payments
+# =========================
+stripe>=10.0
+
+# =========================
+# Excel export
+# =========================
+openpyxl>=3.1

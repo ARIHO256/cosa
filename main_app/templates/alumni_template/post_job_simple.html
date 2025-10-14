@@ -1,0 +1,337 @@
+{% extends 'alumni_template/base.html' %}
+{% load static %}
+{% block title %}Post a Job - Citizens Secondary School COSA{% endblock %}
+{% block extra_css %}
+<style>
+    .post-job-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 60px 0;
+    }
+    
+    .simple-form {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .form-card {
+        border: none;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        border-radius: 16px;
+        overflow: hidden;
+    }
+    
+    .form-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+    }
+    
+    .form-body {
+        padding: 40px;
+        background: white;
+    }
+    
+    .form-section-title {
+        color: #495057;
+        font-weight: 600;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e9ecef;
+    }
+    
+    .required-field {
+        color: #dc3545;
+        font-weight: bold;
+    }
+    
+    .help-text {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+    }
+    
+    .btn-post {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+
+        border: none;
+        padding: 15px 40px;
+        font-size: 1.1rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-post:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+    }
+    
+    .success-banner {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        border: 1px solid #c3e6cb;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .quick-tips {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin-top: 30px;
+    }
+    
+    .tip-item {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 15px;
+    }
+    
+    .tip-icon {
+        color: #28a745;
+        margin-right: 10px;
+        margin-top: 2px;
+    }
+</style>
+{% endblock %}
+{% block alumni_content %}
+<!-- Post Job Header -->
+<div class="post-job-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-5 mb-2">Post a Job</h1>
+                <p class="lead mb-0">Share job opportunities with Citizens Secondary School alumni</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a href="{% url 'job_board' %}" class="btn btn-light btn-lg">
+                    <i class="fas fa-arrow-left me-2"></i>View Jobs
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container my-5">
+    <div class="simple-form">
+        <div class="card form-card">
+            <div class="form-header">
+                <h3 class="mb-0">
+                    <i class="fas fa-briefcase me-2"></i>
+                    Quick Job Post
+                </h3>
+                <p class="mb-0 mt-2">Fill in the essential details below - takes less than 2 minutes!</p>
+            </div>
+            
+            <div class="form-body">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>{{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
+                <form method="post" id="simpleJobForm">
+                    {% csrf_token %}
+                    
+                    <!-- Essential Job Information -->
+                    <div class="mb-4">
+                        <h5 class="form-section-title">
+                            <i class="fas fa-info-circle me-2"></i>Job Information
+                        </h5>
+                        
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="id_title" class="form-label">
+                                    Job Title <span class="required-field">*</span>
+                                </label>
+                                <input type="text" class="form-control form-control-lg" id="id_title" name="title" 
+                                       required maxlength="200" placeholder="Software Engineer, Marketing Manager, etc."
+                                       value="{{ form.title.value|default:'' }}">
+                                {% if form.title.errors %}
+                                    <div class="text-danger small mt-1">{{ form.title.errors.0 }}</div>
+                                {% endif %}
+                                <div class="help-text">
+                                    <i class="fas fa-lightbulb me-1"></i>
+                                    Be specific: "Senior Python Developer" is better than "Developer"
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="id_company" class="form-label">
+                                    Company <span class="required-field">*</span>
+                                </label>
+                                <select class="form-select form-select-lg" id="id_company" name="company" required>
+                                    <option value="">Select Company</option>
+                                    {% for company in companies %}
+                                        <option value="{{ company.id }}" {% if form.company.value == company.id %}selected{% endif %}>
+                                            {{ company.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                {% if form.company.errors %}
+                                    <div class="text-danger small mt-1">{{ form.company.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="id_job_type" class="form-label">
+                                    Job Type <span class="required-field">*</span>
+                                </label>
+                                <select class="form-select form-select-lg" id="id_job_type" name="job_type" required>
+                                    <option value="">Select Job Type</option>
+                                    <option value="full_time" {% if form.job_type.value == 'full_time' %}selected{% endif %}>Full-time</option>
+                                    <option value="part_time" {% if form.job_type.value == 'part_time' %}selected{% endif %}>Part-time</option>
+                                    <option value="contract" {% if form.job_type.value == 'contract' %}selected{% endif %}>Contract</option>
+                                    <option value="internship" {% if form.job_type.value == 'internship' %}selected{% endif %}>Internship</option>
+                                    <option value="freelance" {% if form.job_type.value == 'freelance' %}selected{% endif %}>Freelance</option>
+                                </select>
+                                {% if form.job_type.errors %}
+                                    <div class="text-danger small mt-1">{{ form.job_type.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="id_location" class="form-label">
+                                    Location <span class="required-field">*</span>
+                                </label>
+                                <input type="text" class="form-control form-control-lg" id="id_location" name="location" 
+                                       required maxlength="200" placeholder="Kampala Uganda, NY or Remote"
+                                       value="{{ form.location.value|default:'' }}">
+                                {% if form.location.errors %}
+                                    <div class="text-danger small mt-1">{{ form.location.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="id_is_remote" name="is_remote" 
+                                       {% if form.is_remote.value %}checked{% endif %}>
+                                <label class="form-check-label" for="id_is_remote">
+                                    <i class="fas fa-home me-1"></i>Remote work available
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_description" class="form-label">
+                                Job Description <span class="required-field">*</span>
+                            </label>
+                            <textarea class="form-control" id="id_description" name="description" rows="5" 
+                                      required placeholder="Describe the role, what you're looking for, and why it's a great opportunity">{% if form.description.value %}{{ form.description.value }}{% endif %}</textarea>
+                            {% if form.description.errors %}
+                                <div class="text-danger small mt-1">{{ form.description.errors.0 }}</div>
+                            {% endif %}
+                            <div class="help-text">
+                                <i class="fas fa-edit me-1"></i>
+                                Describe the role, what we're looking for, and why it's a great opportunity
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Tips -->
+                    <div class="quick-tips">
+                        <h6 class="mb-3">
+                            <i class="fas fa-tips me-2"></i>Quick Tips for Better Response
+                        </h6>
+                        <div class="tip-item">
+                            <i class="fas fa-check-circle tip-icon"></i>
+                            <div>
+                                <strong>Clear Title:</strong> Be specific about the role and level
+                            </div>
+                        </div>
+                        <div class="tip-item">
+                            <i class="fas fa-check-circle tip-icon"></i>
+                            <div>
+                                <strong>Brief Description:</strong> Focus on what you need and what you offer
+                            </div>
+                        </div>
+                        <div class="tip-item">
+                            <i class="fas fa-check-circle tip-icon"></i>
+                            <div>
+                                <strong>Quick Response:</strong> Alumni can contact you directly through the platform
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-post btn-lg px-5">
+                            <i class="fas fa-paper-plane me-2"></i>
+                            Post Job Now
+                        </button>
+                        <div class="@help-text mt-2">
+                            Jobs are visible immediately to all verified Citizens Secondary School alumni
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Simple form enhancement
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-focus on first input
+    const titleField = document.getElementById('id_title');
+    if (titleField) {
+        titleField.focus();
+    }
+    
+    // Simple form validation
+    const form = document.getElementById('simpleJobForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const requiredFields = ['id_title', 'id_company', 'id_description', 'id_job_type', 'id_location'];
+            let isValid = true;
+            
+            requiredFields.forEach(function(fieldId) {
+                const field = document.getElementById(fieldId);
+                if (field && !field.value.trim()) {
+                    field.classList.add('is-invalid');
+                    isValid = false;
+                } else if (field) {
+                    field.classList.remove('is-invalid');
+                }
+            });
+            
+            if (!isValid) {
+                e.preventDefault();
+                alert('Please fill in all required fields marked with *');
+                return false;
+            }
+            
+            // Show loading state
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Posting Job...';
+                submitBtn.disabled = true;
+                
+                // If form takes too long, restore button
+                setTimeout(function() {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }, 10000);
+            }
+        });
+    }
+    
+    // Real-time validation feedback
+    document.querySelectorAll('input[required], select[required], textarea[required]').forEach(function(field) {
+        field.addEventListener('blur', function() {
+            if (!this.value.trim()) {
+                this.classList.add('is-invalid');
+            } else {
+                this.classList.remove('is-invalid');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

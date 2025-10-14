@@ -1,0 +1,287 @@
+{% extends 'coordinator_template/base.html' %}
+{% load static %}
+{% block title %}Send Notification - COSA Coordinator{% endblock %}
+{% block extra_css %}
+<style>
+    .notification-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 40px 0;
+    }
+    .form-card {
+        border: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+    }
+    .form-section {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .section-title {
+        color: #495057;
+        border-bottom: 2px solid #dee2e6;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+    .target-audience {
+        background: #e3f2fd;
+        border-left: 4px solid #2196f3;
+        padding: 15px;
+        margin: 15px 0;
+    }
+</style>
+{% endblock %}
+{% block coordinator_content %}
+<!-- Notification Header -->
+<div class="notification-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-6 mb-2">Send Notification</h1>
+                <p class="lead mb-0">Communicate with Citizens Secondary School alumni through the notification system</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a href="{% url 'coordinator_home' %}" class="btn btn-light">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card form-card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-bullhorn me-2"></i>Create Notification
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Notification Content -->
+                        <div class="form-section">
+                            <h5 class="section-title">
+                                <i class="fas fa-edit me-2"></i>Notification Content
+                            </h5>
+                            
+                            <div class="mb-3">
+                                <label for="title" class="form-label">
+                                    Notification Title <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="title" name="title" 
+                                       placeholder="Enter notification title" required>
+                                <div class="form-text">Keep it concise and clear</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="message" class="form-label">
+                                    Message <span class="text-danger">*</span>
+                                </label>
+                                <textarea class="form-control" id="message" name="message" rows="6" 
+                                          placeholder="Enter your notification message" required></textarea>
+                                <div class="form-text">Provide detailed information for the alumni</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="notification_type" class="form-label">
+                                    Notification Type
+                                </label>
+                                <select class="form-select" id="notification_type" name="notification_type">
+                                    <option value="system">System Notification</option>
+                                    <option value="event">Event Notification</option>
+                                    <option value="news">News Update</option>
+                                    <option value="general">General Announcement</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Target Audience -->
+                        <div class="form-section">
+                            <h5 class="section-title">
+                                <i class="fas fa-users me-2"></i>Target Audience
+                            </h5>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Who should receive this notification?</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="target_audience" 
+                                           id="all_alumni" value="all" checked>
+                                    <label class="form-check-label" for="all_alumni">
+                                        <strong>All Verified Alumni</strong>
+                                        <div class="small text-muted">Send to all verified Citizens Secondary School alumni</div>
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="target_audience" 
+                                           id="graduation_year" value="graduation_year">
+                                    <label class="form-check-label" for="graduation_year">
+                                        <strong>Specific Completion Year</strong>
+                                        <div class="small text-muted">Send to Citizens Secondary School alumni from a specific graduation year</div>
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="target_audience" 
+                                           id="level" value="level">
+                                    <label class="form-check-label" for="level">
+                                        <strong>Specific Level</strong>
+                                        <div class="small text-muted">Send to Citizens Secondary School alumni from a specific level program</div>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- Completion Year Selection -->
+                            <div class="mb-3" id="graduation_year_selection" style="display: none;">
+                                <label for="graduation_year_id" class="form-label">Select Completion Year</label>
+                                <select class="form-select" id="graduation_year_id" name="graduation_year">
+                                    <option value="">Choose graduation year...</option>
+                                    {% for year in graduation_years %}
+                                    <option value="{{ year.id }}">{{ year.year }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <!-- Level Selection -->
+                            <div class="mb-3" id="degree_selection" style="display: none;">
+                                <label for="degree_id" class="form-label">Select Level</label>
+                                <select class="form-select" id="degree_id" name="level">
+                                    <option value="">Choose level program...</option>
+                                    {% for level in degrees %}
+                                    <option value="{{ level.id }}">{{ level.name }} ({{ level.degree_type }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Preview Section -->
+                        <div class="form-section">
+                            <h5 class="section-title">
+                                <i class="fas fa-eye me-2"></i>Preview
+                            </h5>
+                            <div class="target-audience">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="fas fa-bullhorn me-2 text-primary"></i>
+                                    <strong id="preview_title">Notification Title</strong>
+                                </div>
+                                <p class="mb-2" id="preview_message">Your notification message will appear here...</p>
+                                <small class="text-muted">
+                                    <i class="fas fa-users me-1"></i>
+                                    <span id="preview_audience">All verified Citizens Secondary School alumni</span>
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'coordinator_home' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-paper-plane me-2"></i>Send Notification
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle target audience selection
+    const targetAudienceRadios = document.querySelectorAll('input[name="target_audience"]');
+    const graduationYearSelection = document.getElementById('graduation_year_selection');
+    const degreeSelection = document.getElementById('degree_selection');
+    
+    targetAudienceRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            // Hide all selections
+            graduationYearSelection.style.display = 'none';
+            degreeSelection.style.display = 'none';
+            
+            // Show relevant selection
+            if (this.value === 'graduation_year') {
+                graduationYearSelection.style.display = 'block';
+            } else if (this.value === 'level') {
+                degreeSelection.style.display = 'block';
+            }
+            
+            updatePreview();
+        });
+    });
+    
+    // Update preview as user types
+    const titleInput = document.getElementById('title');
+    const messageInput = document.getElementById('message');
+    const graduationYearSelect = document.getElementById('graduation_year_id');
+    const degreeSelect = document.getElementById('degree_id');
+    
+    titleInput.addEventListener('input', updatePreview);
+    messageInput.addEventListener('input', updatePreview);
+    graduationYearSelect.addEventListener('change', updatePreview);
+    degreeSelect.addEventListener('change', updatePreview);
+    
+    function updatePreview() {
+        const title = titleInput.value || 'Notification Title';
+        const message = messageInput.value || 'Your notification message will appear here...';
+        const selectedAudience = document.querySelector('input[name="target_audience"]:checked').value;
+        
+        document.getElementById('preview_title').textContent = title;
+        document.getElementById('preview_message').textContent = message;
+        
+        let audienceText = 'All verified Citizens Secondary School alumni';
+        if (selectedAudience === 'graduation_year') {
+            const selectedYear = graduationYearSelect.options[graduationYearSelect.selectedIndex];
+            if (selectedYear.value) {
+                audienceText = `Alumni from ${selectedYear.text}`;
+            }
+        } else if (selectedAudience === 'level') {
+            const selectedDegree = degreeSelect.options[degreeSelect.selectedIndex];
+            if (selectedDegree.value) {
+                audienceText = `Alumni from ${selectedDegree.text}`;
+            }
+        }
+        
+        document.getElementById('preview_audience').textContent = audienceText;
+    }
+    
+    // Form validation
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const selectedAudience = document.querySelector('input[name="target_audience"]:checked').value;
+        
+        if (selectedAudience === 'graduation_year' && !graduationYearSelect.value) {
+            e.preventDefault();
+            alert('Please select a graduation year.');
+            return;
+        }
+        
+        if (selectedAudience === 'level' && !degreeSelect.value) {
+            e.preventDefault();
+            alert('Please select a level program.');
+            return;
+        }
+        
+        // Confirm before sending
+        if (!confirm('Are you sure you want to send this notification?')) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}

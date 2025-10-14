@@ -1,0 +1,547 @@
+{% extends 'coordinator_template/base.html' %}
+{% block title %}Manage News - COSA Coordinator{% endblock %}
+{% block coordinator_content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <i class="fas fa-newspaper me-2"></i>Manage News Articles
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <a href="{% url 'create_news' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-1"></i>Create News Article
+                        </a>
+                        <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="fas fa-download me-1"></i>Export
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-file-csv me-2"></i>CSV</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-file-excel me-2"></i>Excel</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            {% if messages %}
+            <div class="row mb-4">
+                <div class="col-12">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>{{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Filters and Search -->
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-body py-2">
+                            <form method="GET" class="d-flex align-items-center">
+                                <div class="me-2">
+                                    <input type="search" name="search" class="form-control form-control-sm" 
+                                           placeholder="Search articles..." value="{{ request.GET.search }}">
+                                </div>
+                                <div class="me-2">
+                                    <select name="status" class="form-select form-select-sm">
+                                        <option value="">All Status</option>
+                                        <option value="published" {% if request.GET.status == 'published' %}selected{% endif %}>Published</option>
+                                        <option value="draft" {% if request.GET.status == 'draft' %}selected{% endif %}>Draft</option>
+                                    </select>
+                                </div>
+                                <div class="me-2">
+                                    <select name="category" class="form-select form-select-sm">
+                                        <option value="">All Categories</option>
+                                        <option value="general" {% if request.GET.category == 'general' %}selected{% endif %}>General News</option>
+                                        <option value="alumni_spotlight" {% if request.GET.category == 'alumni_spotlight' %}selected{% endif %}>Alumni Spotlight</option>
+                                        <option value="achievements" {% if request.GET.category == 'achievements' %}selected{% endif %}>Achievements</option>
+                                        <option value="events" {% if request.GET.category == 'events' %}selected{% endif %}>Events</option>
+                                        <option value="careers" {% if request.GET.category == 'careers' %}selected{% endif %}>Career News</option>
+                                        <option value="institution" {% if request.GET.category == 'institution' %}selected{% endif %}>Institution Updates</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-sm me-2">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                                {% if request.GET.search or request.GET.status or request.GET.category %}
+                                <a href="{% url 'manage_news' %}" class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-times"></i>
+                                </a>
+                                {% endif %}
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <small class="text-muted">
+                        Showing {{ news|length }} article{{ news|length|pluralize }}
+                    </small>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body text-center">
+                            <h4 class="mb-2">{{ news.paginator.count|default:0 }}</h4>
+                            <small>Total Articles</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body text-center">
+                            <h4 class="mb-2">{{ published_count|default:0 }}</h4>
+                            <small>Published</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-dark">
+                        <div class="card-body text-center">
+                            <h4 class="mb-2">{{ draft_count|default:0 }}</h4>
+                            <small>Drafts</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body text-center">
+                            <h4 class="mb-2">{{ featured_count|default:0 }}</h4>
+                            <small>Featured</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CSRF Token for JavaScript -->
+            {% csrf_token %}
+
+            <!-- News Articles List -->
+            {% if news %}
+            <div class="row">
+                {% for article in news %}
+                <div class="col-lg-6 col-xl-4 mb-4">
+                    <div class="card h-100 shadow-sm news-card">
+                        <!-- Article Image -->
+                        <div class="position-relative">
+                            {% if article.featured_image %}
+                            <img src="{{ article.featured_image.url }}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="{{ article.title }}">
+                            {% else %}
+                            <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 200px;">
+                                <i class="fas fa-newspaper fa-3x text-muted"></i>
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Publication Status Badge -->
+                            <div class="position-absolute top-0 end-0 m-2">
+                                {% if article.is_published %}
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check-circle me-1"></i>Published
+                                </span>
+                                {% else %}
+                                <span class="badge bg-warning text-dark">
+                                    <i class="fas fa-edit me-1"></i>Draft
+                                </span>
+                                {% endif %}
+                            </div>
+
+                            <!-- Category Badge -->
+                            <div class="position-absolute top-0 start-0 m-2">
+                                <span class="badge 
+                                    {% if article.category == 'general' %}bg-secondary
+                                    {% elif article.category == 'alumni_spotlight' %}bg-primary
+                                    {% elif article.category == 'achievements' %}bg-success
+                                    {% elif article.category == 'events' %}bg-info
+                                    {% elif article.category == 'careers' %}bg-warning text-dark
+                                    {% else %}bg-dark{% endif %}">
+                                    {{ article.get_category_display }}
+                                </span>
+                            </div>
+
+                            <!-- Featured Badge -->
+                            {% if article.is_featured %}
+                            <div class="position-absolute bottom-0 start-0 m-2">
+                                <span class="badge bg-danger">
+                                    <i class="fas fa-star me-1"></i>Featured
+                                </span>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">{{ article.title }}</h5>
+                            <p class="card-text text-muted">{{ article.content|truncatewords:20|striptags }}</p>
+                            
+                            <!-- Article Details -->
+                            <div class="mt-auto">
+                                <div class="row text-center mb-3">
+                                    <div class="col-6">
+                                        <small class="text-muted">Created</small>
+                                        <div><strong>{{ article.created_at|date:"M d, Y" }}</strong></div>
+                                        <div><small>{{ article.created_at|time:"g:i A" }}</small></div>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">
+                                            {% if article.is_published %}Published{% else %}Updated{% endif %}
+                                        </small>
+                                        <div>
+                                            {% if article.is_published and article.publish_date %}
+                                            <strong>{{ article.publish_date|date:"M d, Y" }}</strong>
+                                            {% else %}
+                                            <strong>{{ article.updated_at|date:"M d, Y" }}</strong>
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            {% if article.is_published and article.publish_date %}
+                                            <small>{{ article.publish_date|time:"g:i A" }}</small>
+                                            {% else %}
+                                            <small>{{ article.updated_at|time:"g:i A" }}</small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- SEO Info -->
+                                {% if article.slug %}
+                                <div class="mb-3">
+                                    <small class="text-muted">
+                                        <i class="fas fa-link me-1"></i>Slug: {{ article.slug|truncatechars:20 }}
+                                    </small>
+                                </div>
+                                {% endif %}
+
+                                <!-- Meta Description -->
+                                {% if article.meta_description %}
+                                <div class="mb-3">
+                                    <small class="text-muted">
+                                        <i class="fas fa-search me-1"></i>{{ article.meta_description|truncatechars:50 }}
+                                    </small>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Card Actions -->
+                        <div class="card-footer bg-transparent">
+                            <div class="btn-group w-100" role="group">
+                                <button type="button" class="btn btn-sm btn-info" 
+                                        data-bs-toggle="modal" data-bs-target="#newsModal{{ article.id }}">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <a href="{% url 'edit_news' article.id %}" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                {% if not article.is_published %}
+                                <button type="button" class="btn btn-sm btn-success" 
+                                        onclick="publishArticle({{ article.id }})">
+                                    <i class="fas fa-upload"></i>
+                                </button>
+                                {% else %}
+                                <button type="button" class="btn btn-sm btn-secondary" 
+                                        onclick="unpublishArticle({{ article.id }})">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                                {% endif %}
+                                <button type="button" class="btn btn-sm btn-danger" 
+                                        data-bs-toggle="modal" data-bs-target="#deleteModal{{ article.id }}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if news.has_other_pages %}
+            <nav aria-label="News pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if news.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}">First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ news.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}">Previous</a>
+                    </li>
+                    {% endif %}
+
+                    <li class="page-item active">
+                        <span class="page-link">Page {{ news.number }} of {{ news.paginator.num_pages }}</span>
+                    </li>
+
+                    {% if news.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ news.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}">Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ news.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}">Last</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+            {% else %}
+            <!-- No News State -->
+            <div class="text-center py-5">
+                <i class="fas fa-newspaper fa-4x text-muted mb-4"></i>
+                <h3>No News Articles Found</h3>
+                <p class="text-muted mb-4">
+                    {% if request.GET.search or request.GET.status or request.GET.category %}
+                    No articles match your current filters. <a href="{% url 'manage_news' %}">Clear filters</a>
+                    {% else %}
+                    You haven't created any news articles yet. Start sharing updates with the alumni community!
+                    {% endif %}
+                </p>
+                <a href="{% url 'create_news' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus me-2"></i>Create Your First Article
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- News Details Modals -->
+{% for article in news %}
+<!-- View News Modal -->
+<div class="modal fade" id="newsModal{{ article.id }}" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-newspaper me-2"></i>{{ article.title }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h6>Article Details</h6>
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Category:</strong></td>
+                                <td>{{ article.get_category_display }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Status:</strong></td>
+                                <td>
+                                    {% if article.is_published %}
+                                    <span class="badge bg-success">Published</span>
+                                    {% else %}
+                                    <span class="badge bg-warning text-dark">Draft</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Featured:</strong></td>
+                                <td>
+                                    {% if article.is_featured %}
+                                    <span class="badge bg-danger">Yes</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">No</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Created:</strong></td>
+                                <td>{{ article.created_at|date:"M d, Y g:i A" }}</td>
+                            </tr>
+                            {% if article.is_published and article.publish_date %}
+                            <tr>
+                                <td><strong>Published:</strong></td>
+                                <td>{{ article.publish_date|date:"M d, Y g:i A" }}</td>
+                            </tr>
+                            {% endif %}
+                            <tr>
+                                <td><strong>Last Updated:</strong></td>
+                                <td>{{ article.updated_at|date:"M d, Y g:i A" }}</td>
+                            </tr>
+                        </table>
+                        
+                        {% if article.slug %}
+                        <h6>SEO Information</h6>
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Slug:</strong></td>
+                                <td><code>{{ article.slug }}</code></td>
+                            </tr>
+                            {% if article.meta_description %}
+                            <tr>
+                                <td><strong>Meta Description:</strong></td>
+                                <td>{{ article.meta_description }}</td>
+                            </tr>
+                            {% endif %}
+                        </table>
+                        {% endif %}
+                        
+                        <h6>Content</h6>
+                        <div class="border p-3 bg-light">
+                            {{ article.content|linebreaks }}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        {% if article.featured_image %}
+                        <img src="{{ article.featured_image.url }}" class="img-fluid rounded mb-3" alt="{{ article.title }}">
+                        {% endif %}
+                        
+                        <h6>Quick Actions</h6>
+                        <div class="d-grid gap-2">
+                            {% if not article.is_published %}
+                            <button class="btn btn-success btn-sm" onclick="publishArticle({{ article.id }})">
+                                <i class="fas fa-upload me-2"></i>Publish Now
+                            </button>
+                            {% else %}
+                            <button class="btn btn-secondary btn-sm" onclick="unpublishArticle({{ article.id }})">
+                                <i class="fas fa-download me-2"></i>Unpublish
+                            </button>
+                            {% endif %}
+                            
+                            {% if article.is_published %}
+                            <a href="/news/{{ article.slug }}/" target="_blank" class="btn btn-info btn-sm">
+                                <i class="fas fa-external-link-alt me-2"></i>View Public
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="{% url 'edit_news' article.id %}" class="btn btn-warning">
+                    <i class="fas fa-edit me-2"></i>Edit Article
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete News Modal -->
+<div class="modal fade" id="deleteModal{{ article.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Delete Article
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong>{{ article.title }}</strong>?</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-warning me-2"></i>
+                    This action cannot be undone. The article will be permanently removed from the system.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="#" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>Delete Article
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+
+{% endblock %}
+{% block extra_css %}
+<style>
+.news-card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.news-card:hover {
+    transform: translateY(-2px);
+}
+
+.card-img-top {
+    transition: opacity 0.3s ease;
+}
+
+.news-card:hover .card-img-top {
+    opacity: 0.9;
+}
+
+.badge {
+    font-size: 0.75em;
+}
+
+.modal-body .border {
+    max-height: 300px;
+    overflow-y: auto;
+}
+</style>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-hide alerts after 5 seconds
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(function(alert) {
+        setTimeout(function() {
+            alert.style.opacity = '0';
+            setTimeout(function() {
+                alert.remove();
+            }, 300);
+        }, 5000);
+    });
+});
+
+// Publish article function
+function publishArticle(articleId) {
+    if (confirm('Are you sure you want to publish this article?')) {
+        // Create a form and submit it
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{% url "publish_news" 0 %}'.replace('0', articleId);
+        
+        // Get CSRF token
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]') ? 
+            document.querySelector('[name=csrfmiddlewaretoken]').value : 
+            '{{ csrf_token }}';
+        
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken;
+        
+        form.appendChild(csrfInput);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Unpublish article function
+function unpublishArticle(articleId) {
+    if (confirm('Are you sure you want to unpublish this article?')) {
+        // Create a form and submit it
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{% url "unpublish_news" 0 %}'.replace('0', articleId);
+        
+        // Get CSRF token
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]') ? 
+            document.querySelector('[name=csrfmiddlewaretoken]').value : 
+            '{{ csrf_token }}';
+        
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken;
+        
+        form.appendChild(csrfInput);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
+{% endblock %}

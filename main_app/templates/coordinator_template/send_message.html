@@ -1,0 +1,268 @@
+{% extends 'coordinator_template/base.html' %}
+{% load crispy_forms_tags %}
+{% block title %}Send Message to Alumni{% endblock %}
+{% block coordinator_content %}
+<div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-envelope me-2"></i>
+                        Send Message to Alumni
+                    </h3>
+                    <div class="card-tools">
+                        <a href="{% url 'coordinator_messages_inbox' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Back to Inbox
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if recipient %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Sending message to <strong>{{ recipient.full_name }}</strong> ({{ recipient.student_id }})
+                        </div>
+                    {% endif %}
+
+                    <div class="recipient-filter mb-4">
+                        <form method="get" class="row g-3 align-items-end" data-search-url="{% url 'coordinator_alumni_search' %}">
+                            <div class="col-md-4">
+                                <label class="form-label text-muted small text-uppercase mb-1">Search</label>
+                                <input type="search"
+                                       name="search"
+                                       class="form-control"
+                                       placeholder="Name or email"
+                                       value="{{ filters.search|default_if_none:'' }}">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-muted small text-uppercase mb-1">COSA ID</label>
+                                <input type="text"
+                                       name="student_id"
+                                       class="form-control"
+                                       placeholder="e.g. COSAAL001"
+                                       value="{{ filters.student_id|default_if_none:'' }}">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-muted small text-uppercase mb-1">Class Level</label>
+                                <select name="graduation_year" class="form-select">
+                                    <option value="">All class levels</option>
+                                    {% for year in graduation_years %}
+                                        <option value="{{ year.id }}"
+                                            {% if filters.graduation_year == year.id|stringformat:"s" %}selected{% endif %}>
+                                            {{ year.get_year_display }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label text-muted small text-uppercase mb-1">Program</label>
+                                <select name="degree" class="form-select">
+                                    <option value="">All programs</option>
+                                    {% for degree in degrees %}
+                                        <option value="{{ degree.id }}"
+                                            {% if filters.degree == degree.id|stringformat:"s" %}selected{% endif %}>
+                                            {{ degree.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-12 d-flex flex-wrap gap-2">
+                                <button type="submit" class="btn btn-outline-primary">
+                                    <i class="fas fa-filter me-1"></i>Apply Filters
+                                </button>
+                                {% if recipient %}
+                                    <a href="{% url 'coordinator_send_message_to' recipient.id %}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-undo me-1"></i>Reset
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'coordinator_send_message' %}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-undo me-1"></i>Reset
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </form>
+                        <div class="small text-muted mt-2" id="recipient-filter-summary">
+                            Showing <span id="recipient-filter-count">{{ filtered_recipient_count }}</span> of
+                            <span id="recipient-filter-total">{{ total_recipient_count }}</span> verified alumni.
+                            <span id="recipient-filter-empty" class="{% if filtered_recipient_count > 0 %}d-none{% endif %}">
+                                Try adjusting your filters to find a recipient.
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {% crispy form %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card-header {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+}
+
+.card-header .card-title {
+    margin: 0;
+    font-weight: 600;
+}
+
+.card-header .card-tools .btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.card-header .card-tools .btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.alert-info {
+    border-left: 4px solid #17a2b8;
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const filterForm = document.querySelector('.recipient-filter form');
+    const recipientSelect = document.getElementById('id_recipient');
+    if (!filterForm || !recipientSelect) {
+        return;
+    }
+
+    const searchInput = filterForm.querySelector('input[name="search"]');
+    const studentIdInput = filterForm.querySelector('input[name="student_id"]');
+    const graduationSelect = filterForm.querySelector('select[name="graduation_year"]');
+    const degreeSelect = filterForm.querySelector('select[name="degree"]');
+    const filteredCountEl = document.getElementById('recipient-filter-count');
+    const totalCountEl = document.getElementById('recipient-filter-total');
+    const emptyMessageEl = document.getElementById('recipient-filter-empty');
+    const placeholderOption = recipientSelect.querySelector('option[value=""]');
+    const placeholderText = placeholderOption ? placeholderOption.textContent : 'Select an alumni recipient';
+
+    let debounceTimer = null;
+    let abortController = null;
+
+    const buildParams = () => {
+        const params = new URLSearchParams();
+        if (searchInput && searchInput.value.trim()) {
+            params.append('search', searchInput.value.trim());
+        }
+        if (studentIdInput && studentIdInput.value.trim()) {
+            params.append('student_id', studentIdInput.value.trim());
+        }
+        if (graduationSelect && graduationSelect.value) {
+            params.append('graduation_year', graduationSelect.value);
+        }
+        if (degreeSelect && degreeSelect.value) {
+            params.append('degree', degreeSelect.value);
+        }
+        return params;
+    };
+
+    const updateRecipientOptions = (data) => {
+        const previousValue = recipientSelect.value;
+        recipientSelect.innerHTML = '';
+
+        if (placeholderOption) {
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = placeholderText;
+            recipientSelect.appendChild(option);
+        }
+
+        const results = Array.isArray(data.results) ? data.results : [];
+        results.forEach(({ id, label }) => {
+            const option = document.createElement('option');
+            option.value = String(id);
+            option.textContent = label;
+            recipientSelect.appendChild(option);
+        });
+
+        const hasMatch = results.some(result => String(result.id) === previousValue);
+        if (previousValue && hasMatch) {
+            recipientSelect.value = previousValue;
+        } else if (!placeholderOption && results.length > 0) {
+            recipientSelect.selectedIndex = 0;
+        } else if (placeholderOption) {
+            recipientSelect.value = '';
+        }
+
+        recipientSelect.disabled = results.length === 0;
+
+        if (filteredCountEl && typeof data.filtered_count === 'number') {
+            filteredCountEl.textContent = data.filtered_count;
+        }
+        if (totalCountEl && typeof data.total_count === 'number') {
+            totalCountEl.textContent = data.total_count;
+        }
+
+        if (emptyMessageEl) {
+            if ((data.filtered_count || 0) === 0) {
+                emptyMessageEl.classList.remove('d-none');
+            } else {
+                emptyMessageEl.classList.add('d-none');
+            }
+        }
+    };
+
+    const fetchRecipients = async () => {
+        if (abortController) {
+            abortController.abort();
+        }
+        abortController = new AbortController();
+
+        const params = buildParams();
+        const queryString = params.toString();
+        const url = queryString ? `${filterForm.dataset.searchUrl}?${queryString}` : filterForm.dataset.searchUrl;
+
+        try {
+            const response = await fetch(url, { signal: abortController.signal, headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            if (!response.ok) {
+                throw new Error(`Request failed with status ${response.status}`);
+            }
+            const data = await response.json();
+            updateRecipientOptions(data);
+        } catch (error) {
+            if (error.name === 'AbortError') {
+                return;
+            }
+            console.error('Failed to fetch alumni recipients:', error);
+        }
+    };
+
+    const scheduleFetch = () => {
+        if (debounceTimer) {
+            clearTimeout(debounceTimer);
+        }
+        debounceTimer = setTimeout(fetchRecipients, 250);
+    };
+
+    filterForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        fetchRecipients();
+    });
+
+    if (searchInput) {
+        searchInput.addEventListener('input', scheduleFetch);
+    }
+    if (studentIdInput) {
+        studentIdInput.addEventListener('input', scheduleFetch);
+    }
+    if (graduationSelect) {
+        graduationSelect.addEventListener('change', fetchRecipients);
+    }
+    if (degreeSelect) {
+        degreeSelect.addEventListener('change', fetchRecipients);
+    }
+
+    // Prime the recipient list with current filters so typing is reactive immediately
+    fetchRecipients();
+});
+</script>
+{% endblock %}

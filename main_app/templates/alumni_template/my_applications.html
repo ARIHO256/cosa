@@ -1,0 +1,284 @@
+{% extends 'alumni_template/base.html' %}
+{% load static %}
+{% block title %}My Applications - COSA Alumni{% endblock %}
+{% block extra_css %}
+<style>
+    .applications-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 40px 0;
+    }
+    .application-card {
+        border: none;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s ease;
+        margin-bottom: 20px;
+    }
+    .application-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+    .status-pending { background-color: #fff3cd; color: #856404; }
+    .status-reviewed { background-color: #cce5ff; color: #004085; }
+    .status-shortlisted { background-color: #d4edda; color: #155724; }
+    .status-rejected { background-color: #f8d7da; color: #721c24; }
+    .status-hired { background-color: #d1ecf1; color: #0c5460; }
+    .company-logo {
+        width: 50px;
+        height: 50px;
+        object-fit: contain;
+    }
+</style>
+{% endblock %}
+{% block alumni_content %}
+<!-- Applications Header -->
+<div class="applications-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-6 mb-2">My Job Applications</h1>
+                <p class="lead mb-0">Track the status of your job applications</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a href="{% url 'job_board' %}" class="btn btn-light">
+                    <i class="fas fa-search me-2"></i>Find More Jobs
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container my-5">
+    {% if applications %}
+    <!-- Applications List -->
+    <div class="row">
+        <div class="col-12">
+            {% for application in applications %}
+            <div class="card application-card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-1">
+                            {% if application.job.company.logo %}
+                            <img src="{{ application.job.company.logo.url }}" 
+                                 alt="{{ application.job.company.name }}" 
+                                 class="company-logo rounded">
+                            {% else %}
+                            <div class="bg-light rounded d-flex align-items-center justify-content-center company-logo">
+                                <i class="fas fa-building text-muted"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h5 class="mb-1">
+                                <a href="{% url 'job_detail' application.job.id %}" class="text-decoration-none">
+                                    {{ application.job.title }}
+                                </a>
+                            </h5>
+                            <p class="text-muted mb-2">
+                                <strong>{{ application.job.company.name }}</strong>
+                                {% if application.job.company.is_verified %}
+                                <i class="fas fa-check-circle text-success ms-1" title="Verified Company"></i>
+                                {% endif %}
+                            </p>
+                            <div class="small text-muted">
+                                <i class="fas fa-map-marker-alt me-1"></i>{{ application.job.location }}
+                                <span class="ms-3">
+                                    <i class="fas fa-calendar me-1"></i>Applied {{ application.application_date|date:"M d, Y" }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <span class="badge status-{{ application.status }} px-3 py-2">
+                                    {{ application.get_status_display }}
+                                </span>
+                                {% if application.status == 'pending' %}
+                                <div class="small text-muted mt-1">
+                                    {{ application.application_date|timesince }} ago
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-2 text-end">
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary btn-sm" type="button" 
+                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'job_detail' application.job.id %}">
+                                            <i class="fas fa-eye me-2"></i>View Job
+                                        </a>
+                                    </li>
+                                    {% if application.resume %}
+                                    <li>
+                                        <a class="dropdown-item" href="{{ application.resume.url }}" target="_blank">
+                                            <i class="fas fa-file-pdf me-2"></i>View Resume
+                                        </a>
+                                    </li>
+                                    {% endif %}
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item" href="#" onclick="viewApplication({{ application.id }})">
+                                            <i class="fas fa-info-circle me-2"></i>View Details
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Application Details (Collapsible) -->
+                    <div class="collapse" id="application-{{ application.id }}">
+                        <hr>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Cover Letter Preview:</h6>
+                                <p class="small text-muted">
+                                    {{ application.cover_letter|truncatewords:30 }}
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Application Timeline:</h6>
+                                <div class="small">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Applied:</span>
+                                        <span>{{ application.application_date|date:"M d, Y g:i A" }}</span>
+                                    </div>
+                                    {% if application.reviewed_at %}
+                                    <div class="d-flex justify-content-between">
+                                        <span>Reviewed:</span>
+                                        <span>{{ application.reviewed_at|date:"M d, Y g:i A" }}</span>
+                                    </div>
+                                    {% endif %}
+                                    <div class="d-flex justify-content-between">
+                                        <span>Deadline:</span>
+                                        <span class="{% if application.job.application_deadline < today %}text-danger{% endif %}">
+                                            {{ application.job.application_deadline|date:"M d, Y" }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if applications.has_other_pages %}
+    <nav aria-label="Applications pagination" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if applications.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1">
+                        <i class="fas fa-angle-double-left"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ applications.previous_page_number }}">
+                        <i class="fas fa-angle-left"></i>
+                    </a>
+                </li>
+            {% endif %}
+
+            {% for num in applications.paginator.page_range %}
+                {% if applications.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                {% elif num > applications.number|add:'-3' and num < applications.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if applications.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ applications.next_page_number }}">
+                        <i class="fas fa-angle-right"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ applications.paginator.num_pages }}">
+                        <i class="fas fa-angle-double-right"></i>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <!-- Empty State -->
+    <div class="text-center py-5">
+        <i class="fas fa-file-alt fa-4x text-muted mb-3"></i>
+        <h4 class="text-muted">No Applications Yet</h4>
+        <p class="text-muted">You haven't applied for any jobs yet. Start exploring opportunities!</p>
+        <a href="{% url 'job_board' %}" class="btn btn-primary">
+            <i class="fas fa-search me-2"></i>Browse Job Board
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Application Statistics -->
+<div class="bg-light py-4">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-3 mb-3">
+                <div class="h4 text-primary">{{ applications.paginator.count|default:0 }}</div>
+                <small class="text-muted">Total Applications</small>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="h4 text-warning">0</div>
+                <small class="text-muted">Pending Review</small>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="h4 text-success">0</div>
+                <small class="text-muted">Shortlisted</small>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="h4 text-info">0</div>
+                <small class="text-muted">Interviews</small>
+            </div>
+        </div>
+        
+        <div class="text-center mt-4">
+            <h5 class="mb-3">Quick Actions</h5>
+            <div class="d-flex justify-content-center flex-wrap gap-2">
+                <a href="{% url 'job_board' %}" class="btn btn-primary">
+                    <i class="fas fa-search me-2"></i>Find More Jobs
+                </a>
+                <a href="{% url 'alumni_profile' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-user me-2"></i>Update Profile
+                </a>
+                <a href="{% url 'alumni_home' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-home me-2"></i>Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function viewApplication(applicationId) {
+    const element = document.getElementById('application-' + applicationId);
+    const collapse = new bootstrap.Collapse(element);
+    collapse.toggle();
+}
+
+// Auto-refresh status every 5 minutes
+setInterval(function() {
+    // In a real implementation, you might want to check for status updates
+    // via AJAX without refreshing the entire page
+}, 300000);
+</script>
+{% endblock %}

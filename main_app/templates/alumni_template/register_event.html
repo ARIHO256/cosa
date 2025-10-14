@@ -1,0 +1,350 @@
+{% extends 'alumni_template/base.html' %}
+{% load static %}
+{% load math_filters %}
+{% block title %}Register for {{ event.title }} - COSA Alumni{% endblock %}
+{% block extra_css %}
+<style>
+    .register-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 40px 0;
+    }
+    .event-info-card {
+        border: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        position: sticky;
+        top: 100px;
+    }
+    .registration-form {
+        border: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+    }
+    .form-section {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .required-field {
+        color: #dc3545;
+    }
+    .event-badge {
+        font-size: 0.75rem;
+        padding: 4px 8px;
+    }
+</style>
+{% endblock %}
+{% block alumni_content %}
+<!-- Register Header -->
+<div class="register-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-6 mb-2">Event Registration</h1>
+                <p class="lead mb-0">Register for {{ event.title }}</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a href="{% url 'event_detail' event.id %}" class="btn btn-light">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Event
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container my-5">
+    <div class="row">
+        <!-- Registration Form -->
+        <div class="col-lg-8">
+            <div class="card registration-form">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-calendar-plus me-2"></i>Event Registration</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- Personal Information -->
+                        <div class="form-section">
+                            <h6 class="mb-3"><i class="fas fa-user me-2"></i>Personal Information</h6>
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                This information will be shared with the event organizer.
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Full Name</label>
+                                    <input type="text" class="form-control" 
+                                           value="{{ request.user.get_full_name }}" readonly>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Email Address</label>
+                                    <input type="email" class="form-control" 
+                                           value="{{ request.user.email }}" readonly>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Phone Number</label>
+                                    <input type="tel" class="form-control" 
+                                           value="{{ request.user.phone_number|default:'Not provided' }}" readonly>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Completion Year</label>
+                                    <input type="text" class="form-control" 
+                                           value="{{ request.user.alumni.graduation_year.year|default:'Not specified' }}" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Registration Details -->
+                        <div class="form-section">
+                            <h6 class="mb-3"><i class="fas fa-clipboard-list me-2"></i>Registration Details</h6>
+                            
+                            <div class="mb-3">
+                                <label for="attendance_type" class="form-label">Attendance Type <span class="required-field">*</span></label>
+                                <select class="form-select" id="attendance_type" name="attendance_type" required>
+                                    <option value="">Select attendance type</option>
+                                    <option value="in_person">In-Person</option>
+                                    {% if event.is_virtual %}
+                                    <option value="virtual">Virtual</option>
+                                    <option value="hybrid">Hybrid (Both)</option>
+                                    {% endif %}
+                                </select>
+                            </div>
+                            
+                            {% if not event.is_free %}
+                            <div class="mb-3">
+                                <label for="payment_method" class="form-label">Payment Method <span class="required-field">*</span></label>
+                                <select class="form-select" id="payment_method" name="payment_method" required>
+                                    <option value="">Select payment method</option>
+                                    <option value="credit_card">Credit Card</option>
+                                    <option value="paypal">PayPal</option>
+                                    <option value="bank_transfer">Bank Transfer</option>
+                                </select>
+                                <div class="form-text">Event fee: ${{ event.price|default:"0" }}</div>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="mb-3">
+                                <label for="special_requirements" class="form-label">Special Requirements</label>
+                                <textarea class="form-control" id="special_requirements" name="special_requirements" rows="4"
+                                          placeholder="Any dietary restrictions, accessibility needs, or other special requirements..."></textarea>
+                                <div class="form-text">Optional - Let us know if you have any special needs</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Emergency Contact -->
+                        <div class="form-section">
+                            <h6 class="mb-3"><i class="fas fa-phone me-2"></i>Emergency Contact (Optional)</h6>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="emergency_contact_name" class="form-label">Contact Name</label>
+                                    <input type="text" class="form-control" id="emergency_contact_name" name="emergency_contact_name">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="emergency_contact_phone" class="form-label">Contact Phone</label>
+                                    <input type="tel" class="form-control" id="emergency_contact_phone" name="emergency_contact_phone">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="emergency_contact_relationship" class="form-label">Relationship</label>
+                                <input type="text" class="form-control" id="emergency_contact_relationship" name="emergency_contact_relationship"
+                                       placeholder="e.g., Spouse, Parent, Friend">
+                            </div>
+                        </div>
+                        
+                        <!-- Additional Questions -->
+                        {% if event.registration_questions %}
+                        <div class="form-section">
+                            <h6 class="mb-3"><i class="fas fa-question-circle me-2"></i>Additional Questions</h6>
+                            <div class="alert alert-warning">
+                                <strong>Organizer Questions:</strong>
+                                <div class="mt-2">{{ event.registration_questions|safe }}</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="additional_answers" class="form-label">Your Answers</label>
+                                <textarea class="form-control" id="additional_answers" name="additional_answers" rows="6"
+                                          placeholder="Please answer the organizer's questions here..."></textarea>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Terms and Conditions -->
+                        <div class="form-section">
+                            <h6 class="mb-3"><i class="fas fa-shield-alt me-2"></i>Terms & Conditions</h6>
+                            
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="terms_accepted" required>
+                                <label class="form-check-label" for="terms_accepted">
+                                    I agree to the event terms and conditions <span class="required-field">*</span>
+                                </label>
+                            </div>
+                            
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="photo_consent">
+                                <label class="form-check-label" for="photo_consent">
+                                    I consent to being photographed/recorded during the event
+                                </label>
+                            </div>
+                            
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="contact_permission">
+                                <label class="form-check-label" for="contact_permission">
+                                    I allow the organizer to contact me about future events
+                                </label>
+                            </div>
+                            
+                            {% if event.requires_approval %}
+                            <div class="alert alert-warning">
+                                <i class="fas fa-clock me-2"></i>
+                                <strong>Approval Required:</strong> This event requires organizer approval. 
+                                You will be notified once your registration is reviewed.
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'event_detail' event.id %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-calendar-plus me-2"></i>
+                                {% if event.requires_approval %}Submit Registration{% else %}Register Now{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Event Information Sidebar -->
+        <div class="col-lg-4">
+            <div class="card event-info-card">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0"><i class="fas fa-calendar me-2"></i>Event Details</h6>
+                </div>
+                <div class="card-body">
+                    <h5>{{ event.title }}</h5>
+                    
+                    <div class="mb-3">
+                        <span class="badge bg-primary event-badge">{{ event.get_event_type_display }}</span>
+                        {% if event.is_virtual %}
+                        <span class="badge bg-info event-badge">Virtual</span>
+                        {% endif %}
+                        {% if event.is_free %}
+                        <span class="badge bg-success event-badge">Free</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <small class="text-muted">Date & Time:</small><br>
+                        <strong>{{ event.start_date|date:"F d, Y" }}</strong><br>
+                        <strong>{{ event.start_time|time:"g:i A" }}{% if event.end_time %} - {{ event.end_time|time:"g:i A" }}{% endif %}</strong>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <small class="text-muted">Location:</small><br>
+                        <strong>{{ event.location }}</strong>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <small class="text-muted">Organizer:</small><br>
+                        <strong>{{ event.organizer.admin.get_full_name }}</strong>
+                    </div>
+                    
+                    {% if not event.is_free %}
+                    <div class="mb-3">
+                        <small class="text-muted">Registration Fee:</small><br>
+                        <strong class="text-success">${{ event.price|default:"0" }}</strong>
+                    </div>
+                    {% endif %}
+                    
+                    {% if event.max_attendees %}
+                    <div class="mb-3">
+                        <small class="text-muted">Capacity:</small><br>
+                        <strong>{{ event.eventregistration_set.count }}/{{ event.max_attendees }}</strong>
+                        <div class="progress mt-1" style="height: 5px;">
+                            <div class="progress-bar" role="progressbar" 
+                                 style="width: {{ event.eventregistration_set.count|percentage:event.max_attendees }}%">
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <small class="text-muted">Registration Deadline:</small><br>
+                        <strong class="text-danger">{{ event.registration_deadline|date:"M d, Y" }}</strong>
+                    </div>
+                    
+                    <div class="text-center">
+                        <a href="{% url 'event_detail' event.id %}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-eye me-1"></i>View Full Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Registration Tips -->
+            <div class="card mt-4">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Registration Tips</h6>
+                </div>
+                <div class="card-body">
+                    <div class="small">
+                        <div class="mb-2">
+                            <strong>✓ Register early</strong><br>
+                            Popular events fill up quickly.
+                        </div>
+                        
+                        <div class="mb-2">
+                            <strong>✓ Check your email</strong><br>
+                            Confirmation and updates will be sent to your registered email.
+                        </div>
+                        
+                        <div class="mb-2">
+                            <strong>✓ Add to calendar</strong><br>
+                            Don't forget to mark your calendar after registration.
+                        </div>
+                        
+                        <div class="mb-0">
+                            <strong>✓ Contact organizer</strong><br>
+                            Reach out if you have any questions or special needs.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Form validation
+document.querySelector('form').addEventListener('submit', function(e) {
+    const termsAccepted = document.getElementById('terms_accepted').checked;
+    
+    if (!termsAccepted) {
+        e.preventDefault();
+        alert('Please accept the terms and conditions to register for this event.');
+        return false;
+    }
+    
+    if (!confirm('Are you sure you want to register for this event? Please review all information before confirming.')) {
+        e.preventDefault();
+    }
+});
+
+// Update capacity display if needed
+function updateCapacity() {
+    // In a real implementation, you might want to check capacity via AJAX
+}
+</script>
+{% endblock %}

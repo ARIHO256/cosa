@@ -1,0 +1,222 @@
+{% extends 'admin_template/base.html' %}
+{% block title %}User Suspension History{% endblock %}
+{% block admin_content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-history me-2"></i>
+                        Suspension History
+                    </h3>
+                    <div class="card-tools">
+                        <a href="{% url 'manage_alumni' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Back to Alumni Management
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- User Information -->
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <h5>{{ user.get_full_name }}</h5>
+                            <p class="text-muted mb-0">{{ user.email }} • {{ user.get_user_type_display }}</p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <span class="badge bg-{% if user.is_suspended %}danger{% else %}success{% endif %} fs-6">
+                                {% if user.is_suspended %}Currently Suspended{% else %}Active{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- Current Suspension Status -->
+                    {% if user.is_suspended %}
+                    <div class="alert alert-danger">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-ban me-2"></i>
+                            Current Suspension
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Suspended Since:</strong> {{ user.suspended_at|date:"F d, Y \a\t g:i A" }}<br>
+                                <strong>Suspended By:</strong> {{ user.suspended_by.get_full_name|default:"System" }}
+                            </div>
+                            <div class="col-md-6">
+                                {% if user.suspension_expires_at %}
+                                    <strong>Expires:</strong> {{ user.suspension_expires_at|date:"F d, Y \a\t g:i A" }}<br>
+                                    <strong>Type:</strong> Temporary Suspension
+                                {% else %}
+                                    <strong>Type:</strong> Permanent Suspension
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% if user.suspension_reason %}
+                            <div class="mt-3">
+                                <strong>Reason:</strong>
+                                <p class="mt-1 mb-0 p-2 bg-light rounded">{{ user.suspension_reason }}</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Suspension History -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="card-title mb-0">
+                                <i class="fas fa-list me-2"></i>
+                                Suspension History
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            {% if user.is_suspended or user.suspended_at %}
+                                <div class="timeline">
+                                    <!-- Suspension Event -->
+                                    {% if user.suspended_at %}
+                                    <div class="timeline-item">
+                                        <div class="timeline-marker bg-danger"></div>
+                                        <div class="timeline-content">
+                                            <h6 class="timeline-title">
+                                                <i class="fas fa-ban me-2"></i>
+                                                Account Suspended
+                                            </h6>
+                                            <p class="timeline-text">
+                                                <strong>Date:</strong> {{ user.suspended_at|date:"F d, Y \a\t g:i A" }}<br>
+                                                <strong>By:</strong> {{ user.suspended_by.get_full_name|default:"System" }}<br>
+                                                {% if user.suspension_reason %}
+                                                    <strong>Reason:</strong> {{ user.suspension_reason }}
+                                                {% endif %}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <!-- Unsuspension Event (if applicable) -->
+                                    {% if not user.is_suspended and user.suspended_at %}
+                                    <div class="timeline-item">
+                                        <div class="timeline-marker bg-success"></div>
+                                        <div class="timeline-content">
+                                            <h6 class="timeline-title">
+                                                <i class="fas fa-check-circle me-2"></i>
+                                                Account Unsuspended
+                                            </h6>
+                                            <p class="timeline-text">
+                                                <strong>Date:</strong> {{ user.updated_at|date:"F d, Y \a\t g:i A" }}<br>
+                                                <strong>Status:</strong> Account is now active
+                                            </p>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                                    <h5>No Suspension History</h5>
+                                    <p class="text-muted">This account has never been suspended.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="mt-4 text-center">
+                        {% if user.is_suspended %}
+                            <a href="{% url 'admin_unsuspend_user' user.id %}" class="btn btn-success btn-lg me-2">
+                                <i class="fas fa-check-circle me-2"></i>Unsuspend Account
+                            </a>
+                        {% else %}
+                            <a href="{% url 'admin_suspend_user' user.id %}" class="btn btn-danger btn-lg me-2">
+                                <i class="fas fa-ban me-2"></i>Suspend Account
+                            </a>
+                        {% endif %}
+                        <a href="{% url 'manage_alumni' %}" class="btn btn-outline-secondary btn-lg">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Management
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.card-header .card-title {
+    margin: 0;
+    font-weight: 600;
+}
+
+.card-header .card-tools .btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.card-header .card-tools .btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #e9ecef;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 30px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -22px;
+    top: 5px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 3px solid white;
+    box-shadow: 0 0 0 3px #e9ecef;
+}
+
+.timeline-content {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #dee2e6;
+}
+
+.timeline-title {
+    margin-bottom: 10px;
+    color: #495057;
+}
+
+.timeline-text {
+    margin-bottom: 0;
+    color: #6c757d;
+}
+
+.alert-danger {
+    border-left: 4px solid #dc3545;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+}
+
+.alert-heading {
+    color: #721c24;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,399 @@
+{% extends 'coordinator_template/base.html' %}
+{% load static %}
+{% block title %}Manage Alumni - COSA Coordinator{% endblock %}
+{% block extra_css %}
+<style>
+    .manage-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 40px 0;
+    }
+    .alumni-card {
+        border: none;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s ease;
+        margin-bottom: 20px;
+    }
+    .alumni-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+    .status-verified { background-color: #d4edda; color: #155724; }
+    .status-pending { background-color: #fff3cd; color: #856404; }
+    .status-rejected { background-color: #f8d7da; color: #721c24; }
+    .alumni-avatar {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+    }
+    .filter-card {
+        border: none;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+{% block coordinator_content %}
+<!-- Manage Header -->
+            <div class="manage-header">
+                <div class="container">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h1 class="display-6 mb-2">Manage Alumni</h1>
+                            <p class="lead mb-0">Review, verify, and manage Citizens Secondary School alumni profiles</p>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <a href="{% url 'coordinator_register_alumni' %}" class="btn btn-success me-2">
+                                <i class="fas fa-user-plus me-2"></i>Register Alumni
+                            </a>
+                            <div class="dropdown d-inline-block">
+                                <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-file-excel me-2"></i>Export Excel
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="{% url 'coordinator_export_alumni_excel' 'all' %}?{{ request.GET.urlencode }}">
+                                        <i class="fas fa-download me-2"></i>All Data
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="{% url 'coordinator_export_alumni_excel' 'detailed' %}?{{ request.GET.urlencode }}">
+                                        <i class="fas fa-download me-2"></i>Detailed Info
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="{% url 'coordinator_export_alumni_excel' 'basic' %}?{{ request.GET.urlencode }}">
+                                        <i class="fas fa-download me-2"></i>Basic Info
+                                    </a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="{% url 'coordinator_export_alumni_statistics_excel' %}">
+                                        <i class="fas fa-chart-bar me-2"></i>Statistics Report
+                                    </a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="container my-5">
+                <!-- Filter and Search -->
+                <div class="card filter-card">
+                    <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label for="search" class="form-label">Search Alumni</label>
+                    <input type="text" class="form-control" id="search" name="search" 
+                           value="{{ request.GET.search }}" placeholder="Name, email, or Student ID">
+                </div>
+                <div class="col-md-3">
+                    <label for="verification_status" class="form-label">Verification Status</label>
+                    <select name="verification_status" id="verification_status" class="form-select">
+                        <option value="">All Status</option>
+                        <option value="verified" {% if request.GET.verification_status == 'verified' %}selected{% endif %}>Verified</option>
+                        <option value="pending" {% if request.GET.verification_status == 'pending' %}selected{% endif %}>Pending</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fas fa-search me-2"></i>Search
+                    </button>
+                    <a href="{% url 'manage_alumni' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-2"></i>Clear
+                    </a>
+                </div>
+                <div class="col-md-2 text-end">
+                    <small class="text-muted">{{ total_count }} alumni found</small>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Alumni List -->
+    {% if alumni %}
+    <div class="row">
+        {% for alumnus in alumni %}
+        <div class="col-12">
+            <div class="card alumni-card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-1">
+                            {% if alumnus.admin.profile_pic %}
+                            <img src="{{ alumnus.admin.profile_pic.url }}" alt="Profile" 
+                                 class="rounded-circle alumni-avatar">
+                            {% else %}
+                            <div class="bg-light rounded-circle alumni-avatar d-flex align-items-center justify-content-center">
+                                <i class="fas fa-user text-muted"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-5">
+                            <h5 class="mb-1">{{ alumnus.admin.get_full_name }}</h5>
+                            <p class="text-muted mb-1">{{ alumnus.admin.email }}</p>
+                            <div class="small text-muted">
+                                {% if alumnus.student_id %}
+                                <span class="me-3">ID: {{ alumnus.student_id }}</span>
+                                {% endif %}
+                                {% if alumnus.graduation_year %}
+                                <span class="me-3">Class of {{ alumnus.graduation_year.year }}</span>
+                                {% endif %}
+                                {% if alumnus.degree %}
+                                <span>{{ alumnus.degree.name }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                {% if alumnus.admin.is_verified %}
+                                <span class="badge status-verified px-3 py-2">
+                                    <i class="fas fa-check-circle me-1"></i>Verified
+                                </span>
+                                {% else %}
+                                <span class="badge status-pending px-3 py-2">
+                                    <i class="fas fa-clock me-1"></i>Pending
+                                </span>
+                                {% endif %}
+                                
+                                <div class="small text-muted mt-1">
+                                    Joined {{ alumnus.admin.date_joined|date:"M d, Y" }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3 text-end">
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary btn-sm" type="button" 
+                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'alumni_detail' alumnus.id %}">
+                                            <i class="fas fa-eye me-2"></i>View Profile
+                                        </a>
+                                    </li>
+                                    {% if not alumnus.admin.is_verified %}
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'verify_alumni' alumnus.id %}">
+                                            <i class="fas fa-check me-2"></i>Verify Alumni
+                                        </a>
+                                    </li>
+                                    {% endif %}
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item" href="#" onclick="sendMessage({{ alumnus.id }})">
+                                            <i class="fas fa-envelope me-2"></i>Send Message
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item text-warning" href="#" onclick="suspendAlumni({{ alumnus.id }})">
+                                            <i class="fas fa-pause me-2"></i>Suspend
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item text-danger" href="{% url 'coordinator_delete_alumni' alumnus.id %}">
+                                            <i class="fas fa-trash me-2"></i>Delete Alumni
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Expandable Details -->
+                    <div class="collapse" id="alumni-details-{{ alumnus.id }}">
+                        <hr>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Contact Information:</h6>
+                                <div class="small">
+                                    {% if alumnus.admin.phone_number %}
+                                    <div><strong>Phone:</strong> {{ alumnus.admin.phone_number }}</div>
+                                    {% endif %}
+                                    {% if alumnus.current_city %}
+                                    <div><strong>Location:</strong> {{ alumnus.current_city }}</div>
+                                    {% endif %}
+                                    {% if alumnus.linkedin_profile %}
+                                    <div><strong>LinkedIn:</strong> 
+                                        <a href="{{ alumnus.linkedin_profile }}" target="_blank">View Profile</a>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Professional Information:</h6>
+                                <div class="small">
+                                    {% if alumnus.current_company %}
+                                    <div><strong>Company:</strong> {{ alumnus.current_company.name }}</div>
+                                    {% endif %}
+                                    {% if alumnus.job_title %}
+                                    <div><strong>Position:</strong> {{ alumnus.job_title }}</div>
+                                    {% endif %}
+                                    {% if alumnus.employment_status %}
+                                    <div><strong>Status:</strong> {{ alumnus.get_employment_status_display }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if alumni.has_other_pages %}
+    <nav aria-label="Alumni pagination" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if alumni.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.verification_status %}&verification_status={{ request.GET.verification_status }}{% endif %}">
+                        <i class="fas fa-angle-double-left"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ alumni.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.verification_status %}&verification_status={{ request.GET.verification_status }}{% endif %}">
+                        <i class="fas fa-angle-left"></i>
+                    </a>
+                </li>
+            {% endif %}
+
+            {% for num in alumni.paginator.page_range %}
+                {% if alumni.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                {% elif num > alumni.number|add:'-3' and num < alumni.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.verification_status %}&verification_status={{ request.GET.verification_status }}{% endif %}">{{ num }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if alumni.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ alumni.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.verification_status %}&verification_status={{ request.GET.verification_status }}{% endif %}">
+                        <i class="fas fa-angle-right"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ alumni.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.verification_status %}&verification_status={{ request.GET.verification_status }}{% endif %}">
+                        <i class="fas fa-angle-double-right"></i>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <!-- Empty State -->
+    <div class="text-center py-5">
+        <i class="fas fa-users fa-4x text-muted mb-3"></i>
+        <h4 class="text-muted">No Alumni Found</h4>
+        {% if request.GET.search or request.GET.verification_status %}
+        <p class="text-muted">No alumni match your search criteria.</p>
+        <a href="{% url 'manage_alumni' %}" class="btn btn-outline-primary">
+            <i class="fas fa-times me-2"></i>Clear Filters
+        </a>
+        {% else %}
+        <p class="text-muted">No Citizens Secondary School alumni have registered yet.</p>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- Bulk Actions -->
+<div class="bg-light py-4">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8">
+                <h5 class="mb-3">Bulk Actions</h5>
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-success" onclick="bulkVerify()">
+                        <i class="fas fa-check-double me-2"></i>Verify Selected
+                    </button>
+                    <button class="btn btn-primary" onclick="bulkMessage()">
+                        <i class="fas fa-envelope me-2"></i>Send Bulk Message
+                    </button>
+                    <button class="btn btn-outline-info" onclick="exportSelected()">
+                        <i class="fas fa-download me-2"></i>Export Selected
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="{% url 'coordinator_home' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+        </div>
+    </div>
+
+<script>
+function sendMessage(alumniId) {
+    // In a real implementation, this would open a message compose modal
+    alert(`Send message to alumni ID: ${alumniId}`);
+}
+
+function suspendAlumni(alumniId) {
+    if (confirm('Are you sure you want to suspend this alumni account?')) {
+        // AJAX call to suspend alumni
+        console.log('Suspend alumni:', alumniId);
+    }
+}
+
+function bulkVerify() {
+    // Get selected alumni
+    const selected = getSelectedAlumni();
+    if (selected.length === 0) {
+        alert('Please select alumni to verify');
+        return;
+    }
+    
+    if (confirm(`Verify ${selected.length} selected alumni?`)) {
+        // AJAX call for bulk verification
+        console.log('Bulk verify:', selected);
+    }
+}
+
+function bulkMessage() {
+    const selected = getSelectedAlumni();
+    if (selected.length === 0) {
+        alert('Please select alumni to message');
+        return;
+    }
+    
+    // Open bulk message modal
+    alert(`Send message to ${selected.length} alumni`);
+}
+
+function exportSelected() {
+    const selected = getSelectedAlumni();
+    if (selected.length === 0) {
+        alert('Please select alumni to export');
+        return;
+    }
+    
+    // Export selected alumni data
+    console.log('Export selected:', selected);
+}
+
+function getSelectedAlumni() {
+    // In a real implementation, this would get checked checkboxes
+    return [];
+}
+
+function toggleDetails(alumniId) {
+    const element = document.getElementById('alumni-details-' + alumniId);
+    const collapse = new bootstrap.Collapse(element);
+    collapse.toggle();
+}
+
+// Auto-submit search form on filter change
+document.getElementById('verification_status').addEventListener('change', function() {
+    this.form.submit();
+});
+</script>
+{% endblock %}

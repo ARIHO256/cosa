@@ -1,0 +1,156 @@
+{% if can_view_directory %}
+<div class="table-responsive mb-4">
+    <table class="table table-striped align-middle members-table">
+        <thead>
+            <tr>
+                <th scope="col">Member</th>
+                <th scope="col">Education</th>
+                <th scope="col">Location</th>
+                <th scope="col">Career</th>
+                <th scope="col">Highlights</th>
+                <th scope="col" class="text-end">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for alumnus in alumni %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center gap-3">
+                            {% if alumnus.admin.profile_pic %}
+                                <img src="{{ alumnus.admin.profile_pic.url }}" alt="{{ alumnus.full_name }}" class="members-avatar">
+                            {% else %}
+                                <span class="members-avatar-placeholder">
+                                    <i class="fas fa-user"></i>
+                                </span>
+                            {% endif %}
+                            <div>
+                                <div class="fw-semibold">{{ alumnus.full_name }}</div>
+                                {% if alumnus.skills %}
+                                    <div class="d-flex flex-wrap gap-1 mt-1">
+                                        {% for skill in alumnus.skills|slice:":3" %}
+                                            <span class="badge bg-light text-dark">{{ skill|title }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        {% if alumnus.degree %}
+                            <div class="fw-semibold">{{ alumnus.degree.name }}</div>
+                        {% endif %}
+                        {% if alumnus.graduation_year %}
+                            <div class="text-muted small">Class of {{ alumnus.graduation_year.year }}</div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if alumnus.current_city %}
+                            <div>{{ alumnus.current_city }}</div>
+                        {% endif %}
+                        {% if alumnus.current_country %}
+                            <div class="text-muted small">{{ alumnus.current_country }}</div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if alumnus.job_title %}
+                            <div class="fw-semibold">{{ alumnus.job_title }}</div>
+                        {% endif %}
+                        {% if alumnus.current_company %}
+                            <div class="text-muted small">{{ alumnus.current_company.name }}</div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="d-flex flex-wrap gap-1">
+                            {% if alumnus.is_mentor %}
+                                <span class="badge bg-success">
+                                    <i class="fas fa-hands-helping me-1"></i>Mentor
+                                </span>
+                            {% endif %}
+                            {% if alumnus.willing_to_hire %}
+                                <span class="badge bg-primary">
+                                    <i class="fas fa-user-plus me-1"></i>Hiring
+                                </span>
+                            {% endif %}
+                            {% if alumnus.is_job_seeker %}
+                                <span class="badge bg-warning text-dark">
+                                    <i class="fas fa-search me-1"></i>Job Seeker
+                                </span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td class="text-end">
+                        <div class="btn-group" role="group">
+                            {% if user.is_authenticated %}
+                                <a href="{% url 'alumni_detail' alumnus.id %}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                {% if user.user_type == '3' and alumnus.allow_contact and alumnus.id != user.alumni.id %}
+                                    <a href="{% url 'send_message_to' alumnus.id %}" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-envelope"></i>
+                                    </a>
+                                {% endif %}
+                            {% endif %}
+                            
+                            {% if alumnus.linkedin_profile %}
+                                <a href="{{ alumnus.linkedin_profile }}" target="_blank" class="btn btn-outline-info btn-sm">
+                                    <i class="fab fa-linkedin"></i>
+                                </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-5">
+                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                        <h4 class="text-muted mb-2">No Members Found</h4>
+                        <p class="text-muted mb-3">Try adjusting your filters or search for a different name, industry, or location.</p>
+                        <a href="{% url 'public_alumni_directory' %}" class="btn btn-primary">View All Members</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if alumni.has_other_pages %}
+    <nav aria-label="Members pagination">
+        <ul class="pagination justify-content-center">
+            {% if alumni.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.graduation_year %}&graduation_year={{ request.GET.graduation_year }}{% endif %}">First</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ alumni.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.graduation_year %}&graduation_year={{ request.GET.graduation_year }}{% endif %}">Previous</a>
+                </li>
+            {% endif %}
+
+            <li class="page-item active">
+                <span class="page-link">
+                    Page {{ alumni.number }} of {{ alumni.paginator.num_pages }}
+                </span>
+            </li>
+
+            {% if alumni.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ alumni.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.graduation_year %}&graduation_year={{ request.GET.graduation_year }}{% endif %}">Next</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ alumni.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.graduation_year %}&graduation_year={{ request.GET.graduation_year }}{% endif %}">Last</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endif %}
+{% else %}
+<div class="row">
+    <div class="col-12">
+        <div class="text-center py-5">
+            <i class="fas fa-lock fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">Login Required</h4>
+            <p class="text-muted">Sign in to browse COSA members and view their profiles.</p>
+            <a href="{% url 'login_page' %}" class="btn btn-primary">Login to Continue</a>
+        </div>
+    </div>
+</div>
+{% endif %}

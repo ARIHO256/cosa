@@ -1,0 +1,421 @@
+{% extends 'admin_template/base.html' %}
+{% block title %}System Settings - COSA Admin{% endblock %}
+<!-- Template refreshed -->
+
+{% block admin_content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <i class="fas fa-cog me-2"></i>System Settings
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="exportSettings()">
+                            <i class="fas fa-download me-1"></i>Export Config
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-warning" onclick="resetToDefaults()">
+                            <i class="fas fa-undo me-1"></i>Reset to Defaults
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            {% if messages %}
+            <div class="row mb-4">
+                <div class="col-12">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>{{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <form method="POST">
+                {% csrf_token %}
+                
+                <!-- Alumni Management Settings -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-graduation-cap me-2"></i>Alumni Management
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="alumniVerification" 
+                                           name="alumni_verification_required"
+                                           {% if cosa_settings.ALUMNI_VERIFICATION_REQUIRED %}checked{% endif %}>
+                                    <label class="form-check-label" for="alumniVerification">
+                                        <strong>Alumni Verification Required</strong>
+                                        <br><small class="text-muted">New alumni registrations require admin approval</small>
+                                    </label>
+                                </div>
+
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="alumniRegistration" 
+                                           name="allow_alumni_registration"
+                                           {% if cosa_settings.ALLOW_ALUMNI_REGISTRATION %}checked{% endif %}>
+                                    <label class="form-check-label" for="alumniRegistration">
+                                        <strong>Allow Alumni Registration</strong>
+                                        <br><small class="text-muted">Enable public alumni registration form</small>
+                                    </label>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="defaultPrivacy" class="form-label"><strong>Default Privacy Level</strong></label>
+                                    <select class="form-select" id="defaultPrivacy" name="default_privacy_level">
+                                        <option value="private" {% if cosa_settings.DEFAULT_PRIVACY_LEVEL == 'private' %}selected{% endif %}>Private</option>
+                                        <option value="limited" {% if cosa_settings.DEFAULT_PRIVACY_LEVEL == 'limited' %}selected{% endif %}>Limited</option>
+                                        <option value="public" {% if cosa_settings.DEFAULT_PRIVACY_LEVEL == 'public' %}selected{% endif %}>Public</option>
+                                    </select>
+                                    <div class="form-text">Default visibility level for new alumni profiles</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="alert alert-info">
+                                    <h6><i class="fas fa-info-circle me-2"></i>Alumni Management Info</h6>
+                                    <ul class="mb-0">
+                                        <li><strong>Private:</strong> Profile hidden from directory</li>
+                                        <li><strong>Limited:</strong> Basic info visible to verified alumni</li>
+                                        <li><strong>Public:</strong> Full profile visible to all</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Platform Features -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-tools me-2"></i>Platform Features
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="jobBoard" 
+                                           name="job_board_enabled"
+                                           {% if cosa_settings.JOB_BOARD_ENABLED %}checked{% endif %}>
+                                    <label class="form-check-label" for="jobBoard">
+                                        <strong>Job Board</strong>
+                                        <br><small class="text-muted">Enable job postings and applications</small>
+                                    </label>
+                                </div>
+
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="mentorship" 
+                                           name="mentorship_program_enabled"
+                                           {% if cosa_settings.MENTORSHIP_PROGRAM_ENABLED %}checked{% endif %}>
+                                    <label class="form-check-label" for="mentorship">
+                                        <strong>Mentorship Program</strong>
+                                        <br><small class="text-muted">Enable mentor-mentee matching</small>
+                                    </label>
+                                </div>
+
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="donations" 
+                                           name="donation_system_enabled"
+                                           {% if cosa_settings.DONATION_SYSTEM_ENABLED %}checked{% endif %}>
+                                    <label class="form-check-label" for="donations">
+                                        <strong>Donation System</strong>
+                                        <br><small class="text-muted">Enable alumni donations and campaigns</small>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="events" 
+                                           name="event_registration_enabled"
+                                           {% if cosa_settings.EVENT_REGISTRATION_ENABLED %}checked{% endif %}>
+                                    <label class="form-check-label" for="events">
+                                        <strong>Event Registration</strong>
+                                        <br><small class="text-muted">Enable event creation and registration</small>
+                                    </label>
+                                </div>
+
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="messaging" 
+                                           name="messaging_enabled"
+                                           {% if cosa_settings.MESSAGING_ENABLED %}checked{% endif %}>
+                                    <label class="form-check-label" for="messaging">
+                                        <strong>Alumni Messaging</strong>
+                                        <br><small class="text-muted">Enable direct messaging between alumni</small>
+                                    </label>
+                                </div>
+
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="groups" 
+                                           name="groups_enabled"
+                                           {% if cosa_settings.GROUPS_ENABLED %}checked{% endif %}>
+                                    <label class="form-check-label" for="groups">
+                                        <strong>Alumni Groups</strong>
+                                        <br><small class="text-muted">Enable group creation and management</small>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Information -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-server me-2"></i>System Information
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <td><strong>Platform Name:</strong></td>
+                                        <td>COSA Alumni Management System</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Version:</strong></td>
+                                        <td>1.0.0</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Database:</strong></td>
+                                        <td>SQLite (Development)</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Debug Mode:</strong></td>
+                                        <td>
+                                            {% if debug %}
+                                            <span class="badge bg-warning">Enabled</span>
+                                            {% else %}
+                                            <span class="badge bg-success">Disabled</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="alert alert-warning">
+                                    <h6><i class="fas fa-exclamation-triangle me-2"></i>Production Notice</h6>
+                                    <p class="mb-0">For production deployment, ensure:</p>
+                                    <ul class="mb-0">
+                                        <li>Debug mode is disabled</li>
+                                        <li>Secure database configuration</li>
+                                        <li>SSL/HTTPS enabled</li>
+                                        <li>Regular backups configured</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notification Settings -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-bell me-2"></i>Notification Settings
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Email Notifications:</strong> Currently configured to use Django's email backend. 
+                                    For production, configure SMTP settings in the Django settings file.
+                                </div>
+                                
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="emailNotifications" 
+                                           name="email_notifications_enabled" checked>
+                                    <label class="form-check-label" for="emailNotifications">
+                                        <strong>Email Notifications</strong>
+                                        <br><small class="text-muted">Send email notifications for important events</small>
+                                    </label>
+                                </div>
+
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="pushNotifications" 
+                                           name="push_notifications_enabled" checked>
+                                    <label class="form-check-label" for="pushNotifications">
+                                        <strong>Push Notifications</strong>
+                                        <br><small class="text-muted">Enable browser push notifications (requires FCM setup)</small>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security Settings -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-shield-alt me-2"></i>Security Settings
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="alert alert-danger">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <strong>Security Notice:</strong> These settings affect system security. Changes should be made carefully.
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="sessionTimeout" class="form-label"><strong>Session Timeout (minutes)</strong></label>
+                                    <input type="number" class="form-control" id="sessionTimeout" 
+                                           name="session_timeout" value="30" min="5" max="1440">
+                                    <div class="form-text">Automatic logout after period of inactivity</div>
+                                </div>
+
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="twoFactor" 
+                                           name="two_factor_auth" disabled>
+                                    <label class="form-check-label" for="twoFactor">
+                                        <strong>Two-Factor Authentication</strong>
+                                        <br><small class="text-muted">Require 2FA for admin accounts (Feature coming soon)</small>
+                                    </label>
+                                </div>
+
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="loginLogging" 
+                                           name="login_logging_enabled" checked>
+                                    <label class="form-check-label" for="loginLogging">
+                                        <strong>Login Activity Logging</strong>
+                                        <br><small class="text-muted">Log all login attempts for security auditing</small>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="card shadow-sm">
+                    <div class="card-body text-center">
+                        <button type="submit" class="btn btn-primary btn-lg me-3">
+                            <i class="fas fa-save me-2"></i>Save Settings
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-lg" onclick="location.reload()">
+                            <i class="fas fa-times me-2"></i>Cancel Changes
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+{% endblock %}
+{% block extra_js %}
+<script>
+// Settings page functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Track changes to show unsaved changes warning
+    let hasChanges = false;
+    const formElements = document.querySelectorAll('input, select');
+    
+    formElements.forEach(element => {
+        element.addEventListener('change', function() {
+            hasChanges = true;
+            updateSaveButton();
+        });
+    });
+
+    // Update save button state
+    function updateSaveButton() {
+        const saveBtn = document.querySelector('button[type="submit"]');
+        if (hasChanges) {
+            saveBtn.classList.add('btn-warning');
+            saveBtn.classList.remove('btn-primary');
+            saveBtn.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Save Changes';
+        }
+    }
+
+    // Form submission
+    document.querySelector('form').addEventListener('submit', function(e) {
+        hasChanges = false;
+        const saveBtn = document.querySelector('button[type="submit"]');
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+        saveBtn.disabled = true;
+    });
+
+    // Warn about unsaved changes
+    window.addEventListener('beforeunload', function(e) {
+        if (hasChanges) {
+            e.preventDefault();
+            e.returnValue = '';
+            return 'You have unsaved changes. Are you sure you want to leave?';
+        }
+    });
+});
+
+// Export settings function
+function exportSettings() {
+    const settings = {};
+    const formElements = document.querySelectorAll('input, select');
+    
+    formElements.forEach(element => {
+        if (element.name) {
+            if (element.type === 'checkbox') {
+                settings[element.name] = element.checked;
+            } else {
+                settings[element.name] = element.value;
+            }
+        }
+    });
+
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(settings, null, 2));
+    const downloadElement = document.createElement('a');
+    downloadElement.setAttribute("href", dataStr);
+    downloadElement.setAttribute("download", "cosa_settings.json");
+    document.body.appendChild(downloadElement);
+    downloadElement.click();
+    document.body.removeChild(downloadElement);
+}
+
+// Reset to defaults function
+function resetToDefaults() {
+    if (confirm('Are you sure you want to reset all settings to their default values? This cannot be undone.')) {
+        // Reset all switches to their default states
+        document.getElementById('alumniVerification').checked = true;
+        document.getElementById('alumniRegistration').checked = true;
+        document.getElementById('defaultPrivacy').value = 'limited';
+        document.getElementById('jobBoard').checked = true;
+        document.getElementById('mentorship').checked = true;
+        document.getElementById('donations').checked = true;
+        document.getElementById('events').checked = true;
+        document.getElementById('messaging').checked = true;
+        document.getElementById('groups').checked = true;
+        document.getElementById('emailNotifications').checked = true;
+        document.getElementById('pushNotifications').checked = true;
+        document.getElementById('sessionTimeout').value = 30;
+        document.getElementById('loginLogging').checked = true;
+        
+        // Trigger change event to update save button
+        hasChanges = true;
+        updateSaveButton();
+    }
+}
+
+// Auto-hide alerts after 5 seconds
+const alerts = document.querySelectorAll('.alert:not(.alert-info):not(.alert-warning):not(.alert-danger)');
+alerts.forEach(function(alert) {
+    setTimeout(function() {
+        alert.style.opacity = '0';
+        setTimeout(function() {
+            alert.remove();
+        }, 300);
+    }, 5000);
+});
+</script>
+{% endblock %}

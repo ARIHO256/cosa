@@ -1,0 +1,502 @@
+{% extends 'coordinator_template/base.html' %}
+{% block title %}Manage Events - COSA Coordinator{% endblock %}
+{% block coordinator_content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <i class="fas fa-calendar me-2"></i>Manage Events
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <a href="{% url 'create_event' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-1"></i>Create New Event
+                        </a>
+                        <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="fas fa-download me-1"></i>Export
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-file-csv me-2"></i>CSV</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-file-excel me-2"></i>Excel</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            {% if messages %}
+            <div class="row mb-4">
+                <div class="col-12">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>{{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Filters and Search -->
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-body py-2">
+                            <form method="GET" class="d-flex align-items-center">
+                                <div class="me-2">
+                                    <input type="search" name="search" class="form-control form-control-sm" 
+                                           placeholder="Search events..." value="{{ request.GET.search }}">
+                                </div>
+                                <div class="me-2">
+                                    <select name="status" class="form-select form-select-sm">
+                                        <option value="">All Status</option>
+                                        {% for status_code, status_name in event_statuses %}
+                                        <option value="{{ status_code }}" {% if request.GET.status == status_code %}selected{% endif %}>
+                                            {{ status_name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="me-2">
+                                    <select name="event_type" class="form-select form-select-sm">
+                                        <option value="">All Types</option>
+                                        <option value="reunion" {% if request.GET.event_type == 'reunion' %}selected{% endif %}>Alumni Reunion</option>
+                                        <option value="networking" {% if request.GET.event_type == 'networking' %}selected{% endif %}>Networking</option>
+                                        <option value="seminar" {% if request.GET.event_type == 'seminar' %}selected{% endif %}>Seminar</option>
+                                        <option value="social" {% if request.GET.event_type == 'social' %}selected{% endif %}>Social</option>
+                                        <option value="career" {% if request.GET.event_type == 'career' %}selected{% endif %}>Career Fair</option>
+                                        <option value="webinar" {% if request.GET.event_type == 'webinar' %}selected{% endif %}>Webinar</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-sm me-2">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                                {% if request.GET.search or request.GET.status or request.GET.event_type %}
+                                <a href="{% url 'manage_events' %}" class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-times"></i>
+                                </a>
+                                {% endif %}
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <small class="text-muted">
+                        Showing {{ events|length }} event{{ events|length|pluralize }}
+                    </small>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body text-center">
+                            <h4 class="mb-2">{{ events.paginator.count|default:0 }}</h4>
+                            <small>Total Events</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body text-center">
+                            <h4 class="mb-2">{{ upcoming_count|default:0 }}</h4>
+                            <small>Upcoming</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body text-center">
+                            <h4 class="mb-2">{{ ongoing_count|default:0 }}</h4>
+                            <small>Ongoing</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-dark">
+                        <div class="card-body text-center">
+                            <h4 class="mb-2">{{ completed_count|default:0 }}</h4>
+                            <small>Completed</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Events List -->
+            {% if events %}
+            <div class="row">
+                {% for event in events %}
+                <div class="col-lg-6 col-xl-4 mb-4">
+                    <div class="card h-100 shadow-sm event-card">
+                        <!-- Event Image -->
+                        <div class="position-relative">
+                            {% if event.featured_image %}
+                            <img src="{{ event.featured_image.url }}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="{{ event.title }}">
+                            {% else %}
+                            <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 200px;">
+                                <i class="fas fa-calendar-alt fa-3x text-muted"></i>
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Event Status Badge -->
+                            <div class="position-absolute top-0 end-0 m-2">
+                                <span class="badge 
+                                    {% if event.status == 'upcoming' %}bg-success
+                                    {% elif event.status == 'ongoing' %}bg-primary
+                                    {% elif event.status == 'completed' %}bg-secondary
+                                    {% else %}bg-danger{% endif %}">
+                                    {{ event.get_status_display }}
+                                </span>
+                            </div>
+
+                            <!-- Event Type Badge -->
+                            <div class="position-absolute top-0 start-0 m-2">
+                                <span class="badge bg-info">{{ event.get_event_type_display }}</span>
+                            </div>
+
+                            <!-- Virtual/In-Person Badge -->
+                            {% if event.is_virtual %}
+                            <div class="position-absolute bottom-0 start-0 m-2">
+                                <span class="badge bg-warning text-dark">
+                                    <i class="fas fa-video me-1"></i>Virtual
+                                </span>
+                            </div>
+                            {% else %}
+                            <div class="position-absolute bottom-0 start-0 m-2">
+                                <span class="badge bg-dark">
+                                    <i class="fas fa-map-marker-alt me-1"></i>In-Person
+                                </span>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">{{ event.title }}</h5>
+                            <p class="card-text text-muted">{{ event.description|truncatewords:15 }}</p>
+                            
+                            <!-- Event Details -->
+                            <div class="mt-auto">
+                                <div class="row text-center mb-3">
+                                    <div class="col-6">
+                                        <small class="text-muted">Start Date</small>
+                                        <div><strong>{{ event.start_date|date:"M d, Y" }}</strong></div>
+                                        <div><small>{{ event.start_date|time:"g:i A" }}</small></div>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">End Date</small>
+                                        <div><strong>{{ event.end_date|date:"M d, Y" }}</strong></div>
+                                        <div><small>{{ event.end_date|time:"g:i A" }}</small></div>
+                                    </div>
+                                </div>
+
+                                <!-- Location/Venue -->
+                                <div class="mb-3">
+                                    {% if event.is_virtual %}
+                                    <small class="text-muted">
+                                        <i class="fas fa-video me-1"></i>Virtual Event
+                                        {% if event.virtual_link %}
+                                        <br><a href="{{ event.virtual_link }}" target="_blank" class="text-decoration-none">Join Link</a>
+                                        {% endif %}
+                                    </small>
+                                    {% else %}
+                                    <small class="text-muted">
+                                        <i class="fas fa-map-marker-alt me-1"></i>{{ event.venue|default:"Venue TBD" }}
+                                        {% if event.address %}
+                                        <br>{{ event.address|truncatewords:5 }}
+                                        {% endif %}
+                                    </small>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Registration Info -->
+                                <div class="row mb-3">
+                                    <div class="col-6">
+                                        <small class="text-muted">Registration</small>
+                                        <div>
+                                            {% if event.registration_deadline %}
+                                            <small>Until {{ event.registration_deadline|date:"M d" }}</small>
+                                            {% else %}
+                                            <small>Open</small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">Fee</small>
+                                        <div>
+                                            {% if event.registration_fee > 0 %}
+                                            <strong>${{ event.registration_fee }}</strong>
+                                            {% else %}
+                                            <span class="text-success">Free</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Attendees -->
+                                <div class="mb-3">
+                                    <small class="text-muted">Attendees</small>
+                                    <div class="d-flex justify-content-between">
+                                        <span>{{ event.registrations_count|default:0 }} registered</span>
+                                        {% if event.max_attendees %}
+                                        <span>/ {{ event.max_attendees }} max</span>
+                                        {% endif %}
+                                    </div>
+                                    {% if event.max_attendees %}
+                                    <div class="progress mt-1" style="height: 4px;">
+                                        <div class="progress-bar" role="progressbar" 
+                                             style="width: {% widthratio event.registrations_count event.max_attendees 100 %}%">
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card Actions -->
+                        <div class="card-footer bg-transparent">
+                            <div class="btn-group w-100" role="group">
+                                <button type="button" class="btn btn-sm btn-info" 
+                                        data-bs-toggle="modal" data-bs-target="#eventModal{{ event.id }}">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <a href="{% url 'edit_event' event.id %}" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'event_registrations' event.id %}" class="btn btn-sm btn-success">
+                                    <i class="fas fa-users"></i>
+                                </a>
+                                <button type="button" class="btn btn-sm btn-danger" 
+                                        data-bs-toggle="modal" data-bs-target="#deleteModal{{ event.id }}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if events.has_other_pages %}
+            <nav aria-label="Events pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if events.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.event_type %}&event_type={{ request.GET.event_type }}{% endif %}">First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ events.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.event_type %}&event_type={{ request.GET.event_type }}{% endif %}">Previous</a>
+                    </li>
+                    {% endif %}
+
+                    <li class="page-item active">
+                        <span class="page-link">Page {{ events.number }} of {{ events.paginator.num_pages }}</span>
+                    </li>
+
+                    {% if events.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ events.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.event_type %}&event_type={{ request.GET.event_type }}{% endif %}">Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ events.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.event_type %}&event_type={{ request.GET.event_type }}{% endif %}">Last</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+            {% else %}
+            <!-- No Events State -->
+            <div class="text-center py-5">
+                <i class="fas fa-calendar-plus fa-4x text-muted mb-4"></i>
+                <h3>No Events Found</h3>
+                <p class="text-muted mb-4">
+                    {% if request.GET.search or request.GET.status or request.GET.event_type %}
+                    No events match your current filters. <a href="{% url 'manage_events' %}">Clear filters</a>
+                    {% else %}
+                    You haven't created any events yet. Start engaging your alumni community!
+                    {% endif %}
+                </p>
+                <a href="{% url 'create_event' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus me-2"></i>Create Your First Event
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Event Details Modals -->
+{% for event in events %}
+<!-- View Event Modal -->
+<div class="modal fade" id="eventModal{{ event.id }}" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-calendar me-2"></i>{{ event.title }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h6>Event Details</h6>
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Type:</strong></td>
+                                <td>{{ event.get_event_type_display }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Status:</strong></td>
+                                <td>
+                                    <span class="badge 
+                                        {% if event.status == 'upcoming' %}bg-success
+                                        {% elif event.status == 'ongoing' %}bg-primary
+                                        {% elif event.status == 'completed' %}bg-secondary
+                                        {% else %}bg-danger{% endif %}">
+                                        {{ event.get_status_display }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Start:</strong></td>
+                                <td>{{ event.start_date|date:"M d, Y g:i A" }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>End:</strong></td>
+                                <td>{{ event.end_date|date:"M d, Y g:i A" }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Registration Fee:</strong></td>
+                                <td>
+                                    {% if event.registration_fee > 0 %}
+                                    ${{ event.registration_fee }}
+                                    {% else %}
+                                    <span class="text-success">Free</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Max Attendees:</strong></td>
+                                <td>{{ event.max_attendees|default:"Unlimited" }}</td>
+                            </tr>
+                        </table>
+                        
+                        <h6>Description</h6>
+                        <p>{{ event.description }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        {% if event.featured_image %}
+                        <img src="{{ event.featured_image.url }}" class="img-fluid rounded mb-3" alt="{{ event.title }}">
+                        {% endif %}
+                        
+                        <h6>Location</h6>
+                        {% if event.is_virtual %}
+                        <p><i class="fas fa-video me-2"></i>Virtual Event</p>
+                        {% if event.virtual_link %}
+                        <a href="{{ event.virtual_link }}" class="btn btn-sm btn-primary" target="_blank">
+                            <i class="fas fa-external-link-alt me-1"></i>Join Link
+                        </a>
+                        {% endif %}
+                        {% else %}
+                        <p><i class="fas fa-map-marker-alt me-2"></i>{{ event.venue }}</p>
+                        {% if event.address %}
+                        <p class="text-muted small">{{ event.address }}</p>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="{% url 'edit_event' event.id %}" class="btn btn-warning">
+                    <i class="fas fa-edit me-2"></i>Edit Event
+                </a>
+                <a href="{% url 'event_registrations' event.id %}" class="btn btn-success">
+                    <i class="fas fa-users me-2"></i>View Registrations
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Event Modal -->
+<div class="modal fade" id="deleteModal{{ event.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Delete Event
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong>{{ event.title }}</strong>?</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-warning me-2"></i>
+                    This action cannot be undone. All registrations for this event will also be deleted.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="#" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>Delete Event
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+
+{% endblock %}
+{% block extra_css %}
+<style>
+.event-card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.event-card:hover {
+    transform: translateY(-2px);
+}
+
+.progress {
+    background-color: rgba(0,0,0,0.1);
+}
+
+.card-img-top {
+    transition: opacity 0.3s ease;
+}
+
+.event-card:hover .card-img-top {
+    opacity: 0.9;
+}
+
+.badge {
+    font-size: 0.75em;
+}
+</style>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-hide alerts after 5 seconds
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(function(alert) {
+        setTimeout(function() {
+            alert.style.opacity = '0';
+            setTimeout(function() {
+                alert.remove();
+            }, 300);
+        }, 5000);
+    });
+
+    // Add tooltips to action buttons
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
+{% endblock %}

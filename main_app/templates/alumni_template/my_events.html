@@ -1,0 +1,99 @@
+{% extends 'alumni_template/base.html' %}
+{% block title %}My Events - COSA Alumni{% endblock %}
+{% block alumni_content %}
+<section class="app-hero mb-4">
+    <div class="container d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3">
+        <div>
+            <h1>My Events</h1>
+            <p class="mb-0">Track your registrations and revisit past experiences.</p>
+        </div>
+        <a href="{% url 'events' %}" class="btn btn-light hero-rect-btn"><i class="fas fa-search me-2"></i>Find more events</a>
+    </div>
+</section>
+
+<section class="container stack-gap">
+    {% if registrations %}
+        <div class="surface-card stack-gap-sm">
+            <ul class="nav nav-tabs" id="eventTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">All <span class="badge bg-secondary ms-1">{{ registrations.count }}</span></button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="upcoming-tab" data-bs-toggle="tab" data-bs-target="#upcoming" type="button" role="tab">Upcoming <span class="badge bg-primary ms-1" id="upcoming-count">0</span></button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="past-tab" data-bs-toggle="tab" data-bs-target="#past" type="button" role="tab">Past <span class="badge bg-info ms-1" id="past-count">0</span></button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab">Pending <span class="badge bg-warning ms-1" id="pending-count">0</span></button>
+                </li>
+            </ul>
+            <div class="tab-content stack-gap" id="eventTabContent">
+                <div class="tab-pane fade show active stack-gap" id="all" role="tabpanel" aria-labelledby="all-tab">
+                    {% for registration in registrations %}
+                        <article class="alumni-card stack-gap-sm">
+                            <div class="d-flex gap-3 align-items-start">
+                                <div class="text-center" style="min-width:70px;">
+                                    <div class="badge bg-primary text-white d-block mb-1">{{ registration.event.start_date|date:"M" }}</div>
+                                    <div class="h4 mb-0">{{ registration.event.start_date|date:"d" }}</div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <h5 class="mb-1"><a href="{% url 'event_detail' registration.event.id %}" class="text-decoration-none">{{ registration.event.title }}</a></h5>
+                                        <span class="badge px-3 py-2 status-{{ registration.status|lower }} text-uppercase">{{ registration.get_status_display }}</span>
+                                    </div>
+                                    <div class="small text-muted mb-1"><i class="fas fa-map-marker-alt me-1"></i>{{ registration.event.location }}</div>
+                                    <div class="small text-muted mb-1"><i class="fas fa-clock me-1"></i>{{ registration.event.start_date|date:"M d, Y" }} &middot; {{ registration.event.start_time|time:"g:i A" }}</div>
+                                    <div class="d-flex flex-wrap gap-2 mb-2">
+                                        <span class="badge bg-primary">{{ registration.event.get_event_type_display }}</span>
+                                        {% if registration.event.is_virtual %}<span class="badge bg-info text-dark">Virtual</span>{% endif %}
+                                        {% if registration.event.is_free %}<span class="badge bg-success">Free</span>{% endif %}
+                                    </div>
+                                    {% if registration.special_requirements %}
+                                        <p class="text-muted small mb-0"><strong>Notes:</strong> {{ registration.special_requirements }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted"><i class="fas fa-calendar me-1"></i>Registered {{ registration.registration_date|date:"M d, Y" }}</small>
+                                <div class="btn-group">
+                                    <a href="{% url 'event_detail' registration.event.id %}" class="btn btn-outline-primary btn-sm"><i class="fas fa-eye"></i></a>
+                                    {% if registration.event.start_date > today and registration.status in cancel_statuses %}
+                                        <button class="btn btn-outline-danger btn-sm" onclick="cancelRegistration({{ registration.id }}, '{{ registration.event.title }}')"><i class="fas fa-times"></i></button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+                <div class="tab-pane fade stack-gap" id="upcoming" role="tabpanel" aria-labelledby="upcoming-tab"></div>
+                <div class="tab-pane fade stack-gap" id="past" role="tabpanel" aria-labelledby="past-tab"></div>
+                <div class="tab-pane fade stack-gap" id="pending" role="tabpanel" aria-labelledby="pending-tab"></div>
+            </div>
+        </div>
+    {% else %}
+        <div class="surface-card text-center py-5">
+            <i class="fas fa-calendar fa-3x text-muted mb-3"></i>
+            <h5>No event registrations</h5>
+            <p class="text-muted mb-3">You haven’t registered for any events yet. Explore upcoming opportunities.</p>
+            <a href="{% url 'events' %}" class="btn btn-primary">Browse events</a>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .status-pending { background: rgba(251, 191, 36, 0.15); color: #b45309; }
+    .status-confirmed { background: rgba(34, 197, 94, 0.15); color: #047857; }
+    .status-cancelled { background: rgba(248, 113, 113, 0.15); color: #b91c1c; }
+    .status-attended { background: rgba(59, 130, 246, 0.15); color: #1d4ed8; }
+
+    .hero-rect-btn {
+        border-radius: var(--app-radius);
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+    }
+</style>
+{% endblock %}

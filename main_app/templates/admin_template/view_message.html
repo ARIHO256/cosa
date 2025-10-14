@@ -1,0 +1,112 @@
+{% extends 'admin_template/base.html' %}
+{% load static %}
+{% block title %}Message Conversation{% endblock %}
+
+{% block admin_content %}
+<div class="container-fluid conversation-admin">
+    <div class="row mb-3 align-items-center">
+        <div class="col-sm-6">
+            <h3 class="mb-1"><i class="fas fa-comments me-2"></i>Conversation</h3>
+            <p class="text-muted mb-0">Review the full thread and keep the dialogue moving.</p>
+        </div>
+        <div class="col-sm-6 text-sm-end mt-3 mt-sm-0">
+            <a href="{% url 'admin_messages_inbox' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Back to Inbox
+            </a>
+        </div>
+    </div>
+
+    <div class="card conversation-card shadow-sm">
+        <div class="card-body">
+            <div class="conversation-thread mb-4">
+                {% include 'main_app/partials/conversation_entry.html' with entry=message is_root=True %}
+                {% for reply in replies %}
+                    {% include 'main_app/partials/conversation_entry.html' with entry=reply is_root=False %}
+                {% empty %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-comments fa-2x mb-2"></i>
+                        <p class="mb-0">No replies yet. Send the first response.</p>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="conversation-reply">
+                <h5 class="mb-3"><i class="fas fa-reply text-primary me-2"></i>Send a Reply</h5>
+                <form method="post" enctype="multipart/form-data" class="row g-3">
+                    {% csrf_token %}
+                    {% if reply_form.non_field_errors %}
+                        <div class="col-12">
+                            <div class="alert alert-danger mb-0">
+                                {{ reply_form.non_field_errors }}
+                            </div>
+                        </div>
+                    {% endif %}
+                    <div class="col-12">
+                        {{ reply_form.content.label_tag }}
+                        {{ reply_form.content }}
+                        {% for error in reply_form.content.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="col-md-6">
+                        {{ reply_form.attachment.label_tag }}
+                        {{ reply_form.attachment }}
+                        {% for error in reply_form.attachment.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="col-12 text-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-1"></i>Send Reply
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.conversation-admin .conversation-thread {
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.conversation-admin .conversation-thread::-webkit-scrollbar {
+    width: 6px;
+}
+
+.conversation-admin .conversation-thread::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 999px;
+}
+
+.conversation-card .conversation-entry-inner {
+    max-width: 640px;
+}
+
+.conversation-card .conversation-bubble {
+    background: #f8fafc;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.conversation-card .conversation-entry-self .conversation-bubble {
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(59, 130, 246, 0.18));
+    border-color: rgba(37, 99, 235, 0.2);
+}
+
+.conversation-card .form-control {
+    border-radius: 12px;
+    min-height: 120px;
+}
+
+.conversation-card input[type="file"] {
+    padding: 0.45rem 0.6rem;
+    border-radius: 8px;
+}
+</style>
+{% endblock %}

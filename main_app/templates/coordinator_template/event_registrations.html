@@ -1,0 +1,187 @@
+{% extends 'coordinator_template/base.html' %}
+{% block title %}Event Registrations - {{ event.title }}{% endblock %}
+{% block coordinator_content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2"><i class="fas fa-users me-2"></i>Event Registrations - {{ event.title }}</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{% url 'manage_events' %}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Back to Events</a>
+                </div>
+            </div>
+
+            <!-- Event Info Card -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h5 class="card-title">{{ event.title }}</h5>
+                            <p class="text-muted mb-2">{{ event.description|truncatewords:20 }}</p>
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <small class="text-muted">Start Date</small>
+                                    <div><strong>{{ event.start_date|date:"M d, Y g:i A" }}</strong></div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <small class="text-muted">End Date</small>
+                                    <div><strong>{{ event.end_date|date:"M d, Y g:i A" }}</strong></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="mb-2">
+                                <span class="badge bg-{{ event.status|yesno:'success,warning,secondary' }}">{{ event.get_status_display }}</span>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted">Total Registrations</small>
+                                <div><strong>{{ registrations|length }}</strong></div>
+                            </div>
+                            {% if event.max_attendees %}
+                            <div>
+                                <small class="text-muted">Capacity</small>
+                                <div><strong>{{ event.max_attendees }} max</strong></div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="card mb-3">
+                <div class="card-body py-2">
+                    <form method="GET" class="row g-2 align-items-center">
+                        <div class="col-sm-6 col-md-4">
+                            <input type="search" name="search" class="form-control form-control-sm" placeholder="Search by name or email" value="{{ request.GET.search }}">
+                        </div>
+                        <div class="col-auto">
+                            <select name="status" class="form-select form-select-sm">
+                                <option value="">All Status</option>
+                                {% for status_code, status_name in registration_statuses %}
+                                <option value="{{ status_code }}" {% if request.GET.status == status_code %}selected{% endif %}>{{ status_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i></button>
+                        </div>
+                        {% if request.GET.search or request.GET.status %}
+                        <div class="col-auto">
+                            <a href="{% url 'event_registrations' event.id %}" class="btn btn-outline-secondary btn-sm"><i class="fas fa-times"></i></a>
+                        </div>
+                        {% endif %}
+                        <div class="col ms-auto text-end">
+                            <small class="text-muted">Showing {{ registrations|length }} registration{{ registrations|length|pluralize }}</small>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Registrations Table -->
+            {% if registrations %}
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Alumni</th>
+                                <th>Level</th>
+                                <th>Completion Year</th>
+                                <th>Status</th>
+                                <th>Registered</th>
+                                <th>Payment</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for registration in registrations %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-3">
+                                            {% if registration.alumni.admin.profile_pic %}
+                                                <img src="{{ registration.alumni.admin.profile_pic.url }}" class="rounded-circle" width="36" height="36" alt="{{ registration.alumni.full_name }}">
+                                            {% else %}
+                                                <i class="fas fa-user-circle fa-2x text-muted"></i>
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            <div class="fw-semibold">{{ registration.alumni.full_name }}</div>
+                                            <small class="text-muted">{{ registration.alumni.admin.email }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ registration.alumni.level.name|default:'-' }}</td>
+                                <td>{{ registration.alumni.graduation_year.year|default:'-' }}</td>
+                                <td>
+                                    <span class="badge 
+                                        {% if registration.status == 'confirmed' %}bg-success
+                                        {% elif registration.status == 'pending' %}bg-warning
+                                        {% elif registration.status == 'cancelled' %}bg-danger
+                                        {% else %}bg-secondary{% endif %}">
+                                        {{ registration.get_status_display }}
+                                    </span>
+                                </td>
+                                <td><small class="text-muted">{{ registration.registration_date|date:"M d, Y" }}</small></td>
+                                <td>
+                                    {% if registration.payment_status %}
+                                        <span class="badge bg-success">Paid</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        {% if registration.status == 'pending' %}
+                                        <a href="{% url 'approve_registration' registration.id %}?action=approve" class="btn btn-success btn-sm" onclick="return confirm('Approve this registration?')">
+                                            <i class="fas fa-check"></i>
+                                        </a>
+                                        <a href="{% url 'approve_registration' registration.id %}?action=reject" class="btn btn-danger btn-sm" onclick="return confirm('Reject this registration?')">
+                                            <i class="fas fa-times"></i>
+                                        </a>
+                                        {% else %}
+                                        <button type="button" class="btn btn-outline-secondary btn-sm" disabled>
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-user-friends fa-4x text-muted mb-3"></i>
+                <h3>No Registrations Yet</h3>
+                <p class="text-muted">
+                    {% if request.GET.search or request.GET.status %}
+                    No registrations match your current filters.
+                    {% else %}
+                    No one has registered for this event yet.
+                    {% endif %}
+                </p>
+                {% if request.GET.search or request.GET.status %}
+                <a href="{% url 'event_registrations' event.id %}" class="btn btn-outline-primary">Clear Filters</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-hide alerts after 5 seconds
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(function(alert) {
+        setTimeout(function() {
+            alert.style.opacity = '0';
+            setTimeout(function() {
+                alert.remove();
+            }, 300);
+        }, 5000);
+    });
+});
+</script>
+{% endblock %}

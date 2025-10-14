@@ -1,0 +1,447 @@
+{% extends 'coordinator_template/base.html' %}
+{% block title %}Verify Alumni - {{ alumni.admin.first_name }} {{ alumni.admin.last_name }}{% endblock %}
+{% block coordinator_content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-user-check me-2"></i>Verify Alumni Registration
+                    </h1>
+                    <p class="text-muted mb-0">Review and approve alumni account verification</p>
+                </div>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <a href="{% url 'manage_alumni' %}?verification_status=pending" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Back to Pending
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    {% if request.user.user_type == '1' %}
+                    <li class="breadcrumb-item"><a href="{% url 'admin_home' %}">Admin Dashboard</a></li>
+                    {% else %}
+                    <li class="breadcrumb-item"><a href="{% url 'coordinator_home' %}">Coordinator Dashboard</a></li>
+                    {% endif %}
+                    <li class="breadcrumb-item"><a href="{% url 'manage_alumni' %}">Alumni Management</a></li>
+                    <li class="breadcrumb-item active">Verify {{ alumni.admin.first_name }} {{ alumni.admin.last_name }}</li>
+                </ol>
+            </nav>
+
+            <!-- Messages -->
+            {% if messages %}
+            <div class="row mb-4">
+                <div class="col-12">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>{{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Verification Status Alert -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    {% if not alumni.admin.is_verified %}
+                    <div class="alert alert-warning border-0 shadow-sm" role="alert">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+                            <div class="flex-grow-1">
+                                <h5 class="alert-heading mb-1">Pending Verification</h5>
+                                <p class="mb-0">This alumni account is waiting for approval. Please review the information below and take action.</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-success border-0 shadow-sm" role="alert">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-check-circle fa-2x me-3"></i>
+                            <div class="flex-grow-1">
+                                <h5 class="alert-heading mb-1">Already Verified</h5>
+                                <p class="mb-0">This alumni account has been verified and is active.</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Alumni Information -->
+                <div class="col-lg-8">
+                    <!-- Personal Information -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-user me-2"></i>Personal Information
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td><strong>Full Name:</strong></td>
+                                            <td>{{ alumni.admin.first_name }} {{ alumni.admin.last_name }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Email:</strong></td>
+                                            <td>
+                                                <a href="mailto:{{ alumni.admin.email }}">{{ alumni.admin.email }}</a>
+                                                {% if alumni.admin.is_verified %}
+                                                <span class="badge bg-success ms-2">Verified</span>
+                                                {% else %}
+                                                <span class="badge bg-warning ms-2">Pending</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Phone:</strong></td>
+                                            <td>{{ alumni.admin.phone_number|default:"Not provided" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Gender:</strong></td>
+                                            <td>{{ alumni.admin.get_gender_display|default:"Not specified" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Date of Birth:</strong></td>
+                                            <td>{{ alumni.date_of_birth|date:"M d, Y"|default:"Not provided" }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="col-md-6">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td><strong>Current City:</strong></td>
+                                            <td>{{ alumni.current_city|default:"Not provided" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Current Country:</strong></td>
+                                            <td>{{ alumni.current_country|default:"Not provided" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Address:</strong></td>
+                                            <td>{{ alumni.admin.address|default:"Not provided" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Registration Date:</strong></td>
+                                            <td>{{ alumni.admin.date_joined|date:"M d, Y g:i A" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Last Login:</strong></td>
+                                            <td>{{ alumni.admin.last_login|date:"M d, Y g:i A"|default:"Never" }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                            {% if alumni.bio %}
+                            <div class="mt-3">
+                                <h6>Bio:</h6>
+                                <p class="text-muted">{{ alumni.bio }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Academic Information -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-graduation-cap me-2"></i>Academic Information
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td><strong>Student ID:</strong></td>
+                                            <td>
+                                                {% if alumni.student_id %}
+                                                <span class="badge bg-primary">{{ alumni.student_id }}</span>
+                                                {% else %}
+                                                <span class="text-muted">Not provided</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Level:</strong></td>
+                                            <td>
+                                                {% if alumni.level %}
+                                                {{ alumni.level }}
+                                                {% else %}
+                                                <span class="text-muted">Not specified</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Completion Year:</strong></td>
+                                            <td>
+                                                {% if alumni.graduation_year %}
+                                                <span class="badge bg-info">{{ alumni.graduation_year.year }}</span>
+                                                {% else %}
+                                                <span class="text-muted">Not specified</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="col-md-6">
+                                    {% if alumni.level and alumni.level.department %}
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td><strong>Department:</strong></td>
+                                            <td>{{ alumni.level.department.name }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Department Code:</strong></td>
+                                            <td><span class="badge bg-secondary">{{ alumni.level.department.code }}</span></td>
+                                        </tr>
+                                    </table>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Professional Information -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-briefcase me-2"></i>Professional Information
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td><strong>Employment Status:</strong></td>
+                                            <td>
+                                                <span class="badge 
+                                                    {% if alumni.employment_status == 'employed' %}bg-success
+                                                    {% elif alumni.employment_status == 'unemployed' %}bg-danger
+                                                    {% elif alumni.employment_status == 'self_employed' %}bg-primary
+                                                    {% elif alumni.employment_status == 'student' %}bg-info
+                                                    {% else %}bg-secondary{% endif %}">
+                                                    {{ alumni.get_employment_status_display }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Current Company:</strong></td>
+                                            <td>{{ alumni.current_company.name|default:"Not specified" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Job Title:</strong></td>
+                                            <td>{{ alumni.job_title|default:"Not specified" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Industry:</strong></td>
+                                            <td>{{ alumni.industry|default:"Not specified" }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="col-md-6">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td><strong>LinkedIn:</strong></td>
+                                            <td>
+                                                {% if alumni.linkedin_profile %}
+                                                <a href="{{ alumni.linkedin_profile }}" target="_blank">
+                                                    <i class="fab fa-linkedin me-1"></i>View Profile
+                                                </a>
+                                                {% else %}
+                                                <span class="text-muted">Not provided</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Skills:</strong></td>
+                                            <td>
+                                                {% if alumni.skills %}
+                                                <small>{{ alumni.skills|truncatewords:10 }}</small>
+                                                {% else %}
+                                                <span class="text-muted">Not provided</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                            {% if alumni.achievements %}
+                            <div class="mt-3">
+                                <h6>Achievements:</h6>
+                                <p class="text-muted">{{ alumni.achievements|truncatewords:20 }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Verification Actions -->
+                <div class="col-lg-4">
+                    <!-- Verification Actions -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-warning text-dark">
+                            <h6 class="card-title mb-0">
+                                <i class="fas fa-gavel me-2"></i>Verification Actions
+                            </h6>
+                        </div>
+                        <div class="card-body text-center">
+                            {% if not alumni.admin.is_verified %}
+                            <p class="text-muted mb-4">Review the alumni information and choose an action:</p>
+                            
+                            <form method="POST" class="d-inline me-2">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="verify">
+                                <button type="submit" class="btn btn-success btn-lg" 
+                                        onclick="return confirm('Are you sure you want to verify this alumni account?')">
+                                    <i class="fas fa-check-circle me-2"></i>Verify Alumni
+                                </button>
+                            </form>
+                            
+                            <form method="POST" class="d-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="reject">
+                                <button type="submit" class="btn btn-danger btn-lg" 
+                                        onclick="return confirm('Are you sure you want to reject this alumni verification?')">
+                                    <i class="fas fa-times-circle me-2"></i>Reject
+                                </button>
+                            </form>
+                            {% else %}
+                            <div class="alert alert-success">
+                                <i class="fas fa-check-circle me-2"></i>
+                                <strong>Already Verified</strong><br>
+                                This alumni account has been approved.
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Account Settings -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-secondary text-white">
+                            <h6 class="card-title mb-0">
+                                <i class="fas fa-cog me-2"></i>Account Settings
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-borderless table-sm">
+                                <tr>
+                                    <td><strong>Privacy Level:</strong></td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if alumni.privacy_level == 'public' %}bg-success
+                                            {% elif alumni.privacy_level == 'limited' %}bg-info
+                                            {% else %}bg-secondary{% endif %}">
+                                            {{ alumni.get_privacy_level_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Allow Contact:</strong></td>
+                                    <td>
+                                        {% if alumni.allow_contact %}
+                                        <span class="badge bg-success">Yes</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">No</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Newsletter:</strong></td>
+                                    <td>
+                                        {% if alumni.newsletter_subscription %}
+                                        <span class="badge bg-success">Subscribed</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">Not subscribed</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Account Status:</strong></td>
+                                    <td>
+                                        {% if alumni.admin.is_active %}
+                                        <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Engagement Preferences -->
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h6 class="card-title mb-0">
+                                <i class="fas fa-handshake me-2"></i>Engagement
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-4">
+                                    <div class="mb-2">
+                                        {% if alumni.is_mentor %}
+                                        <i class="fas fa-user-tie fa-2x text-success"></i>
+                                        <br><small class="text-success">Mentor</small>
+                                        {% else %}
+                                        <i class="fas fa-user-tie fa-2x text-muted"></i>
+                                        <br><small class="text-muted">Not mentor</small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="mb-2">
+                                        {% if alumni.willing_to_hire %}
+                                        <i class="fas fa-user-plus fa-2x text-primary"></i>
+                                        <br><small class="text-primary">Hiring</small>
+                                        {% else %}
+                                        <i class="fas fa-user-plus fa-2x text-muted"></i>
+                                        <br><small class="text-muted">Not hiring</small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="mb-2">
+                                        {% if alumni.is_job_seeker %}
+                                        <i class="fas fa-search fa-2x text-warning"></i>
+                                        <br><small class="text-warning">Job seeking</small>
+                                        {% else %}
+                                        <i class="fas fa-search fa-2x text-muted"></i>
+                                        <br><small class="text-muted">Not seeking</small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-hide alerts after 5 seconds
+    const alerts = document.querySelectorAll('.alert:not(.alert-success):not(.alert-warning)');
+    alerts.forEach(function(alert) {
+        setTimeout(function() {
+            alert.style.opacity = '0';
+            setTimeout(function() {
+                alert.remove();
+            }, 300);
+        }, 5000);
+    });
+});
+</script>
+{% endblock %}

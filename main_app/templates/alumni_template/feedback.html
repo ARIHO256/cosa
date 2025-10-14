@@ -1,0 +1,186 @@
+{% extends 'alumni_template/base.html' %}
+{% block title %}Submit Feedback - COSA Alumni{% endblock %}
+{% block alumni_content %}
+<section class="app-hero mb-4">
+    <div class="container d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3">
+        <div>
+            <h1>Submit Feedback</h1>
+            <p class="mb-0">Help us improve the COSA experience for everyone.</p>
+        </div>
+        <a href="{% url 'alumni_home' %}" class="btn btn-light"><i class="fas fa-arrow-left me-2"></i>Back to dashboard</a>
+    </div>
+</section>
+
+<section class="container stack-gap">
+    <div class="surface-card stack-gap-sm">
+        <h5 class="mb-3"><i class="fas fa-comment-alt me-2 text-primary"></i>Your feedback matters</h5>
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>We review every submission carefully. Share as much detail as you can so we can take action quickly.
+        </div>
+        <form method="post" class="stack-gap-sm">
+            {% csrf_token %}
+
+            <div class="surface-card stack-gap-sm">
+                <h6 class="mb-1"><i class="fas fa-list me-2"></i>Feedback type <span class="text-danger">*</span></h6>
+                <div class="row g-3">
+                    <div class="col-12">
+                        {{ form.feedback_type }}
+                        {{ form.feedback_type.errors }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="surface-card stack-gap-sm">
+                <h6 class="mb-1"><i class="fas fa-heading me-2"></i>Subject <span class="text-danger">*</span></h6>
+                {{ form.subject }}
+                {{ form.subject.errors }}
+            </div>
+
+            <div class="surface-card stack-gap-sm">
+                <h6 class="mb-1"><i class="fas fa-star me-2"></i>Rating (optional)</h6>
+                <p class="text-muted mb-2">How would you rate your overall experience?</p>
+                <div class="rating-stars-wrapper d-flex align-items-center gap-3">
+                <div class="rating-stars">
+                    {% for value, label in form.rating.field.choices|slice:"::-1" %}
+                        {% with value_str=value|stringformat:"s" current=form.rating.value|default_if_none:'' %}
+                        {% with current_str=current|stringformat:"s" %}
+                        <input type="radio"
+                               id="rating-{{ value }}"
+                               name="{{ form.rating.name }}"
+                               value="{{ value }}"
+                               {% if current_str == value_str %}checked{% endif %}
+                               {% if not form.rating.field.required %}data-optional="true"{% endif %}>
+                        <label for="rating-{{ value }}" class="rating-star-label" title="{{ value }} star{% if value != 1 %}s{% endif %}">
+                            <i class="fas fa-star"></i>
+                        </label>
+                        {% endwith %}
+                        {% endwith %}
+                    {% endfor %}
+                </div>
+                {% if not form.rating.field.required %}
+                <button type="button" class="btn btn-link btn-sm px-0 rating-clear" data-rating-clear>
+                    <i class="fas fa-eraser me-1"></i>Clear rating
+                </button>
+                {% endif %}
+                </div>
+                {% for error in form.rating.errors %}
+                    <div class="invalid-feedback d-block">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="surface-card stack-gap-sm">
+                <h6 class="mb-1"><i class="fas fa-comment me-2"></i>Detailed feedback <span class="text-danger">*</span></h6>
+                {{ form.feedback }}
+                <small class="text-muted">{{ form.feedback.help_text }}</small>
+                {{ form.feedback.errors }}
+            </div>
+
+            <div class="surface-card stack-gap-sm">
+                <h6 class="mb-1"><i class="fas fa-tags me-2"></i>Related area</h6>
+                {{ form.category }}
+            </div>
+
+            <div class="surface-card stack-gap-sm">
+                <h6 class="mb-1"><i class="fas fa-envelope me-2"></i>Your info</h6>
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-control" value="{{ request.user.get_full_name }}" readonly>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" value="{{ request.user.email }}" readonly>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'alumni_home' %}" class="btn btn-outline-secondary"><i class="fas fa-times me-2"></i>Cancel</a>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane me-2"></i>Submit feedback</button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-control, .form-select {
+        border-radius: 1rem;
+        border: 1.5px solid var(--app-border);
+        background: rgba(255, 255, 255, 0.95);
+    }
+
+    .btn-light {
+        border-radius: var(--app-radius);
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+    }
+
+    .rating-stars {
+        display: inline-flex;
+        flex-direction: row-reverse;
+        gap: 0.35rem;
+        align-items: center;
+    }
+
+    .rating-stars input {
+        display: none;
+    }
+
+    .rating-star-label {
+        font-size: 1.85rem;
+        color: rgba(148, 163, 184, 0.6);
+        cursor: pointer;
+        transition: transform 0.2s ease, color 0.2s ease;
+    }
+
+    .rating-star-label:hover,
+    .rating-star-label:hover ~ .rating-star-label {
+        color: #fcd34d;
+    }
+
+    .rating-stars input:checked ~ .rating-star-label,
+    .rating-stars input:checked ~ .rating-star-label ~ .rating-star-label {
+        color: #f59e0b;
+    }
+
+    .rating-star-label:active {
+        transform: scale(0.92);
+    }
+
+    .rating-clear {
+        color: var(--app-primary);
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .rating-clear:hover {
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('[data-rating-clear]').forEach(function (button) {
+            button.addEventListener('click', function () {
+                const wrapper = button.closest('.rating-stars-wrapper');
+                if (!wrapper) {
+                    return;
+                }
+                const container = wrapper.querySelector('.rating-stars');
+                if (!container) {
+                    return;
+                }
+                const checked = container.querySelector('input:checked');
+                if (checked) {
+                    checked.checked = false;
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

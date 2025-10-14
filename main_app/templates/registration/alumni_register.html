@@ -1,0 +1,569 @@
+{% extends 'main_app/base.html' %}
+
+{% block title %}Create your COSA account{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-screen {
+        position: relative;
+        min-height: calc(100vh - 3.5rem);
+        padding: 3.25rem 0;
+        background: linear-gradient(165deg, rgba(37, 99, 235, 0.1) 0%, rgba(59, 130, 246, 0.08) 40%, rgba(34, 197, 94, 0.12) 100%);
+        color: var(--app-text-primary);
+        overflow: hidden;
+    }
+
+    .auth-screen::before,
+    .auth-screen::after {
+        content: "";
+        position: absolute;
+        width: 60vh;
+        height: 60vh;
+        border-radius: 50%;
+        filter: blur(0);
+        opacity: 0.75;
+        z-index: 0;
+    }
+
+    .auth-screen::before {
+        top: -25vh;
+        right: -15vh;
+        background: radial-gradient(circle, rgba(37, 99, 235, 0.24), transparent 65%);
+    }
+
+    .auth-screen::after {
+        bottom: -28vh;
+        left: -20vh;
+        background: radial-gradient(circle, rgba(34, 197, 94, 0.18), transparent 70%);
+    }
+
+    .auth-stack {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 2rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .auth-hero {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+        text-align: center;
+    }
+
+    .auth-hero span {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+        background: rgba(255, 255, 255, 0.7);
+        border-radius: 999px;
+        padding: 0.35rem 0.9rem;
+        font-size: 0.8rem;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--app-text-secondary);
+    }
+
+    .auth-hero h1 {
+        font-size: clamp(2.2rem, 6vw, 2.7rem);
+        font-weight: 800;
+        margin: 0;
+        color: var(--app-text-primary);
+    }
+
+    .auth-hero p {
+        margin: 0;
+        font-size: 1rem;
+        color: var(--app-text-secondary);
+        line-height: 1.5;
+    }
+
+    .auth-card {
+        background: var(--app-surface);
+        color: var(--app-text-primary);
+        border-radius: 1.6rem;
+        padding: 2.25rem 1.85rem;
+        box-shadow: var(--app-shadow-sm);
+        border: 1px solid var(--app-border);
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        backdrop-filter: saturate(180%) blur(18px);
+        -webkit-backdrop-filter: saturate(180%) blur(18px);
+    }
+
+    .auth-card header {
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .auth-card header h2 {
+        margin: 0;
+        font-size: 1.7rem;
+        font-weight: 700;
+    }
+
+    .auth-card header p {
+        margin: 0;
+        color: var(--app-text-secondary);
+        font-size: 0.95rem;
+    }
+
+    .auth-alert {
+        background: rgba(37, 99, 235, 0.08);
+        border: 1px solid rgba(37, 99, 235, 0.22);
+        border-radius: 1rem;
+        padding: 1rem;
+        font-size: 0.95rem;
+        display: flex;
+        gap: 0.75rem;
+        align-items: flex-start;
+        color: var(--app-text-secondary);
+        box-shadow: var(--app-shadow-sm);
+    }
+
+    .auth-alert i {
+        font-size: 1.1rem;
+        color: var(--app-primary);
+        margin-top: 0.2rem;
+    }
+
+    .auth-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+    }
+
+    .auth-field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+    }
+
+    .auth-field label {
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: var(--app-text-secondary);
+    }
+
+    .auth-field label span {
+        color: var(--app-accent);
+        margin-left: 0.2rem;
+    }
+
+    .auth-field input,
+    .auth-field select,
+    .auth-field textarea {
+        width: 100%;
+        border: 1.5px solid var(--app-border);
+        border-radius: 1rem;
+        padding: 0.9rem 1rem;
+        font-size: 1rem;
+        background: rgba(255, 255, 255, 0.92);
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .auth-field input:focus,
+    .auth-field select:focus,
+    .auth-field textarea:focus {
+        border-color: rgba(37, 99, 235, 0.7);
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+        outline: none;
+    }
+
+    .auth-field .form-text {
+        font-size: 0.85rem;
+        color: var(--app-text-muted);
+        margin: 0;
+    }
+
+    .auth-field .errorlist {
+        margin: 0;
+        padding-left: 1rem;
+        color: var(--app-accent);
+        font-size: 0.85rem;
+    }
+
+    .auth-strength {
+        height: 6px;
+        border-radius: 999px;
+        background: var(--app-border-light);
+        overflow: hidden;
+    }
+
+    .auth-strength-bar {
+        height: 100%;
+        width: 0;
+        border-radius: 999px;
+        transition: width 0.3s ease;
+    }
+
+    .auth-agreement {
+        font-size: 0.85rem;
+        color: var(--app-text-muted);
+        text-align: center;
+        line-height: 1.6;
+    }
+
+    .auth-agreement button {
+        background: none;
+        border: none;
+        color: var(--app-primary);
+        font-weight: 600;
+        padding: 0;
+    }
+
+    .auth-submit {
+        background: linear-gradient(135deg, var(--app-secondary) 0%, #16a34a 100%);
+        border: none;
+        border-radius: 999px;
+        padding: 0.95rem;
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--app-text-inverse);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        width: 100%;
+        box-shadow: 0 22px 48px rgba(34, 197, 94, 0.35);
+    }
+
+    .auth-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 28px 56px rgba(34, 197, 94, 0.38);
+    }
+
+    .auth-secondary-links {
+        text-align: center;
+        font-size: 0.9rem;
+        color: var(--app-text-secondary);
+    }
+
+    .auth-secondary-links a {
+        color: var(--app-primary);
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .auth-secondary-links a:hover {
+        text-decoration: underline;
+    }
+
+    .auth-highlights {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.9rem;
+    }
+
+    .auth-pill {
+        background: rgba(255, 255, 255, 0.7);
+        border: 1px solid rgba(148, 163, 184, 0.32);
+        border-radius: 1rem;
+        padding: 0.85rem 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: var(--app-text-secondary);
+        font-size: 0.95rem;
+        box-shadow: var(--app-shadow-sm);
+        backdrop-filter: saturate(160%) blur(12px);
+        -webkit-backdrop-filter: saturate(160%) blur(12px);
+    }
+
+    .auth-pill i {
+        font-size: 1.1rem;
+        color: var(--app-primary);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="auth-screen">
+    <div class="container">
+        <div class="auth-stack">
+            <div class="auth-hero">
+                <span><i class="fas fa-seedling"></i> Join COSA</span>
+                <h1>Build your alumni identity in one place</h1>
+                <p>Register to reconnect with classmates, unlock mentorship, and stay on top of exclusive alumni experiences.</p>
+            </div>
+
+            <div class="auth-card">
+                <header>
+                    <h2>Your COSA profile starts here</h2>
+                    <p>Complete the fields below to set up your account</p>
+                </header>
+
+                <div class="auth-alert">
+                    <i class="fas fa-info-circle"></i>
+                    <div>
+                        <strong>Verification required.</strong> After you submit the form, our team will review your details. You will receive an email when your account is activated.
+                    </div>
+                </div>
+
+                {% if setup_needed %}
+                <div class="auth-alert" style="background: rgba(217, 119, 6, 0.12); border-color: rgba(217, 119, 6, 0.4);">
+                    <i class="fas fa-tools" style="color: #d97706;"></i>
+                    <div>
+                        Some registration options are still being configured by the administrator. Submit what you can now—we'll invite you to update anything missing later.
+                    </div>
+                </div>
+                {% endif %}
+
+                <form method="post" class="auth-form">
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="auth-alert" style="background: rgba(220, 38, 38, 0.08); border-color: rgba(220, 38, 38, 0.35); color: var(--cosa-danger);">
+                            <i class="fas fa-exclamation-triangle" style="color: var(--cosa-danger);"></i>
+                            <div>
+                                {% for error in form.non_field_errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <div class="auth-field">
+                        <label for="{{ form.first_name.id_for_label }}">First name <span>*</span></label>
+                        {{ form.first_name }}
+                        {{ form.first_name.errors }}
+                    </div>
+
+                    <div class="auth-field">
+                        <label for="{{ form.last_name.id_for_label }}">Last name <span>*</span></label>
+                        {{ form.last_name }}
+                        {{ form.last_name.errors }}
+                    </div>
+
+                    <div class="auth-field">
+                        <label for="{{ form.email.id_for_label }}">Email address <span>*</span></label>
+                        {{ form.email }}
+                        <div class="form-text">We’ll send verification and key updates here.</div>
+                        {{ form.email.errors }}
+                    </div>
+
+                    <div class="auth-field">
+                        <label for="{{ form.graduation_year.id_for_label }}">Completion year <span>*</span></label>
+                        {{ form.graduation_year }}
+                        {{ form.graduation_year.errors }}
+                    </div>
+
+                    <div class="auth-field">
+                        <label for="{{ form.degree.id_for_label }}">Level <span>*</span></label>
+                        {{ form.degree }}
+                        {{ form.degree.errors }}
+                    </div>
+
+                    <div class="auth-field">
+                        <label for="{{ form.password1.id_for_label }}">Create password <span>*</span></label>
+                        {{ form.password1 }}
+                        {{ form.password1.errors }}
+                    </div>
+
+                    <div class="auth-field">
+                        <label for="{{ form.password2.id_for_label }}">Confirm password <span>*</span></label>
+                        {{ form.password2 }}
+                        {{ form.password2.errors }}
+                    </div>
+
+                    {% if form.errors %}
+                        <div class="auth-alert" style="background: rgba(220, 38, 38, 0.08); border-color: rgba(220, 38, 38, 0.35); color: var(--cosa-danger);">
+                            <i class="fas fa-exclamation-circle" style="color: var(--cosa-danger);"></i>
+                            <div>
+                                {% for field, errors in form.errors.items %}
+                                    {% if field != '__all__' %}
+                                        {% for error in errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <p class="auth-agreement">
+                        By creating an account you agree to our
+                        <button type="button" data-bs-toggle="modal" data-bs-target="#termsModal">Terms of Service</button>
+                        and
+                        <button type="button" data-bs-toggle="modal" data-bs-target="#privacyModal">Privacy Policy</button>.
+                    </p>
+
+                    <button type="submit" class="auth-submit">
+                        Create my COSA account
+                    </button>
+                </form>
+
+                <div class="auth-secondary-links">
+                    Already a member? <a href="{% url 'login_page' %}">Sign in instead</a>
+                </div>
+            </div>
+
+            <div class="auth-highlights">
+                <div class="auth-pill">
+                    <i class="fas fa-network-wired"></i>
+                    Organise your professional network with curated alumni circles.
+                </div>
+                <div class="auth-pill">
+                    <i class="fas fa-lightbulb"></i>
+                    Access mentorship programs tailored to your career goals.
+                </div>
+                <div class="auth-pill">
+                    <i class="fas fa-calendar-check"></i>
+                    RSVP to reunions and events with a tap—no long forms required.
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Terms of Service Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Terms of Service</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6>1. Acceptance of Terms</h6>
+                <p>By registering for COSA, you agree to these terms and conditions.</p>
+
+                <h6>2. User Responsibilities</h6>
+                <p>You are responsible for maintaining the confidentiality of your account and for all activities that occur under your account.</p>
+
+                <h6>3. Privacy and Data Protection</h6>
+                <p>We respect your privacy and are committed to protecting your personal information in accordance with our Privacy Policy.</p>
+
+                <h6>4. Acceptable Use</h6>
+                <p>You agree to use COSA only for lawful purposes and in ways that do not infringe the rights of others.</p>
+
+                <h6>5. Intellectual Property</h6>
+                <p>All content and materials on COSA are protected by intellectual property laws.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Privacy Policy Modal -->
+<div class="modal fade" id="privacyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Privacy Policy</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Information We Collect</h6>
+                <p>We collect information you provide directly to us, such as when you create an account, update your profile, or contact us.</p>
+
+                <h6>How We Use Your Information</h6>
+                <p>We use the information we collect to provide, maintain, and improve our services, communicate with you, and ensure the security of our platform.</p>
+
+                <h6>Information Sharing</h6>
+                <p>We do not sell, trade, or otherwise transfer your personal information to third parties without your consent, except as described in this policy.</p>
+
+                <h6>Data Security</h6>
+                <p>We implement appropriate security measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction.</p>
+
+                <h6>Your Rights</h6>
+                <p>You have the right to access, update, or delete your personal information at any time through your account settings.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const emailInput = document.getElementById('{{ form.email.id_for_label }}');
+        if (emailInput) {
+            const emailField = emailInput.closest('.auth-field');
+            if (emailField) {
+                const emailFeedback = document.createElement('div');
+                emailFeedback.className = 'form-text';
+                emailField.appendChild(emailFeedback);
+
+                emailInput.addEventListener('blur', function () {
+                    const email = this.value.trim();
+                    if (!email) {
+                        emailFeedback.textContent = '';
+                        return;
+                    }
+                    fetch('{% url "check_email_availability" %}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                        },
+                        body: 'email=' + encodeURIComponent(email)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.available) {
+                            emailFeedback.innerHTML = '<i class="fas fa-check me-1 text-success"></i>Email is available';
+                            emailFeedback.className = 'form-text text-success';
+                        } else {
+                            emailFeedback.innerHTML = '<i class="fas fa-times me-1 text-danger"></i>Email is already registered';
+                            emailFeedback.className = 'form-text text-danger';
+                        }
+                    })
+                    .catch(() => {
+                        emailFeedback.innerHTML = '<i class="fas fa-info-circle me-1 text-warning"></i>Unable to verify email right now';
+                        emailFeedback.className = 'form-text text-warning';
+                    });
+                });
+            }
+        }
+
+        const password1 = document.getElementById('{{ form.password1.id_for_label }}');
+        if (password1) {
+            const passwordField = password1.closest('.auth-field');
+            if (passwordField) {
+                const strengthIndicator = document.createElement('div');
+                strengthIndicator.className = 'auth-strength';
+                strengthIndicator.innerHTML = '<div class="auth-strength-bar"></div>';
+                passwordField.appendChild(strengthIndicator);
+
+                const strengthText = document.createElement('div');
+                strengthText.className = 'form-text';
+                passwordField.appendChild(strengthText);
+
+                const progressBar = strengthIndicator.querySelector('.auth-strength-bar');
+                password1.addEventListener('input', function () {
+                    const password = this.value;
+                    let strength = 0;
+                    let color = 'rgba(220, 38, 38, 0.9)';
+                    let label = 'Weak';
+
+                    if (password.length >= 8) strength += 25;
+                    if (/[a-z]/.test(password)) strength += 25;
+                    if (/[A-Z]/.test(password)) strength += 25;
+                    if (/[0-9]/.test(password) || /[^A-Za-z0-9]/.test(password)) strength += 25;
+
+                    if (strength >= 75) {
+                        color = 'rgba(5, 150, 105, 0.9)';
+                        label = 'Strong';
+                    } else if (strength >= 50) {
+                        color = 'rgba(217, 119, 6, 0.9)';
+                        label = 'Medium';
+                    }
+
+                    progressBar.style.width = strength + '%';
+                    progressBar.style.background = color;
+                    strengthText.textContent = password ? `Password strength: ${label}` : '';
+                });
+            }
+        }
+    });
+</script>
+{% endblock %}

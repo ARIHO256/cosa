@@ -1,0 +1,328 @@
+{% extends 'main_app/base.html' %}
+
+{% block title %}Sign in to COSA{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-screen {
+        position: relative;
+        min-height: calc(100vh - 4rem);
+        padding: 3.5rem 0;
+        background: linear-gradient(160deg, rgba(37, 99, 235, 0.12) 0%, rgba(37, 99, 235, 0.04) 35%, rgba(34, 197, 94, 0.08) 100%);
+        color: var(--app-text-primary);
+        overflow: hidden;
+    }
+
+    .auth-screen::before {
+        content: "";
+        position: absolute;
+        inset: -40% -20% auto;
+        height: 60vh;
+        background: radial-gradient(circle at top, rgba(37, 99, 235, 0.22), transparent 60%);
+        transform: translateY(-20%);
+        z-index: 0;
+    }
+
+    .auth-screen::after {
+        content: "";
+        position: absolute;
+        inset: auto -30% -35% -30%;
+        height: 55vh;
+        background: radial-gradient(circle at bottom, rgba(34, 197, 94, 0.16), transparent 65%);
+        z-index: 0;
+    }
+
+    .auth-stack {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1.75rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .auth-hero {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        text-align: center;
+        padding: 0 0.5rem;
+    }
+
+    .auth-hero-logo {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+        opacity: 0.85;
+        color: var(--app-text-secondary);
+    }
+
+    .auth-hero-logo i {
+        font-size: 1.25rem;
+        color: var(--app-primary);
+    }
+
+    .auth-hero h1 {
+        font-size: clamp(2.1rem, 6vw, 2.8rem);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        margin: 0;
+        color: var(--app-text-primary);
+    }
+
+    .auth-card {
+        background: var(--app-surface);
+        color: var(--app-text-primary);
+        border-radius: 1.6rem;
+        padding: 2rem 1.75rem;
+        box-shadow: var(--app-shadow-sm);
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        border: 1px solid var(--app-border);
+        backdrop-filter: saturate(180%) blur(18px);
+        -webkit-backdrop-filter: saturate(180%) blur(18px);
+    }
+
+    .auth-card header {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: center;
+    }
+
+    .auth-card header h2 {
+        font-size: 1.65rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .auth-card header p {
+        margin: 0;
+        color: var(--app-text-secondary);
+        font-size: 0.95rem;
+    }
+
+    .auth-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+    }
+
+    .auth-field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .auth-field label {
+        font-weight: 600;
+        color: var(--app-text-secondary);
+        font-size: 0.95rem;
+    }
+
+    .auth-control {
+        width: 100%;
+        border: 1.5px solid var(--app-border);
+        border-radius: 1rem;
+        padding: 0.9rem 1rem;
+        font-size: 1rem;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        background: rgba(255, 255, 255, 0.9);
+    }
+
+    .auth-control:focus {
+        border-color: rgba(37, 99, 235, 0.7);
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+        outline: none;
+    }
+
+    .auth-password-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.85rem;
+        color: var(--app-text-muted);
+    }
+
+    .auth-password-meta a {
+        color: var(--app-primary);
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .auth-password-meta a:hover {
+        text-decoration: underline;
+    }
+
+    .auth-submit {
+        background: linear-gradient(135deg, var(--app-primary) 0%, var(--app-primary-dark) 100%);
+        border: none;
+        border-radius: 999px;
+        padding: 0.95rem;
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--app-text-inverse);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        width: 100%;
+        box-shadow: 0 20px 45px rgba(37, 99, 235, 0.35);
+    }
+
+    .auth-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 26px 55px rgba(37, 99, 235, 0.4);
+    }
+
+    .auth-links {
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        color: var(--app-text-secondary);
+    }
+
+    .auth-links a {
+        color: var(--app-primary);
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .auth-links a:hover {
+        text-decoration: underline;
+    }
+
+    .auth-highlights {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .auth-pill {
+        background: rgba(255, 255, 255, 0.65);
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        border-radius: 1rem;
+        padding: 0.9rem 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: var(--app-text-secondary);
+        font-size: 0.95rem;
+        box-shadow: var(--app-shadow-sm);
+        backdrop-filter: saturate(160%) blur(12px);
+        -webkit-backdrop-filter: saturate(160%) blur(12px);
+    }
+
+    .auth-pill i {
+        font-size: 1.1rem;
+        color: var(--app-primary);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="auth-screen">
+    <div class="container">
+        <div class="auth-stack">
+            <div class="auth-hero">
+                <div class="auth-hero-logo">
+                    <i class="fas fa-graduation-cap"></i>
+                    COSA Community
+                </div>
+                <h1>Stay connected with your alma mater</h1>
+            </div>
+
+            <div class="auth-card">
+                <header>
+                    <h2>Welcome back</h2>
+                    <p>Enter your account details to continue</p>
+                </header>
+
+                <form method="post" action="{% url 'user_login' %}" class="auth-form">
+                    {% csrf_token %}
+                    {% if request.GET.next %}
+                        <input type="hidden" name="next" value="{{ request.GET.next }}">
+                    {% endif %}
+
+                    <div class="auth-field">
+                        <label for="login-email">Email address</label>
+                        <input
+                            type="email"
+                            id="login-email"
+                            class="auth-control"
+                            name="email"
+                            autocomplete="email"
+                            required
+                            placeholder="you@example.com"
+                            autofocus
+                        >
+                    </div>
+
+                    <div class="auth-field">
+                        <label for="login-password">Password</label>
+                        <input
+                            type="password"
+                            id="login-password"
+                            class="auth-control"
+                            name="password"
+                            autocomplete="current-password"
+                            required
+                            placeholder="Password"
+                        >
+                        <div class="auth-password-meta">
+                            <span>Keep your account secure</span>
+                            <a href="{% url 'password_reset' %}">Forgot password?</a>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="auth-submit">
+                        Sign in
+                    </button>
+                </form>
+
+                <div class="auth-links">
+                    <span>New to COSA? <a href="{% url 'alumni_registration' %}">Create an account</a></span>
+                    <span>Need help? <a href="mailto:cosa@gmail.com">Contact support</a></span>
+                </div>
+            </div>
+
+            <div class="auth-highlights">
+                <div class="auth-pill">
+                    <i class="fas fa-comments"></i>
+                    Conversations that keep classmates close.
+                </div>
+                <div class="auth-pill">
+                    <i class="fas fa-briefcase"></i>
+                    Curated opportunities tailored to your journey.
+                </div>
+                <div class="auth-pill">
+                    <i class="fas fa-calendar-alt"></i>
+                    Event alerts for reunions, webinars, and more.
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.querySelector('.auth-form');
+        if (!form) {
+            return;
+        }
+
+        const submitBtn = form.querySelector('.auth-submit');
+        form.addEventListener('submit', function () {
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Signing in…';
+            submitBtn.disabled = true;
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,350 @@
+{% extends 'main_app/base.html' %}
+{% block title %}Alumni Registration - COSA{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="cosa-card shadow-lg">
+        <div class="cosa-card-header text-center">
+          <i class="fas fa-user-plus fa-3x mb-3"></i>
+          <h2 class="mb-0">Create Your COSA Alumni Account</h2>
+          <p class="mb-0">
+            Join our community of graduates and unlock opportunities
+          </p>
+        </div>
+
+        <div class="cosa-card-body">
+          {% if setup_needed %}
+          <div class="alert alert-warning mb-4">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>Setup Required:</strong> {{ message }}
+          </div>
+
+          <div class="text-center">
+            <p class="mb-4">
+              To enable alumni registration, the system needs to be initialized
+              with:
+            </p>
+            <ul class="list-unstyled text-start mb-4">
+              <li>
+                <i class="fas fa-check text-success me-2"></i>Departments
+                (Computer Science, IT, Business, etc.)
+              </li>
+              <li>
+                <i class="fas fa-check text-success me-2"></i>Levels
+                (Bachelor's, Master's, PhD)
+              </li>
+              <li>
+                <i class="fas fa-check text-success me-2"></i>Completion Years
+              </li>
+              <li>
+                <i class="fas fa-check text-success me-2"></i>Sample Companies
+              </li>
+            </ul>
+
+            <div class="d-grid gap-2">
+              <button
+                type="button"
+                class="btn btn-cosa-primary"
+                onclick="alert('Run: setup_registration.bat to initialize the system')"
+              >
+                <i class="fas fa-cog me-2"></i>Initialize System
+              </button>
+              <a href="{% url 'login_page' %}" class="btn btn-cosa-outline">
+                <i class="fas fa-arrow-left me-2"></i>Back to Login
+              </a>
+            </div>
+          </div>
+          {% else %}
+          <div class="alert alert-info mb-4">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>Registration Process:</strong> After submitting this form,
+            your account will be created but requires administrator approval
+            before you can access all features. You'll receive an email once
+            your account is verified.
+          </div>
+
+          <form method="post">
+            {% csrf_token %}
+
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <label
+                  for="{{ form.first_name.id_for_label }}"
+                  class="form-label"
+                  style="color: #1f2937; font-weight: 600"
+                  >First Name *</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="{{ form.first_name.id_for_label }}"
+                  name="first_name"
+                  required
+                  maxlength="30"
+                  placeholder="Enter your first name"
+                  value="{{ form.first_name.value|default:'' }}"
+                />
+                {% if form.first_name.errors %}
+                <div class="text-danger">{{ form.first_name.errors.0 }}</div>
+                {% endif %}
+              </div>
+              <div class="col-md-6">
+                <label
+                  for="{{ form.last_name.id_for_label }}"
+                  class="form-label"
+                  style="color: #1f2937; font-weight: 600"
+                  >Last Name *</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="{{ form.last_name.id_for_label }}"
+                  name="last_name"
+                  required
+                  maxlength="30"
+                  placeholder="Enter your last name"
+                  value="{{ form.last_name.value|default:'' }}"
+                />
+                {% if form.last_name.errors %}
+                <div class="text-danger">{{ form.last_name.errors.0 }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label
+                for="{{ form.email.id_for_label }}"
+                class="form-label"
+                style="color: #1f2937; font-weight: 600"
+                >Email Address *</label
+              >
+              <div class="input-group">
+                <span
+                  class="input-group-text"
+                  style="background: #f8fafc; border-color: #e2e8f0"
+                  ><i class="fas fa-envelope" style="color: #6b7280"></i
+                ></span>
+                <input
+                  type="email"
+                  class="form-control"
+                  id="{{ form.email.id_for_label }}"
+                  name="email"
+                  required
+                  placeholder="your.email@example.com"
+                  value="{{ form.email.value|default:'' }}"
+                />
+              </div>
+              {% if form.email.errors %}
+              <div class="text-danger">{{ form.email.errors.0 }}</div>
+              {% endif %}
+              <div class="form-text" style="color: #6b7280">
+                We'll use this email for account verification and
+                communications.
+              </div>
+            </div>
+
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <label
+                  for="{{ form.student_id.id_for_label }}"
+                  class="form-label"
+                  style="color: #1f2937; font-weight: 600"
+                  >Student ID</label
+                >
+                <div class="input-group">
+                  <span
+                    class="input-group-text"
+                    style="background: #f8fafc; border-color: #e2e8f0"
+                    ><i class="fas fa-id-card" style="color: #6b7280"></i
+                  ></span>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="{{ form.student_id.id_for_label }}"
+                    name="student_id"
+                    placeholder="Enter your student ID (optional)"
+                    value="{{ form.student_id.value|default:'' }}"
+                  />
+                </div>
+                {% if form.student_id.errors %}
+                <div class="text-danger">{{ form.student_id.errors.0 }}</div>
+                {% endif %}
+              </div>
+              <div class="col-md-6">
+                <label
+                  for="{{ form.graduation_year.id_for_label }}"
+                  class="form-label"
+                  style="color: #1f2937; font-weight: 600"
+                  >Completion Year *</label
+                >
+                <input
+                  type="number"
+                  class="form-control"
+                  id="{{ form.graduation_year.id_for_label }}"
+                  name="graduation_year"
+                  required
+                  placeholder="e.g., 2020"
+                  min="1950"
+                  max="2025"
+                  value="{{ form.graduation_year.value|default:'' }}"
+                />
+                {% if form.graduation_year.errors %}
+                <div class="text-danger">
+                  {{ form.graduation_year.errors.0 }}
+                </div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label
+                for="{{ form.degree.id_for_label }}"
+                class="form-label"
+                style="color: #1f2937; font-weight: 600"
+                >Level *</label
+              >
+              {{ form.degree }}
+              {% if form.degree.errors %}
+              <div class="text-danger">{{ form.degree.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <label
+                  for="{{ form.password1.id_for_label }}"
+                  class="form-label"
+                  style="color: #1f2937; font-weight: 600"
+                  >Password *</label
+                >
+                <div class="input-group">
+                  <span
+                    class="input-group-text"
+                    style="background: #f8fafc; border-color: #e2e8f0"
+                    ><i class="fas fa-lock" style="color: #6b7280"></i
+                  ></span>
+                  <input
+                    type="password"
+                    class="form-control"
+                    id="{{ form.password1.id_for_label }}"
+                    name="password1"
+                    required
+                    placeholder="Enter your password"
+                  />
+                </div>
+                {% if form.password1.errors %}
+                <div class="text-danger">{{ form.password1.errors.0 }}</div>
+                {% endif %}
+              </div>
+              <div class="col-md-6">
+                <label
+                  for="{{ form.password2.id_for_label }}"
+                  class="form-label"
+                  style="color: #1f2937; font-weight: 600"
+                  >Confirm Password *</label
+                >
+                <div class="input-group">
+                  <span
+                    class="input-group-text"
+                    style="background: #f8fafc; border-color: #e2e8f0"
+                    ><i class="fas fa-lock" style="color: #6b7280"></i
+                  ></span>
+                  <input
+                    type="password"
+                    class="form-control"
+                    id="{{ form.password2.id_for_label }}"
+                    name="password2"
+                    required
+                    placeholder="Confirm your password"
+                  />
+                </div>
+                {% if form.password2.errors %}
+                <div class="text-danger">{{ form.password2.errors.0 }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="terms" required>
+                <label class="form-check-label" for="terms">
+                  I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Terms of Service</a> and <a href="#" data-bs-toggle="modal" data-bs-target="#privacyModal">Privacy Policy</a>
+                </label>
+              </div>
+            </div>
+
+            <div class="d-grid">
+              <button type="submit" class="btn btn-cosa-success btn-lg">
+                <i class="fas fa-user-plus me-2"></i>Register as Alumni
+              </button>
+            </div>
+          </form>
+
+          <div class="text-center mt-4">
+            <p class="mb-0">
+              Already have an account?
+              <a href="{% url 'login_page' %}">Sign in here</a>
+            </p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Terms of Service Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Terms of Service</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>1. Acceptance of Terms</h6>
+                <p>By registering for COSA, you agree to these terms and conditions.</p>
+                
+                <h6>2. User Responsibilities</h6>
+                <p>You are responsible for maintaining the confidentiality of your account and for all activities that occur under your account.</p>
+                
+                <h6>3. Privacy and Data Protection</h6>
+                <p>We respect your privacy and are committed to protecting your personal information in accordance with our Privacy Policy.</p>
+                
+                <h6>4. Acceptable Use</h6>
+                <p>You agree to use COSA only for lawful purposes and in a way that does not infringe the rights of others.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Privacy Policy Modal -->
+<div class="modal fade" id="privacyModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Privacy Policy</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Information We Collect</h6>
+                <p>We collect information you provide directly to us, such as when you create an account, update your profile, or contact us.</p>
+                
+                <h6>How We Use Your Information</h6>
+                <p>We use the information we collect to provide, maintain, and improve our services, communicate with you, and ensure the security of our platform.</p>
+                
+                <h6>Information Sharing</h6>
+                <p>We do not sell, trade, or otherwise transfer your personal information to third parties without your consent.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

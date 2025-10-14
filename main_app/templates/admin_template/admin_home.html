@@ -1,0 +1,148 @@
+{% extends 'admin_template/base.html' %}
+{% block title %}Admin Dashboard - COSA{% endblock %}
+{% block admin_content %}
+<section class="app-hero mb-4">
+    <div class="container stack-gap-sm">
+        <div class="d-flex flex-column flex-sm-row justify-content-between gap-3">
+            <div>
+                <h1>System Admin</h1>
+                <p class="mb-0">Welcome back, {{ admin_user.first_name }}. Manage the COSA platform effortlessly.</p>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <div class="avatar d-flex align-items-center justify-content-center bg-light text-primary" style="width:72px;height:72px;">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+            </div>
+        </div>
+        <div class="app-hero-meta">
+            <div class="app-hero-stat">
+                <h4>{{ stats.total_alumni|default:0 }}</h4>
+                <span>Total alumni</span>
+            </div>
+            <div class="app-hero-stat">
+                <h4>{{ stats.total_coordinators|default:0 }}</h4>
+                <span>Coordinators</span>
+            </div>
+            <div class="app-hero-stat">
+                <h4>{{ stats.active_events|default:0 }}</h4>
+                <span>Active events</span>
+            </div>
+            <div class="app-hero-stat">
+                <h4>{{ stats.total_jobs|default:0 }}</h4>
+                <span>Job postings</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="container stack-gap">
+    {% if stats.pending_verifications > 0 %}
+    <div class="surface-card d-flex flex-column flex-sm-row gap-3 align-items-sm-center border border-warning">
+        <div class="avatar d-flex align-items-center justify-content-center bg-warning text-white"><i class="fas fa-clock"></i></div>
+        <div class="flex-grow-1">
+            <h5 class="mb-1">{{ stats.pending_verifications }} registration{{ stats.pending_verifications|pluralize }} awaiting approval</h5>
+            <p class="text-muted mb-0">Review new alumni submissions to keep the community up to date.</p>
+        </div>
+        <a href="{% url 'manage_alumni' %}?verification_status=pending" class="btn btn-warning">Review now</a>
+    </div>
+    {% endif %}
+
+    <div class="surface-card stack-gap-sm">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-users me-2 text-primary"></i>Recent alumni</h5>
+            <a href="{% url 'manage_alumni' %}" class="btn btn-outline-primary btn-sm">Manage</a>
+        </div>
+        <div class="stack-gap-sm">
+            {% for alumnus in recent_alumni %}
+                <div class="d-flex gap-3 border rounded p-3">
+                    <div class="avatar d-flex align-items-center justify-content-center bg-light text-primary">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1">{{ alumnus.full_name }}</h6>
+                        <div class="small text-muted">{{ alumnus.degree.name }} &middot; Class of {{ alumnus.graduation_year.year }}</div>
+                    </div>
+                </div>
+            {% empty %}
+                <p class="text-muted text-center">No recent alumni activity.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="surface-card stack-gap-sm">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-briefcase me-2 text-success"></i>Recent job posts</h5>
+            <a href="{% url 'manage_companies' %}" class="btn btn-outline-success btn-sm">Companies</a>
+        </div>
+        <div class="stack-gap-sm">
+            {% for job in recent_jobs %}
+                <div class="d-flex flex-column flex-sm-row gap-3 border rounded p-3">
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1">{{ job.title }}</h6>
+                        <div class="small text-muted">{{ job.company.name }} &middot; {{ job.location }}</div>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2 align-items-start">
+                        <span class="badge bg-primary">{{ job.get_job_type_display }}</span>
+                        <small class="text-muted">Posted {{ job.created_at|timesince }} ago</small>
+                    </div>
+                </div>
+            {% empty %}
+                <p class="text-muted text-center">No recent job postings.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="surface-card stack-gap-sm">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-calendar-alt me-2 text-info"></i>Latest events</h5>
+            <a href="{% url 'system_settings' %}" class="btn btn-outline-info btn-sm">Settings</a>
+        </div>
+        <div class="stack-gap-sm">
+            {% for event in recent_events %}
+                <div class="d-flex flex-column flex-sm-row gap-3 border rounded p-3">
+                    <div class="text-center" style="min-width:70px;">
+                        <div class="badge bg-info text-white d-block mb-1">{{ event.start_date|date:"M" }}</div>
+                        <div class="h4 mb-0">{{ event.start_date|date:"d" }}</div>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1">{{ event.title }}</h6>
+                        <div class="small text-muted">{{ event.start_date|date:"M d, Y" }} &middot; {{ event.location }}</div>
+                    </div>
+                    <small class="text-muted">{{ event.attendee_count }} registered</small>
+                </div>
+            {% empty %}
+                <p class="text-muted text-center">No events scheduled.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="surface-card stack-gap-sm">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-hand-holding-usd me-2 text-warning"></i>Recent donations</h5>
+            <span class="text-muted small">Total donated: ${{ stats.total_donations|floatformat:0 }}</span>
+        </div>
+        <div class="stack-gap-sm">
+            {% for donation in recent_donations %}
+                <div class="d-flex justify-content-between border rounded p-3">
+                    <div>
+                        <h6 class="mb-1">{{ donation.donor_name|default:"Anonymous" }}</h6>
+                        <small class="text-muted">{{ donation.created_at|date:"M d, Y" }}</small>
+                    </div>
+                    <strong>${{ donation.amount|floatformat:0 }}</strong>
+                </div>
+            {% empty %}
+                <p class="text-muted text-center">No donations in the last period.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="surface-card stack-gap-sm">
+        <h5 class="mb-2"><i class="fas fa-bolt me-2 text-danger"></i>Quick actions</h5>
+        <div class="d-grid gap-2">
+            <a href="{% url 'add_coordinator' %}" class="btn btn-outline-primary"><i class="fas fa-user-plus me-2"></i>Add coordinator</a>
+            <a href="{% url 'add_department' %}" class="btn btn-outline-success"><i class="fas fa-building me-2"></i>Add department</a>
+            <a href="{% url 'bulk_operations' %}" class="btn btn-outline-warning"><i class="fas fa-tasks me-2"></i>Bulk operations</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,151 @@
+{% load math_filters %}
+
+{% if request.GET %}
+<div class="mb-3">
+    <small class="text-muted">Active filters:</small>
+    {% if request.GET.search %}
+    <span class="badge bg-primary filter-badge me-1">Search: {{ request.GET.search }}</span>
+    {% endif %}
+    {% if request.GET.graduation_year %}
+    <span class="badge bg-info filter-badge me-1">Year: {{ request.GET.graduation_year }}</span>
+    {% endif %}
+    {% if request.GET.level %}
+    <span class="badge bg-success filter-badge me-1">Level: {{ request.GET.level }}</span>
+    {% endif %}
+    {% if request.GET.is_mentor %}
+    <span class="badge bg-success filter-badge me-1">Mentors</span>
+    {% endif %}
+    {% if request.GET.willing_to_hire %}
+    <span class="badge bg-primary filter-badge me-1">Hiring</span>
+    {% endif %}
+    <a href="{% url 'alumni_directory' %}" class="btn btn-outline-secondary btn-sm ms-2">
+        <i class="fas fa-times me-1"></i>Clear All
+    </a>
+</div>
+{% endif %}
+
+{% if alumni %}
+<div class="stack-gap" data-total-count="{{ alumni.paginator.count }}" data-total-pages="{{ alumni.paginator.num_pages }}">
+    {% for alumnus in alumni %}
+    <article class="alumni-card stack-gap-sm">
+        <div class="card-body stack-gap-sm">
+            <div class="d-flex gap-3 align-items-start">
+                {% if alumnus.admin.profile_pic %}
+                    <img src="{{ alumnus.admin.profile_pic.url }}" alt="{{ alumnus.admin.get_full_name }}" class="avatar">
+                {% else %}
+                    <div class="avatar d-flex align-items-center justify-content-center bg-light text-primary">
+                        <i class="fas fa-user"></i>
+                    </div>
+                {% endif %}
+                <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-start gap-2">
+                        <div>
+                            <h5 class="mb-1"><a href="{% url 'alumni_detail' alumnus.id %}" class="text-decoration-none">{{ alumnus.admin.get_full_name }}</a></h5>
+                            <div class="small text-muted">
+                                {% if alumnus.level %}{{ alumnus.level.name }}{% endif %}
+                                {% if alumnus.graduation_year %} &middot; Class of {{ alumnus.graduation_year.year }}{% endif %}
+                            </div>
+                        </div>
+                        <div class="d-flex flex-wrap gap-1 justify-content-end">
+                            {% if alumnus.privacy_level == 'public' %}
+                                <span class="badge bg-success">Public</span>
+                            {% elif alumnus.privacy_level == 'limited' %}
+                                <span class="badge bg-warning text-dark">Limited</span>
+                            {% endif %}
+                            {% if alumnus.is_mentor %}
+                                <span class="badge bg-info text-dark">Mentor</span>
+                            {% endif %}
+                            {% if alumnus.willing_to_hire %}
+                                <span class="badge bg-primary">Hiring</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if alumnus.admin.email %}
+                    <div class="small text-muted mt-1"><i class="fas fa-envelope me-2"></i>{{ alumnus.admin.email }}</div>
+                    {% endif %}
+                    {% if alumnus.admin.phone_number %}
+                    <div class="small text-muted mt-1"><i class="fas fa-phone me-2"></i>{{ alumnus.admin.phone_number }}</div>
+                    {% endif %}
+                    {% if alumnus.current_company or alumnus.job_title %}
+                    <div class="small text-muted mt-1">
+                        <i class="fas fa-briefcase me-2"></i>
+                        {% if alumnus.job_title %}{{ alumnus.job_title }}{% endif %}
+                        {% if alumnus.current_company %}
+                            {% if alumnus.job_title %} at {% endif %}{{ alumnus.current_company.name }}
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    {% if alumnus.current_city %}
+                    <div class="small text-muted mt-1"><i class="fas fa-map-marker-alt me-2"></i>{{ alumnus.current_city }}</div>
+                    {% endif %}
+                    {% if alumnus.industry %}
+                    <div class="small text-muted mt-1"><i class="fas fa-industry me-2"></i>{{ alumnus.industry }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% with skills_list=alumnus.skills|split_string %}
+                {% if skills_list %}
+                <div class="d-flex flex-wrap gap-2">
+                    {% for skill in skills_list|slice:":4" %}
+                        <span class="badge bg-light text-dark">{{ skill }}</span>
+                    {% endfor %}
+                    {% if skills_list|length > 4 %}
+                        <span class="badge bg-secondary">+{{ skills_list|length|add:"-4" }}</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+            {% endwith %}
+
+            {% if alumnus.bio %}
+            <p class="mb-0 text-muted small">{{ alumnus.bio|truncatewords:24 }}</p>
+            {% endif %}
+        </div>
+        <div class="card-footer bg-light d-flex justify-content-between align-items-center">
+            <small class="text-muted">Member since {{ alumnus.admin.date_joined|date:"Y" }}</small>
+            <div class="d-flex gap-2">
+                <a href="{% url 'alumni_detail' alumnus.id %}" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-eye"></i>
+                </a>
+                {% if alumnus.allow_contact and request.user.is_authenticated and alumnus != request.user.alumni %}
+                <a href="{% url 'send_message_to' alumnus.id %}" class="btn btn-outline-success btn-sm">
+                    <i class="fas fa-envelope"></i>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </article>
+    {% endfor %}
+</div>
+
+{% if alumni.has_other_pages %}
+<nav aria-label="Alumni pagination" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if alumni.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"><i class="fas fa-angle-double-left"></i></a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ alumni.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"><i class="fas fa-angle-left"></i></a></li>
+        {% endif %}
+        <li class="page-item active"><span class="page-link">{{ alumni.number }} / {{ alumni.paginator.num_pages }}</span></li>
+        {% if alumni.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ alumni.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"><i class="fas fa-angle-right"></i></a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ alumni.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"><i class="fas fa-angle-double-right"></i></a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% else %}
+<!-- Empty State -->
+<div class="text-center py-5">
+    <i class="fas fa-users fa-4x text-muted mb-3"></i>
+    <h4 class="text-muted">No Alumni Found</h4>
+    {% if request.GET %}
+    <p class="text-muted">No alumni match your search criteria. Try adjusting your filters.</p>
+    <a href="{% url 'alumni_directory' %}" class="btn btn-outline-primary">
+        <i class="fas fa-times me-2"></i>Clear Filters
+    </a>
+    {% else %}
+    <p class="text-muted">The COSA Directory is currently empty.</p>
+    {% endif %}
+</div>
+{% endif %}

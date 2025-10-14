@@ -1,0 +1,349 @@
+{% load static %}
+
+<style>
+.like-comment-section {
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    background: #f8f9fa;
+}
+
+.like-comment-section .card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.like-comment-section .card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white;
+    border-radius: 8px 8px 0 0 !important;
+}
+
+.comment-item {
+    border-left: 3px solid #007bff;
+    padding-left: 15px;
+    background: white;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.reply-item {
+    border-left: 3px solid #6c757d;
+    background: #f8f9fa;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.reply-form {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 10px;
+}
+
+.reply-form textarea {
+    border-radius: 6px;
+    border: 1px solid #ced4da;
+    resize: vertical;
+}
+
+.reply-form textarea:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.like-btn, .comment-toggle-btn {
+    transition: all 0.3s ease;
+}
+
+.like-btn:hover, .comment-toggle-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.comments-section {
+    border-top: 1px solid #dee2e6;
+    padding-top: 20px;
+    margin-top: 20px;
+}
+</style>
+
+<!-- Like and Comment Section -->
+<!-- Debug: content_type={{ content_type|default:"news" }}, object_id={{ object_id|default:"1" }}, total_likes={{ total_likes|default:"0" }}, total_comments={{ total_comments|default:"0" }} -->
+<div class="like-comment-section mt-4" data-content-type="{{ content_type|default:'news' }}" data-object-id="{{ object_id|default:'1' }}">
+    <div class="card">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="fas fa-heart me-2"></i>Engagement</h5>
+        </div>
+        <div class="card-body">
+            <!-- Like Button -->
+            <div class="d-flex align-items-center mb-3">
+                {% if user.is_authenticated %}
+                <button class="btn btn-outline-primary like-btn me-3" 
+                        data-content-type="{{ content_type|default:'news' }}" 
+                        data-object-id="{{ object_id|default:'1' }}"
+                        {% if user_liked %}data-liked="true"{% endif %}>
+                    <i class="fas fa-thumbs-up me-1"></i>
+                    <span class="like-text">{% if user_liked %}Unlike{% else %}Like{% endif %}</span>
+                    <span class="like-count">({{ total_likes|default:"0" }})</span>
+                </button>
+                {% else %}
+                <div class="btn btn-outline-secondary me-3" title="Login to like">
+                    <i class="fas fa-thumbs-up me-1"></i>
+                    Like <span class="like-count">({{ total_likes|default:"0" }})</span>
+                </div>
+                {% endif %}
+                
+                <button class="btn btn-outline-secondary comment-toggle-btn">
+                    <i class="fas fa-comment me-1"></i>
+                    Comments <span class="comment-count">({{ total_comments|default:"0" }})</span>
+                </button>
+            </div>
+    
+    <!-- Comments Section -->
+    <div class="comments-section">
+        <!-- Add Comment Form -->
+        <div class="add-comment-form mb-4">
+            {% if user.is_authenticated %}
+            <form class="comment-form" data-content-type="{{ content_type|default:'news' }}" data-object-id="{{ object_id|default:'1' }}">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <textarea class="form-control" name="content" rows="3" 
+                              placeholder="Write your comment..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="fas fa-paper-plane me-1"></i>Post Comment
+                </button>
+            </form>
+            {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                Please <a href="{% url 'login_page' %}">login</a> to post comments.
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Comments List -->
+        <div class="comments-list">
+            {% for comment in comments %}
+                {% include 'main_app/comment_item.html' with comment=comment %}
+            {% empty %}
+            <div class="text-center text-muted py-3">
+                <i class="fas fa-comment-slash fa-2x mb-2"></i>
+                <p>No comments yet. Be the first to comment!</p>
+            </div>
+            {% endfor %}
+        </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Like and Comment Functionality -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const likeCommentSection = document.querySelector('.like-comment-section');
+    if (!likeCommentSection) return;
+    
+    const contentType = likeCommentSection.dataset.contentType || 'news';
+    const objectId = likeCommentSection.dataset.objectId || '1';
+    
+    // Like/Unlike functionality
+    document.querySelectorAll('.like-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const isLiked = this.dataset.liked === 'true';
+            const likeText = this.querySelector('.like-text');
+            const likeCount = this.querySelector('.like-count');
+            
+            fetch('{% url "toggle_like" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: `content_type=${contentType}&object_id=${objectId}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.liked) {
+                    likeText.textContent = 'Unlike';
+                    this.dataset.liked = 'true';
+                    this.classList.remove('btn-outline-primary');
+                    this.classList.add('btn-primary');
+                } else {
+                    likeText.textContent = 'Like';
+                    this.dataset.liked = 'false';
+                    this.classList.remove('btn-primary');
+                    this.classList.add('btn-outline-primary');
+                }
+                likeCount.textContent = `(${data.total_likes})`;
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+    
+    // Comment toggle
+    document.querySelector('.comment-toggle-btn').addEventListener('click', function() {
+        const commentsSection = document.querySelector('.comments-section');
+        if (commentsSection.style.display === 'none') {
+            commentsSection.style.display = 'block';
+            this.innerHTML = '<i class="fas fa-comment me-1"></i>Hide Comments <span class="comment-count">({{ total_comments }})</span>';
+        } else {
+            commentsSection.style.display = 'none';
+            this.innerHTML = '<i class="fas fa-comment me-1"></i>Show Comments <span class="comment-count">({{ total_comments }})</span>';
+        }
+    });
+    
+    // Add comment
+    document.querySelector('.comment-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const content = this.querySelector('textarea').value.trim();
+        if (!content) return;
+        
+        fetch('{% url "add_comment" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: `content_type=${contentType}&object_id=${objectId}&content=${encodeURIComponent(content)}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Add comment to list
+                const commentsList = document.querySelector('.comments-list');
+                if (commentsList.querySelector('.text-center')) {
+                    commentsList.innerHTML = '';
+                }
+                commentsList.insertAdjacentHTML('afterbegin', data.comment_html);
+                
+                // Update comment count
+                document.querySelector('.comment-count').textContent = `(${data.total_comments})`;
+                
+                // Clear form
+                this.querySelector('textarea').value = '';
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    });
+    
+    // Comment like functionality
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.like-comment')) {
+            const btn = e.target.closest('.like-comment');
+            const commentId = btn.dataset.commentId;
+            const isLiked = btn.dataset.liked === 'true';
+            const likeText = btn.querySelector('.like-text');
+            const likeCount = btn.querySelector('.like-count');
+            
+            fetch('{% url "toggle_comment_like" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: `comment_id=${commentId}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.liked) {
+                    likeText.textContent = 'Unlike';
+                    btn.dataset.liked = 'true';
+                    btn.classList.remove('btn-outline-primary');
+                    btn.classList.add('btn-primary');
+                } else {
+                    likeText.textContent = 'Like';
+                    btn.dataset.liked = 'false';
+                    btn.classList.remove('btn-primary');
+                    btn.classList.add('btn-outline-primary');
+                }
+                likeCount.textContent = `(${data.total_likes})`;
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    });
+    
+    // Reply functionality - Enhanced for unlimited nested replies
+    document.addEventListener('click', function(e) {
+        // Show reply form
+        if (e.target.closest('.reply-comment')) {
+            const btn = e.target.closest('.reply-comment');
+            const commentId = btn.dataset.commentId;
+            const replyForm = btn.closest('.comment-item').querySelector(`.reply-form[data-comment-id="${commentId}"]`);
+            
+            if (replyForm) {
+                // Hide all other reply forms first
+                document.querySelectorAll('.reply-form').forEach(form => {
+                    if (form !== replyForm) form.style.display = 'none';
+                });
+                
+                replyForm.style.display = 'block';
+                replyForm.querySelector('textarea').focus();
+            }
+        }
+        
+        // Cancel reply
+        if (e.target.closest('.cancel-reply')) {
+            const btn = e.target.closest('.cancel-reply');
+            const replyForm = btn.closest('.reply-form');
+            replyForm.style.display = 'none';
+            replyForm.querySelector('textarea').value = '';
+        }
+    });
+    
+    // Submit reply - Enhanced for unlimited nested replies
+    document.addEventListener('submit', function(e) {
+        if (e.target.closest('.reply-comment-form')) {
+            e.preventDefault();
+            const form = e.target.closest('.reply-comment-form');
+            const content = form.querySelector('textarea').value.trim();
+            const commentId = form.closest('.reply-form').dataset.commentId;
+            
+            if (!content) return;
+            
+            fetch('{% url "add_reply" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: `parent_comment_id=${commentId}&content=${encodeURIComponent(content)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const commentItem = form.closest('.comment-item');
+                    let repliesSection = commentItem.querySelector('.replies');
+                    
+                    if (repliesSection) {
+                        // Add the new reply to existing replies section
+                        repliesSection.insertAdjacentHTML('beforeend', data.reply_html);
+                    } else {
+                        // Create replies section if it doesn't exist
+                        const repliesHtml = `<div class="replies ms-4 mt-3">${data.reply_html}</div>`;
+                        commentItem.insertAdjacentHTML('beforeend', repliesHtml);
+                    }
+                    
+                    // Hide reply form and clear textarea
+                    form.closest('.reply-form').style.display = 'none';
+                    form.querySelector('textarea').value = '';
+                    
+                    // Update comment count
+                    const commentCountElement = document.querySelector('.comment-count');
+                    if (commentCountElement) {
+                        const currentCount = parseInt(commentCountElement.textContent.match(/\d+/)[0]) || 0;
+                        commentCountElement.textContent = `(${currentCount + 1})`;
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Sorry, there was an error posting your reply. Please try again.');
+            });
+        }
+    });
+});
+</script>

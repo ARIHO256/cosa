@@ -1,0 +1,588 @@
+{% extends 'coordinator_template/base.html' %}
+{% block title %}Create Event - COSA Coordinator{% endblock %}
+{% block coordinator_content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-calendar-plus me-2"></i>Create New Event
+                    </h1>
+                    <p class="text-muted mb-0">Organize an engaging event for the alumni community</p>
+                </div>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <a href="{% url 'manage_events' %}" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Back to Events
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'coordinator_home' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'manage_events' %}">Events</a></li>
+                    <li class="breadcrumb-item active">Create Event</li>
+                </ol>
+            </nav>
+
+            <!-- Messages -->
+            {% if messages %}
+            <div class="row mb-4">
+                <div class="col-12">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>{{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <form method="POST" enctype="multipart/form-data" id="eventForm">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <!-- Main Event Information -->
+                    <div class="col-lg-8">
+                        <!-- Basic Information -->
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-info-circle me-2"></i>Basic Information
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <!-- Event Title -->
+                                <div class="mb-4">
+                                    <label for="{{ form.title.id_for_label }}" class="form-label">
+                                        <strong>Event Title</strong>
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.title }}
+                                    {% if form.title.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.title.errors %}
+                                                <div>{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">
+                                        Choose a compelling title that clearly describes your event
+                                    </div>
+                                </div>
+
+                                <!-- Event Type -->
+                                <div class="mb-4">
+                                    <label for="{{ form.event_type.id_for_label }}" class="form-label">
+                                        <strong>Event Type</strong>
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.event_type }}
+                                    {% if form.event_type.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.event_type.errors %}
+                                                <div>{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">
+                                        Select the category that best describes your event
+                                    </div>
+                                </div>
+
+                                <!-- Description -->
+                                <div class="mb-4">
+                                    <label for="{{ form.description.id_for_label }}" class="form-label">
+                                        <strong>Description</strong>
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.description }}
+                                    {% if form.description.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.description.errors %}
+                                                <div>{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">
+                                        Provide a detailed description of what attendees can expect
+                                    </div>
+                                </div>
+
+                                <!-- Featured Image -->
+                                <div class="mb-4">
+                                    <label for="{{ form.featured_image.id_for_label }}" class="form-label">
+                                        <strong>Featured Image</strong>
+                                    </label>
+                                    {{ form.featured_image }}
+                                    {% if form.featured_image.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.featured_image.errors %}
+                                                <div>{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">
+                                        Upload an attractive image to promote your event (optional)
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Date and Time -->
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-clock me-2"></i>Date and Time
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <!-- Start Date -->
+                                        <div class="mb-4">
+                                            <label for="{{ form.start_date.id_for_label }}" class="form-label">
+                                                <strong>Start Date & Time</strong>
+                                                <span class="text-danger">*</span>
+                                            </label>
+                                            {{ form.start_date }}
+                                            {% if form.start_date.errors %}
+                                                <div class="text-danger small mt-1">
+                                                    {% for error in form.start_date.errors %}
+                                                        <div>{{ error }}</div>
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <!-- End Date -->
+                                        <div class="mb-4">
+                                            <label for="{{ form.end_date.id_for_label }}" class="form-label">
+                                                <strong>End Date & Time</strong>
+                                                <span class="text-danger">*</span>
+                                            </label>
+                                            {{ form.end_date }}
+                                            {% if form.end_date.errors %}
+                                                <div class="text-danger small mt-1">
+                                                    {% for error in form.end_date.errors %}
+                                                        <div>{{ error }}</div>
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Registration Deadline -->
+                                <div class="mb-4">
+                                    <label for="{{ form.registration_deadline.id_for_label }}" class="form-label">
+                                        <strong>Registration Deadline</strong>
+                                    </label>
+                                    {{ form.registration_deadline }}
+                                    {% if form.registration_deadline.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.registration_deadline.errors %}
+                                                <div>{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">
+                                        Leave blank if registration stays open until the event starts
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Location -->
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-map-marker-alt me-2"></i>Location
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <!-- Virtual Event Toggle -->
+                                <div class="mb-4">
+                                    <div class="form-check form-switch">
+                                        {{ form.is_virtual }}
+                                        <label class="form-check-label" for="{{ form.is_virtual.id_for_label }}">
+                                            <strong>This is a virtual event</strong>
+                                        </label>
+                                    </div>
+                                    {% if form.is_virtual.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.is_virtual.errors %}
+                                                <div>{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Physical Location Fields -->
+                                <div id="physicalLocation">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <!-- Venue -->
+                                            <div class="mb-4">
+                                                <label for="{{ form.venue.id_for_label }}" class="form-label">
+                                                    <strong>Venue Name</strong>
+                                                </label>
+                                                {{ form.venue }}
+                                                {% if form.venue.errors %}
+                                                    <div class="text-danger small mt-1">
+                                                        {% for error in form.venue.errors %}
+                                                            <div>{{ error }}</div>
+                                                        {% endfor %}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <!-- Address -->
+                                            <div class="mb-4">
+                                                <label for="{{ form.address.id_for_label }}" class="form-label">
+                                                    <strong>Full Address</strong>
+                                                </label>
+                                                {{ form.address }}
+                                                {% if form.address.errors %}
+                                                    <div class="text-danger small mt-1">
+                                                        {% for error in form.address.errors %}
+                                                            <div>{{ error }}</div>
+                                                        {% endfor %}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Virtual Location Fields -->
+                                <div id="virtualLocation" style="display: none;">
+                                    <div class="mb-4">
+                                        <label for="{{ form.virtual_link.id_for_label }}" class="form-label">
+                                            <strong>Virtual Meeting Link</strong>
+                                        </label>
+                                        {{ form.virtual_link }}
+                                        {% if form.virtual_link.errors %}
+                                            <div class="text-danger small mt-1">
+                                                {% for error in form.virtual_link.errors %}
+                                                    <div>{{ error }}</div>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                        <div class="form-text">
+                                            Zoom, Teams, Google Meet, or other virtual meeting platform link
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Event Settings -->
+                    <div class="col-lg-4">
+                        <!-- Registration Settings -->
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-warning text-dark">
+                                <h6 class="card-title mb-0">
+                                    <i class="fas fa-users me-2"></i>Registration Settings
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <!-- Max Attendees -->
+                                <div class="mb-3">
+                                    <label for="{{ form.max_attendees.id_for_label }}" class="form-label">
+                                        <strong>Maximum Attendees</strong>
+                                    </label>
+                                    {{ form.max_attendees }}
+                                    {% if form.max_attendees.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.max_attendees.errors %}
+                                                <div>{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">Leave blank for unlimited</div>
+                                </div>
+
+                                <!-- Registration Fee -->
+                                <div class="mb-3">
+                                    <label for="{{ form.registration_fee.id_for_label }}" class="form-label">
+                                        <strong>Registration Fee ($)</strong>
+                                    </label>
+                                    {{ form.registration_fee }}
+                                    {% if form.registration_fee.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.registration_fee.errors %}
+                                                <div>{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">Enter 0 for free events</div>
+                                </div>
+
+                                <!-- Requires Approval -->
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        {{ form.requires_approval }}
+                                        <label class="form-check-label" for="{{ form.requires_approval.id_for_label }}">
+                                            <strong>Require registration approval</strong>
+                                        </label>
+                                    </div>
+                                    {% if form.requires_approval.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.requires_approval.errors %}
+                                                <div>{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">
+                                        Check if you want to manually approve each registration
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Target Audience -->
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-secondary text-white">
+                                <h6 class="card-title mb-0">
+                                    <i class="fas fa-graduation-cap me-2"></i>Target Audience
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <!-- Target Completion Years -->
+                                <div class="mb-3">
+                                    <label for="{{ form.target_graduation_years.id_for_label }}" class="form-label">
+                                        <strong>Target Completion Years</strong>
+                                    </label>
+                                    {{ form.target_graduation_years }}
+                                    {% if form.target_graduation_years.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.target_graduation_years.errors %}
+                                                <div>{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">
+                                        Leave blank to target all alumni. Hold Ctrl/Cmd to select multiple years.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Event Guidelines -->
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <h6 class="card-title mb-0">
+                                    <i class="fas fa-lightbulb me-2"></i>Event Guidelines
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-unstyled mb-0">
+                                    <li class="mb-2">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        Use clear, engaging titles
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        Provide detailed descriptions
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        Set realistic attendance limits
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        Include high-quality images
+                                    </li>
+                                    <li class="mb-0">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        Test virtual meeting links
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="card shadow-sm">
+                            <div class="card-body text-center">
+                                <button type="submit" class="btn btn-primary btn-lg me-3">
+                                    <i class="fas fa-calendar-plus me-2"></i>Create Event
+                                </button>
+                                <a href="{% url 'manage_events' %}" class="btn btn-outline-secondary btn-lg">
+                                    <i class="fas fa-times me-2"></i>Cancel
+                                </a>
+                                <div class="mt-3">
+                                    <span class="text-muted small">
+                                        <i class="fas fa-info-circle me-1"></i>Fields marked with * are required
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+{% endblock %}
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('eventForm');
+    const isVirtualCheckbox = document.getElementById('{{ form.is_virtual.id_for_label }}');
+    const physicalLocation = document.getElementById('physicalLocation');
+    const virtualLocation = document.getElementById('virtualLocation');
+    
+    // Add Bootstrap classes to form fields
+    const formControls = form.querySelectorAll('input, select, textarea');
+    formControls.forEach(function(field) {
+        if (field.type !== 'checkbox' && field.type !== 'file') {
+            field.classList.add('form-control');
+        }
+        if (field.type === 'file') {
+            field.classList.add('form-control');
+        }
+        if (field.tagName === 'SELECT' && field.multiple) {
+            field.classList.add('form-select');
+            field.size = 5;
+        } else if (field.tagName === 'SELECT') {
+            field.classList.add('form-select');
+        }
+    });
+
+    // Handle virtual/physical location toggle
+    function toggleLocationFields() {
+        if (isVirtualCheckbox.checked) {
+            physicalLocation.style.display = 'none';
+            virtualLocation.style.display = 'block';
+            // Make virtual link required
+            document.getElementById('{{ form.virtual_link.id_for_label }}').required = true;
+            // Make venue and address not required
+            document.getElementById('{{ form.venue.id_for_label }}').required = false;
+            document.getElementById('{{ form.address.id_for_label }}').required = false;
+        } else {
+            physicalLocation.style.display = 'block';
+            virtualLocation.style.display = 'none';
+            // Make venue required
+            document.getElementById('{{ form.venue.id_for_label }}').required = true;
+            // Make virtual link not required
+            document.getElementById('{{ form.virtual_link.id_for_label }}').required = false;
+        }
+    }
+
+    // Initialize location fields
+    toggleLocationFields();
+    
+    // Listen for changes
+    isVirtualCheckbox.addEventListener('change', toggleLocationFields);
+
+    // Form validation
+    const startDateField = document.getElementById('{{ form.start_date.id_for_label }}');
+    const endDateField = document.getElementById('{{ form.end_date.id_for_label }}');
+    const regDeadlineField = document.getElementById('{{ form.registration_deadline.id_for_label }}');
+
+    function validateDates() {
+        const startDate = new Date(startDateField.value);
+        const endDate = new Date(endDateField.value);
+        const regDeadline = regDeadlineField.value ? new Date(regDeadlineField.value) : null;
+        const now = new Date();
+
+        let isValid = true;
+
+        // Clear previous validation
+        [startDateField, endDateField, regDeadlineField].forEach(field => {
+            field.classList.remove('is-invalid', 'is-valid');
+            const feedback = field.parentNode.querySelector('.invalid-feedback');
+            if (feedback) feedback.remove();
+        });
+
+        // Start date validation
+        if (startDate < now) {
+            showFieldError(startDateField, 'Start date cannot be in the past');
+            isValid = false;
+        }
+
+        // End date validation
+        if (endDate <= startDate) {
+            showFieldError(endDateField, 'End date must be after start date');
+            isValid = false;
+        }
+
+        // Registration deadline validation
+        if (regDeadline && regDeadline >= startDate) {
+            showFieldError(regDeadlineField, 'Registration deadline must be before start date');
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+    function showFieldError(field, message) {
+        field.classList.add('is-invalid');
+        const feedback = document.createElement('div');
+        feedback.className = 'invalid-feedback';
+        feedback.textContent = message;
+        field.parentNode.appendChild(feedback);
+    }
+
+    // Real-time date validation
+    [startDateField, endDateField, regDeadlineField].forEach(field => {
+        field.addEventListener('change', validateDates);
+    });
+
+    // Form submission validation
+    form.addEventListener('submit', function(e) {
+        if (!validateDates()) {
+            e.preventDefault();
+            // Scroll to first error
+            const firstError = document.querySelector('.is-invalid');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstError.focus();
+            }
+        } else {
+            // Show loading state
+            const submitBtn = form.querySelector('button[type="submit"]');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating Event...';
+            submitBtn.disabled = true;
+        }
+    });
+
+    // Warn about unsaved changes
+    let hasChanges = false;
+    const originalData = new FormData(form);
+
+    form.addEventListener('input', function() {
+        hasChanges = true;
+    });
+
+    form.addEventListener('change', function() {
+        hasChanges = true;
+    });
+
+    window.addEventListener('beforeunload', function(e) {
+        if (hasChanges) {
+            e.preventDefault();
+            e.returnValue = '';
+            return 'You have unsaved changes. Are you sure you want to leave?';
+        }
+    });
+
+    // Auto-hide alerts after 5 seconds
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(function(alert) {
+        setTimeout(function() {
+            alert.style.opacity = '0';
+            setTimeout(function() {
+                alert.remove();
+            }, 300);
+        }, 5000);
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,264 @@
+{% extends 'admin_template/base.html' %}
+{% block title %}Manage Alumni - COSA Admin{% endblock %}
+{% block admin_content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <i class="fas fa-graduation-cap me-2"></i>Manage Citizens Secondary School Alumni
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{% url 'admin_register_alumni' %}" class="btn btn-success">
+                        <i class="fas fa-user-plus me-2"></i>Register Alumni
+                    </a>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            {% if messages %}
+            <div class="row">
+                <div class="col-12">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Filters -->
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-body py-2">
+                            <form method="GET" class="d-flex align-items-center">
+                                <div class="me-2">
+                                    <input type="search" name="search" class="form-control form-control-sm" 
+                                           placeholder="Search alumni..." value="{{ request.GET.search }}">
+                                </div>
+                                <div class="me-2">
+                                    <select name="verification_status" class="form-select form-select-sm">
+                                        <option value="">All Status</option>
+                                        <option value="verified" {% if request.GET.verification_status == 'verified' %}selected{% endif %}>Verified</option>
+                                        <option value="pending" {% if request.GET.verification_status == 'pending' %}selected{% endif %}>Pending</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-sm me-2">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                                {% if request.GET.search or request.GET.verification_status %}
+                                <a href="{% url 'manage_alumni' %}" class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-times"></i>
+                                </a>
+                                {% endif %}
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-success btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-file-excel me-1"></i>Export Excel
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'admin_export_alumni_excel' 'all' %}?{{ request.GET.urlencode }}">
+                                <i class="fas fa-download me-2"></i>All Data
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'admin_export_alumni_excel' 'detailed' %}?{{ request.GET.urlencode }}">
+                                <i class="fas fa-download me-2"></i>Detailed Info
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'admin_export_alumni_excel' 'basic' %}?{{ request.GET.urlencode }}">
+                                <i class="fas fa-download me-2"></i>Basic Info
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'admin_export_alumni_statistics_excel' %}">
+                                <i class="fas fa-chart-bar me-2"></i>Statistics Report
+                            </a></li>
+                        </ul>
+                    </div>
+                    <small class="text-muted d-block mt-1">
+                        Showing {{ alumni|length }} alumni
+                    </small>
+                </div>
+            </div>
+
+            <!-- Alumni Table -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-graduation-cap me-2"></i>Citizens Secondary School Alumni Directory
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if alumni %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Alumni</th>
+                                    <th>Level</th>
+                                    <th>Completion Year</th>
+                                    <th>Employment Status</th>
+                                    <th>Verification</th>
+                                    <th>Status</th>
+                                    <th>Joined</th>
+                                    <th class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for alum in alumni %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3">
+                                                {% if alum.admin.profile_pic %}
+                                                <img src="{{ alum.admin.profile_pic.url }}" alt="Profile" 
+                                                     class="rounded-circle" width="40" height="40">
+                                                {% else %}
+                                                <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" 
+                                                     style="width: 40px; height: 40px;">
+                                                    <i class="fas fa-user text-white"></i>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-1">{{ alum.admin.get_full_name }}</h6>
+                                                <small class="text-muted">{{ alum.admin.email }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="text-muted">{{ alum.level.name|default:"Not specified" }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ alum.graduation_year.year|default:"Not specified" }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if alum.employment_status == 'employed' %}bg-success
+                                            {% elif alum.employment_status == 'unemployed' %}bg-warning
+                                            {% elif alum.employment_status == 'self_employed' %}bg-primary
+                                            {% else %}bg-secondary{% endif %}">
+                                            {{ alum.get_employment_status_display|default:"Not specified" }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if alum.admin.is_verified %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check-circle me-1"></i>Verified
+                                        </span>
+                                        {% else %}
+                                        <span class="badge bg-warning">
+                                            <i class="fas fa-clock me-1"></i>Pending
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if alum.admin.is_suspended %}
+                                            <span class="badge bg-danger">
+                                                <i class="fas fa-ban me-1"></i>Suspended
+                                            </span>
+                                            {% if alum.admin.suspension_expires_at %}
+                                                <br><small class="text-muted">Until {{ alum.admin.suspension_expires_at|date:"M d, Y" }}</small>
+                                            {% else %}
+                                                <br><small class="text-muted">Permanent</small>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check-circle me-1"></i>Active
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ alum.admin.date_joined|date:"M d, Y" }}</small>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group" role="group">
+                                            {% if not alum.admin.is_verified %}
+                                            <a href="{% url 'verify_alumni' alum.id %}" class="btn btn-sm btn-success" 
+                                               title="Verify Alumni">
+                                                <i class="fas fa-check"></i>
+                                            </a>
+                                            {% endif %}
+                                            
+                                            <!-- Suspension Actions -->
+                                            {% if alum.admin.is_suspended %}
+                                                <a href="{% url 'admin_unsuspend_user' alum.admin.id %}" class="btn btn-sm btn-warning" 
+                                                   title="Unsuspend Account">
+                                                    <i class="fas fa-unlock"></i>
+                                                </a>
+                                            {% else %}
+                                                <a href="{% url 'admin_suspend_user' alum.admin.id %}" class="btn btn-sm btn-danger" 
+                                                   title="Suspend Account">
+                                                    <i class="fas fa-ban"></i>
+                                                </a>
+                                            {% endif %}
+                                            
+                                            <a href="{% url 'admin_user_suspension_history' alum.admin.id %}" class="btn btn-sm btn-secondary" 
+                                               title="Suspension History">
+                                                <i class="fas fa-history"></i>
+                                            </a>
+                                            
+                                            <button type="button" class="btn btn-sm btn-info" 
+                                                    data-bs-toggle="modal" data-bs-target="#alumniModal{{ alum.id }}"
+                                                    title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <a href="{% url 'admin_delete_alumni' alum.id %}" class="btn btn-sm btn-danger" 
+                                               title="Delete Alumni" onclick="return confirm('Are you sure you want to delete this alumni?')">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-graduation-cap fa-3x text-muted mb-3"></i>
+                        <h5>No Alumni Found</h5>
+                        <p class="text-muted">
+                            {% if request.GET.search or request.GET.verification_status %}
+                            No Citizens Secondary School alumni match your current filters. <a href="{% url 'manage_alumni' %}">Clear filters</a>
+                            {% else %}
+                            No Citizens Secondary School alumni have registered yet.
+                            {% endif %}
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            {% if alumni.has_other_pages %}
+            <nav aria-label="Alumni pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if alumni.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.verification_status %}&verification_status={{ request.GET.verification_status }}{% endif %}">First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ alumni.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.verification_status %}&verification_status={{ request.GET.verification_status }}{% endif %}">Previous</a>
+                    </li>
+                    {% endif %}
+
+                    <li class="page-item active">
+                        <span class="page-link">{{ alumni.number }} of {{ alumni.paginator.num_pages }}</span>
+                    </li>
+
+                    {% if alumni.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ alumni.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.verification_status %}&verification_status={{ request.GET.verification_status }}{% endif %}">Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ alumni.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.verification_status %}&verification_status={{ request.GET.verification_status }}{% endif %}">Last</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

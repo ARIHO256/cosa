@@ -1,0 +1,274 @@
+{% extends 'main_app/base.html' %}
+
+{% block title %}Alumni Events - COSA{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="display-4 fw-bold mb-4">Alumni Events</h1>
+                <p class="lead mb-4">Join fellow alumni at exciting events, reunions, and networking opportunities. Stay connected with your alma mater and build lasting relationships.</p>
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <h3 class="fw-bold">{{ events.paginator.count }}</h3>
+                        <p class="mb-0">Upcoming Events</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h3 class="fw-bold">500+</h3>
+                        <p class="mb-0">Alumni Attended</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h3 class="fw-bold">25+</h3>
+                        <p class="mb-0">Cities Worldwide</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Section -->
+<section class="py-4 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <form method="get" class="row g-3 align-items-end">
+                            <div class="col-md-6">
+                                <label for="search" class="form-label">Search Events</label>
+                                <input type="text" class="form-control" id="search" name="search" value="{{ request.GET.search }}" placeholder="Event name, location, or description...">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="event_type" class="form-label">Event Type</label>
+                                <select class="form-select" id="event_type" name="event_type">
+                                    <option value="">All Types</option>
+                                    {% for value, label in event_types %}
+                                        <option value="{{ value }}" {% if request.GET.event_type == value %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-search me-2"></i>Search
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Events Grid -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            {% for event in events %}
+                <div class="col-lg-6 col-md-12 mb-4">
+                    <div class="card h-100 border-0 shadow-sm card-hover">
+                        {% if event.featured_image %}
+                            <img src="{{ event.featured_image.url }}" class="card-img-top" alt="{{ event.title }}" style="height: 200px; object-fit: cover;">
+                        {% else %}
+                            <div class="card-img-top bg-gradient-primary d-flex align-items-center justify-content-center text-white" style="height: 200px;">
+                                <div class="text-center">
+                                    <i class="fas fa-calendar-alt fa-3x mb-2"></i>
+                                    <h5>{{ event.get_event_type_display }}</h5>
+                                </div>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <span class="badge bg-primary">{{ event.get_event_type_display }}</span>
+                                {% if event.is_virtual %}
+                                    <span class="badge bg-success">Virtual</span>
+                                {% else %}
+                                    <span class="badge bg-info">In-Person</span>
+                                {% endif %}
+                            </div>
+                            
+                            <h5 class="card-title mb-3">{{ event.title }}</h5>
+                            
+                            <div class="mb-3">
+                                <p class="text-muted mb-2">
+                                    <i class="fas fa-calendar me-2"></i>
+                                    {{ event.start_date|date:"l, F d, Y" }}
+                                </p>
+                                <p class="text-muted mb-2">
+                                    <i class="fas fa-clock me-2"></i>
+                                    {{ event.start_date|date:"g:i A" }} - {{ event.end_date|date:"g:i A" }}
+                                </p>
+                                {% if event.is_virtual %}
+                                    <p class="text-muted mb-2">
+                                        <i class="fas fa-video me-2"></i>Virtual Event
+                                    </p>
+                                {% else %}
+                                    <p class="text-muted mb-2">
+                                        <i class="fas fa-map-marker-alt me-2"></i>{{ event.venue }}
+                                    </p>
+                                {% endif %}
+                                
+                                {% if event.registration_fee > 0 %}
+                                    <p class="text-success mb-2">
+                                        <i class="fas fa-dollar-sign me-2"></i>Sh{{ event.registration_fee }}
+                                    </p>
+                                {% else %}
+                                    <p class="text-success mb-2">
+                                        <i class="fas fa-gift me-2"></i>Free Event
+                                    </p>
+                                {% endif %}
+                            </div>
+                            
+                            <p class="card-text mb-3">{{ event.description|truncatewords:20 }}</p>
+                            
+                            <div class="mb-3">
+                                <small class="text-muted">
+                                    <i class="fas fa-users me-1"></i>{{ event.attendee_count }} registered
+                                    {% if event.max_attendees %}
+                                        / {{ event.max_attendees }} max
+                                    {% endif %}
+                                </small>
+                            </div>
+                            
+                            <div class="mt-auto">
+                                {% if event.registration_deadline and event.registration_deadline < now %}
+                                    <button class="btn btn-secondary w-100" disabled>
+                                        <i class="fas fa-times me-2"></i>Registration Closed
+                                    </button>
+                                {% elif event.max_attendees and event.attendee_count >= event.max_attendees %}
+                                    <button class="btn btn-warning w-100" disabled>
+                                        <i class="fas fa-users me-2"></i>Event Full
+                                    </button>
+                                {% else %}
+                                    <div class="d-grid gap-2">
+                                        <a href="{% url 'event_detail' event.id %}" class="btn btn-outline-primary">
+                                            <i class="fas fa-eye me-2"></i>View Details
+                                        </a>
+                                        {% if user.is_authenticated and user.user_type == '3' %}
+                                            {% if event.id not in user_registrations %}
+                                                <a href="{% url 'register_event' event.id %}" class="btn btn-success">
+                                                    <i class="fas fa-calendar-plus me-2"></i>Register Now
+                                                </a>
+                                            {% else %}
+                                                <button class="btn btn-primary" disabled>
+                                                    <i class="fas fa-check me-2"></i>Registered
+                                                </button>
+                                            {% endif %}
+                                        {% else %}
+                                            <a href="{% url 'login_page' %}" class="btn btn-success">
+                                                <i class="fas fa-sign-in-alt me-2"></i>Login to Register
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="card-footer bg-transparent">
+                            <small class="text-muted">
+                                Organized by {{ event.organizer.admin.first_name }} {{ event.organizer.admin.last_name }}
+                                {% if event.registration_deadline %}
+                                    • Registration closes {{ event.registration_deadline|date:"M d, Y" }}
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12">
+                    <div class="text-center py-5">
+                        <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                        <h4 class="text-muted">No Events Found</h4>
+                        <p class="text-muted">Check back later for upcoming alumni events and reunions.</p>
+                        {% if user.is_authenticated and user.user_type == '2' %}
+                            <a href="{% url 'create_event' %}" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Create Event
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if events.has_other_pages %}
+            <div class="row">
+                <div class="col-12">
+                    <nav aria-label="Events pagination">
+                        <ul class="pagination justify-content-center">
+                            {% if events.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.event_type %}&event_type={{ request.GET.event_type }}{% endif %}">First</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ events.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.event_type %}&event_type={{ request.GET.event_type }}{% endif %}">Previous</a>
+                                </li>
+                            {% endif %}
+
+                            <li class="page-item active">
+                                <span class="page-link">
+                                    Page {{ events.number }} of {{ events.paginator.num_pages }}
+                                </span>
+                            </li>
+
+                            {% if events.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ events.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.event_type %}&event_type={{ request.GET.event_type }}{% endif %}">Next</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ events.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.event_type %}&event_type={{ request.GET.event_type }}{% endif %}">Last</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Call to Action -->
+{% if not user.is_authenticated %}
+    <section class="py-5 bg-success text-white">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 mx-auto text-center">
+                    <h2 class="mb-4">Don't Miss Out on Alumni Events</h2>
+                    <p class="lead mb-4">Join the COSA COSA Network to get notified about upcoming events, reunions, and exclusive networking opportunities.</p>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <a href="{% url 'alumni_registration' %}" class="btn btn-light btn-lg me-md-2">
+                            <i class="fas fa-user-plus me-2"></i>Register as Alumni
+                        </a>
+                        <a href="{% url 'login_page' %}" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, var(--cosa-primary), var(--cosa-secondary));
+        color: white;
+        padding: 4rem 0;
+    }
+    
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, var(--cosa-primary), var(--cosa-secondary));
+    }
+    
+    .card-hover:hover {
+        transform: translateY(-5px);
+        transition: transform 0.3s ease;
+    }
+</style>
+{% endblock %}

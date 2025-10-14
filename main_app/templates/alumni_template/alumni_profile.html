@@ -1,0 +1,510 @@
+{% extends 'alumni_template/base.html' %}
+{% load static %}
+{% block title %}My Profile - COSA Alumni{% endblock %}
+{% block extra_css %}
+<style>
+    .profile-header {
+        position: relative;
+        background: linear-gradient(135deg, #7b61ff 0%, #4bc0c8 100%);
+        color: #ffffff;
+        padding: 2.5rem 0;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 20px 40px -30px rgba(65, 48, 161, 0.6);
+    }
+    .profile-header::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.25), transparent 55%);
+        opacity: 0.8;
+    }
+    .profile-header .container {
+        position: relative;
+        z-index: 1;
+    }
+    .profile-header h1 {
+        font-size: 2rem;
+        font-weight: 600;
+    }
+    .profile-header p {
+        color: rgba(255, 255, 255, 0.85);
+        max-width: 360px;
+    }
+    .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        border: none;
+        border-radius: 999px;
+        padding: 0.65rem 1.5rem;
+        background: rgba(255, 255, 255, 0.2);
+        color: #ffffff;
+        font-weight: 500;
+        backdrop-filter: blur(8px);
+        transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .back-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        color: #ffffff;
+        text-decoration: none;
+        transform: translateY(-1px);
+        box-shadow: 0 10px 20px -12px rgba(65, 48, 161, 0.7);
+    }
+    .profile-card {
+        border: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+    }
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        border: 4px solid white;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    .form-section {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .privacy-badge {
+        font-size: 0.75rem;
+        padding: 4px 8px;
+    }
+    .skill-tag {
+        display: inline-block;
+        background-color: #e9ecef;
+        color: #495057;
+        padding: 4px 12px;
+        border-radius: 15px;
+        font-size: 0.85rem;
+        margin: 2px;
+    }
+    .profile-stats {
+        background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        border-radius: 10px;
+        padding: 20px;
+    }
+</style>
+{% endblock %}
+{% block alumni_content %}
+<!-- Profile Header -->
+<div class="profile-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-6 mb-2">My Profile</h1>
+                <p class="lead mb-0">Manage your alumni profile and privacy settings</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a href="{% url 'alumni_home' %}" class="back-btn">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Back to Dashboard</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container my-5">
+    <div class="row">
+        <!-- Profile Information -->
+        <div class="col-lg-4">
+            <div class="card profile-card">
+                <div class="card-body text-center">
+                    {% if alumni.admin.profile_pic %}
+                    <img src="{{ alumni.admin.profile_pic.url }}" alt="Profile Picture" 
+                         class="rounded-circle profile-avatar mb-3">
+                    {% else %}
+                    <div class="bg-secondary rounded-circle profile-avatar d-flex align-items-center justify-content-center mx-auto mb-3">
+                        <i class="fas fa-user fa-3x text-white"></i>
+                    </div>
+                    {% endif %}
+                    
+                    <h4>{{ alumni.admin.get_full_name }}</h4>
+                    <p class="text-muted mb-2">{{ alumni.level.name|default:"Alumni" }}</p>
+                    <p class="text-muted mb-3">Class of {{ alumni.graduation_year.year|default:"N/A" }}</p>
+                    
+                    <div class="mb-3">
+                        {% if alumni.privacy_level == 'public' %}
+                        <span class="badge bg-success privacy-badge">
+                            <i class="fas fa-globe me-1"></i>Public Profile
+                        </span>
+                        {% elif alumni.privacy_level == 'limited' %}
+                        <span class="badge bg-warning privacy-badge">
+                            <i class="fas fa-users me-1"></i>Limited Visibility
+                        </span>
+                        {% else %}
+                        <span class="badge bg-danger privacy-badge">
+                            <i class="fas fa-lock me-1"></i>Private Profile
+                        </span>
+                        {% endif %}
+                        
+                        {% if alumni.admin.is_verified %}
+                        <span class="badge bg-primary privacy-badge ms-1">
+                            <i class="fas fa-check-circle me-1"></i>Verified
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="border-end">
+                                <h5 class="text-primary mb-1">{{ alumni.admin.date_joined|date:"M Y" }}</h5>
+                                <small class="text-muted">Member Since</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <h5 class="text-success mb-1">{{ alumni.admin.last_login|date:"M d" }}</h5>
+                            <small class="text-muted">Last Login</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="profile-stats mt-4">
+                <h6 class="mb-3"><i class="fas fa-chart-bar me-2"></i>My Activity</h6>
+                <div class="row text-center">
+                    <div class="col-6 mb-3">
+                        <div class="h4 mb-1">{{ alumni.jobapplication_set.count|default:0 }}</div>
+                        <small>Job Applications</small>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="h4 mb-1">{{ alumni.eventregistration_set.count|default:0 }}</div>
+                        <small>Events Attended</small>
+                    </div>
+                    <div class="col-6">
+                        <div class="h4 mb-1">{{ alumni.sent_messages.count|default:0 }}</div>
+                        <small>Messages Sent</small>
+                    </div>
+                    <div class="col-6">
+                        <div class="h4 mb-1">
+                            {% if alumni.is_mentor %}1{% else %}0{% endif %}
+                        </div>
+                        <small>Mentorship</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Profile Form -->
+        <div class="col-lg-8">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <!-- Personal Information -->
+                <div class="form-section">
+                    <h5 class="mb-3"><i class="fas fa-user me-2"></i>Personal Information</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="first_name" class="form-label">First Name *</label>
+                            <input type="text" class="form-control" id="first_name" name="first_name" 
+                                   value="{{ alumni.admin.first_name }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="last_name" class="form-label">Last Name *</label>
+                            <input type="text" class="form-control" id="last_name" name="last_name" 
+                                   value="{{ alumni.admin.last_name }}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="email" 
+                                   value="{{ alumni.admin.email }}" readonly>
+                            <small class="text-muted">Email cannot be changed</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="phone_number" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="phone_number" name="phone_number" 
+                                   value="{{ alumni.admin.phone_number|default:'' }}">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="date_of_birth" class="form-label">Date of Birth</label>
+                            <input type="date" class="form-control" id="date_of_birth" name="date_of_birth" 
+                                   value="{{ alumni.admin.date_of_birth|date:'Y-m-d'|default:'' }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="gender" class="form-label">Gender</label>
+                            <select class="form-select" id="gender" name="gender">
+                                <option value="">Select Gender</option>
+                                <option value="M" {% if alumni.admin.gender == 'M' %}selected{% endif %}>Male</option>
+                                <option value="F" {% if alumni.admin.gender == 'F' %}selected{% endif %}>Female</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Address</label>
+                        <textarea class="form-control" id="address" name="address" rows="3">{{ alumni.admin.address|default:'' }}</textarea>
+                    </div>
+                </div>
+                
+                <!-- Academic Information -->
+                <div class="form-section">
+                    <h5 class="mb-3"><i class="fas fa-graduation-cap me-2"></i>Academic Information</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="student_id" class="form-label">Student ID</label>
+                            <input type="text" class="form-control" id="student_id" name="student_id" 
+                                   value="{{ alumni.student_id|default:'' }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="graduation_year" class="form-label">Completion Year</label>
+                            <select class="form-select" id="graduation_year" name="graduation_year">
+                                <option value="">Select Year</option>
+                                {% for year in graduation_years %}
+                                <option value="{{ year.id }}" {% if alumni.graduation_year == year %}selected{% endif %}>
+                                    {{ year.year }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="level" class="form-label">Level</label>
+                            <select class="form-select" id="level" name="level">
+                                <option value="">Select Level</option>
+                                {% for level in degrees %}
+                                <option value="{{ level.id }}" {% if alumni.level == level %}selected{% endif %}>
+                                    {{ level.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="department" class="form-label">Department</label>
+                            <select class="form-select" id="department" name="department">
+                                <option value="">Select Department</option>
+                                {% for dept in departments %}
+                                <option value="{{ dept.id }}" {% if alumni.department == dept %}selected{% endif %}>
+                                    {{ dept.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Professional Information -->
+                <div class="form-section">
+                    <h5 class="mb-3"><i class="fas fa-briefcase me-2"></i>Professional Information</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="current_company" class="form-label">Current Company</label>
+                            <input type="text" class="form-control" id="current_company" name="current_company" 
+                                   value="{{ alumni.current_company.name|default:'' }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="job_title" class="form-label">Job Title</label>
+                            <input type="text" class="form-control" id="job_title" name="job_title" 
+                                   value="{{ alumni.job_title|default:'' }}">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="industry" class="form-label">Industry</label>
+                            <input type="text" class="form-control" id="industry" name="industry" 
+                                   value="{{ alumni.industry|default:'' }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="employment_status" class="form-label">Employment Status</label>
+                            <select class="form-select" id="employment_status" name="employment_status">
+                                <option value="">Select Status</option>
+                                <option value="employed" {% if alumni.employment_status == 'employed' %}selected{% endif %}>Employed</option>
+                                <option value="self_employed" {% if alumni.employment_status == 'self_employed' %}selected{% endif %}>Self-Employed</option>
+                                <option value="unemployed" {% if alumni.employment_status == 'unemployed' %}selected{% endif %}>Unemployed</option>
+                                <option value="student" {% if alumni.employment_status == 'student' %}selected{% endif %}>Student</option>
+                                <option value="retired" {% if alumni.employment_status == 'retired' %}selected{% endif %}>Retired</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="current_city" class="form-label">Current City</label>
+                            <input type="text" class="form-control" id="current_city" name="current_city" 
+                                   value="{{ alumni.current_city|default:'' }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="linkedin_profile" class="form-label">LinkedIn Profile</label>
+                            <input type="url" class="form-control" id="linkedin_profile" name="linkedin_profile" 
+                                   value="{{ alumni.linkedin_profile|default:'' }}" 
+                                   placeholder="https://linkedin.com/in/yourprofile">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="website" class="form-label">Personal Website</label>
+                        <input type="url" class="form-control" id="website" name="website" 
+                               value="{{ alumni.website|default:'' }}" 
+                               placeholder="https://yourwebsite.com">
+                    </div>
+                </div>
+                
+                <!-- Skills and Interests -->
+                <div class="form-section">
+                    <h5 class="mb-3"><i class="fas fa-cogs me-2"></i>Skills & Interests</h5>
+                    <div class="mb-3">
+                        <label for="skills" class="form-label">Skills</label>
+                        <textarea class="form-control" id="skills" name="skills" rows="3" 
+                                  placeholder="Enter your skills separated by commas">{{ alumni.skills|default:'' }}</textarea>
+                        <small class="text-muted">Separate skills with commas (e.g., Python, Project Management, Data Analysis)</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="interests" class="form-label">Interests</label>
+                        <textarea class="form-control" id="interests" name="interests" rows="3" 
+                                  placeholder="Enter your interests separated by commas">{{ alumni.interests|default:'' }}</textarea>
+                        <small class="text-muted">Separate interests with commas (e.g., Technology, Sports, Travel)</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="bio" class="form-label">Bio</label>
+                        <textarea class="form-control" id="bio" name="bio" rows="4" 
+                                  placeholder="Tell us about yourself...">{{ alumni.bio|default:'' }}</textarea>
+                        <small class="text-muted">Maximum 500 characters</small>
+                    </div>
+                </div>
+                
+                <!-- Privacy Settings -->
+                <div class="form-section">
+                    <h5 class="mb-3"><i class="fas fa-shield-alt me-2"></i>Privacy Settings</h5>
+                    <div class="mb-3">
+                        <label for="privacy_level" class="form-label">Profile Visibility</label>
+                        <select class="form-select" id="privacy_level" name="privacy_level">
+                            <option value="public" {% if alumni.privacy_level == 'public' %}selected{% endif %}>
+                                Public - Visible to everyone
+                            </option>
+                            <option value="limited" {% if alumni.privacy_level == 'limited' %}selected{% endif %}>
+                                Limited - Visible to verified alumni only
+                            </option>
+                            <option value="private" {% if alumni.privacy_level == 'private' %}selected{% endif %}>
+                                Private - Not visible in directory
+                            </option>
+                        </select>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="allow_contact" name="allow_contact" 
+                                       {% if alumni.allow_contact %}checked{% endif %}>
+                                <label class="form-check-label" for="allow_contact">
+                                    Allow other alumni to contact me
+                                </label>
+                            </div>
+                            
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="is_mentor" name="is_mentor" 
+                                       {% if alumni.is_mentor %}checked{% endif %}>
+                                <label class="form-check-label" for="is_mentor">
+                                    Available as a mentor
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="willing_to_hire" name="willing_to_hire" 
+                                       {% if alumni.willing_to_hire %}checked{% endif %}>
+                                <label class="form-check-label" for="willing_to_hire">
+                                    Open to hiring alumni
+                                </label>
+                            </div>
+                            
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="newsletter_subscription" name="newsletter_subscription" 
+                                       {% if alumni.newsletter_subscription %}checked{% endif %}>
+                                <label class="form-check-label" for="newsletter_subscription">
+                                    Subscribe to newsletter
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Profile Picture -->
+                <div class="form-section">
+                    <h5 class="mb-3"><i class="fas fa-camera me-2"></i>Profile Picture</h5>
+                    <div class="row align-items-center">
+                        <div class="col-md-3">
+                            {% if alumni.admin.profile_pic %}
+                            <img src="{{ alumni.admin.profile_pic.url }}" alt="Current Profile Picture" 
+                                 class="img-fluid rounded">
+                            {% else %}
+                            <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                                 style="height: 100px;">
+                                <i class="fas fa-user fa-2x text-muted"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-9">
+                            <input type="file" class="form-control" id="profile_pic" name="profile_pic" 
+                                   accept="image/*">
+                            <small class="text-muted">Recommended size: 300x300px. Max file size: 2MB</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'alumni_home' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Update Profile
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Character counter for bio
+document.getElementById('bio').addEventListener('input', function() {
+    const maxLength = 500;
+    const currentLength = this.value.length;
+    const remaining = maxLength - currentLength;
+    
+    // You could add a character counter display here
+    if (remaining < 0) {
+        this.value = this.value.substring(0, maxLength);
+    }
+});
+
+// Profile picture preview
+document.getElementById('profile_pic').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            // You could add preview functionality here
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// Skills and interests tag formatting
+function formatTags(inputId) {
+    const input = document.getElementById(inputId);
+    input.addEventListener('blur', function() {
+        const tags = this.value.split(',').map(tag => tag.trim()).filter(tag => tag);
+        this.value = tags.join(', ');
+    });
+}
+
+formatTags('skills');
+formatTags('interests');
+</script>
+{% endblock %}

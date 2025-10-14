@@ -1,0 +1,164 @@
+{% extends 'alumni_template/base.html' %}
+{% block title %}Dashboard - COSA Alumni{% endblock %}
+{% block alumni_content %}
+<section class="app-hero mb-4">
+    <div class="container stack-gap-sm">
+        <div class="d-flex flex-column flex-sm-row justify-content-between gap-3">
+            <div>
+                <h1>Welcome back, {{ alumni.admin.first_name }}!</h1>
+                <p class="mb-0">{{ alumni.degree.name }} &middot; Class of {{ alumni.graduation_year.year }}</p>
+                {% if alumni.current_company %}
+                    <p class="mb-0 text-light"><i class="fas fa-briefcase me-2"></i>{{ alumni.job_title }} at {{ alumni.current_company.name }}</p>
+                {% endif %}
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                {% if alumni.admin.profile_pic %}
+                    <img src="{{ alumni.admin.profile_pic.url }}" alt="Profile" class="avatar" style="width:72px;height:72px;">
+                {% else %}
+                    <div class="avatar d-flex align-items-center justify-content-center bg-light text-primary" style="width:72px;height:72px;">
+                        <i class="fas fa-user"></i>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="app-hero-meta">
+            <div class="app-hero-stat">
+                <h4>{{ stats.total_alumni }}</h4>
+                <span>Total COSA members</span>
+            </div>
+            <div class="app-hero-stat">
+                <h4>{{ stats.my_connections }}</h4>
+                <span>My connections</span>
+            </div>
+            <div class="app-hero-stat">
+                <h4>{{ stats.my_applications }}</h4>
+                <span>Job applications</span>
+            </div>
+            <div class="app-hero-stat">
+                <h4>{{ stats.my_registrations }}</h4>
+                <span>Event registrations</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="container stack-gap">
+    <div class="stack-gap">
+        <div class="surface-card stack-gap-sm">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-briefcase me-2 text-primary"></i>Recent job opportunities</h5>
+                <a href="{% url 'job_board' %}" class="btn btn-outline-primary btn-sm">View all</a>
+            </div>
+            <div class="stack-gap-sm">
+                {% for job in recent_jobs %}
+                    <div class="d-flex flex-column flex-sm-row gap-3 border rounded p-3">
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1"><a href="{% url 'job_detail' job.id %}" class="text-decoration-none">{{ job.title }}</a></h6>
+                            <p class="mb-1 text-muted">{{ job.company.name }}{% if job.company.is_verified %} <i class="fas fa-check-circle text-success"></i>{% endif %}</p>
+                            <div class="small text-muted"><i class="fas fa-map-marker-alt me-1"></i>{{ job.location }}</div>
+                        </div>
+                        <div class="d-flex flex-column gap-2 align-items-sm-end">
+                            <div class="d-flex flex-wrap gap-1">
+                                <span class="badge bg-primary">{{ job.get_job_type_display }}</span>
+                                <span class="badge bg-secondary">{{ job.get_experience_level_display }}</span>
+                                {% if job.is_remote %}<span class="badge bg-info text-dark">Remote</span>{% endif %}
+                            </div>
+                            <small class="text-muted">Posted {{ job.created_at|timesince }} ago</small>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="text-muted text-center">No jobs posted yet. Check back soon.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="surface-card stack-gap-sm">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-calendar-alt me-2 text-success"></i>Upcoming events</h5>
+                <a href="{% url 'events' %}" class="btn btn-outline-success btn-sm">Browse events</a>
+            </div>
+            <div class="stack-gap-sm">
+                {% for event in recent_events %}
+                    <div class="d-flex flex-column flex-sm-row gap-3 border rounded p-3">
+                        <div class="text-center" style="min-width:70px;">
+                            <div class="badge bg-success text-white d-block mb-1">{{ event.start_date|date:"M" }}</div>
+                            <div class="h4 mb-0">{{ event.start_date|date:"d" }}</div>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1"><a href="{% url 'event_detail' event.id %}" class="text-decoration-none">{{ event.title }}</a></h6>
+                            <div class="small text-muted mb-1"><i class="fas fa-map-marker-alt me-1"></i>{{ event.location }}</div>
+                            <div class="small text-muted"><i class="fas fa-clock me-1"></i>{{ event.start_time|time:"g:i A" }}{% if event.end_time %} - {{ event.end_time|time:"g:i A" }}{% endif %}</div>
+                        </div>
+                        <div class="d-flex flex-column align-items-sm-end">
+                            <span class="badge bg-light text-dark">{{ event.get_event_type_display }}</span>
+                            <small class="text-muted mt-2">{{ event.attendee_count }} attending</small>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="text-muted text-center">No upcoming events scheduled.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="stack-gap">
+        <div class="surface-card stack-gap-sm">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-newspaper me-2 text-info"></i>Latest news</h5>
+                <a href="{% url 'public_news' %}" class="btn btn-outline-info btn-sm">View all</a>
+            </div>
+            <div class="stack-gap-sm">
+                {% for article in recent_news %}
+                    <div class="d-flex gap-3 border rounded p-3">
+                        {% if article.featured_image %}
+                            <img src="{{ article.featured_image.url }}" alt="{{ article.title }}" class="rounded" style="width:90px;height:90px;object-fit:cover;">
+                        {% else %}
+                            <div class="rounded d-flex align-items-center justify-content-center bg-light text-muted" style="width:90px;height:90px;">
+                                <i class="fas fa-newspaper"></i>
+                            </div>
+                        {% endif %}
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">{{ article.title }}</h6>
+                            <p class="mb-2 text-muted">{{ article.content|truncatewords:24 }}</p>
+                            <small class="text-muted"><i class="fas fa-user me-1"></i>{{ article.author.admin.get_full_name }} &middot; {{ article.publish_date|timesince }} ago</small>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="text-muted text-center">No news articles available.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="surface-card stack-gap-sm">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-bell me-2 text-warning"></i>Notifications</h5>
+                <a href="{% url 'notifications' %}" class="btn btn-outline-warning btn-sm">See all</a>
+            </div>
+            <div class="stack-gap-sm">
+                {% for notification in notifications %}
+                    <div class="d-flex gap-3 border rounded p-3">
+                        <div class="avatar d-flex align-items-center justify-content-center bg-light text-warning">
+                            {% if notification.notification_type == 'event' %}
+                                <i class="fas fa-calendar"></i>
+                            {% elif notification.notification_type == 'job' %}
+                                <i class="fas fa-briefcase"></i>
+                            {% elif notification.notification_type == 'message' %}
+                                <i class="fas fa-envelope"></i>
+                            {% else %}
+                                <i class="fas fa-info-circle"></i>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">{{ notification.title }}</h6>
+                            <p class="mb-1 text-muted">{{ notification.message|truncatewords:18 }}</p>
+                            <small class="text-muted">{{ notification.created_at|timesince }} ago</small>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="text-muted text-center">No notifications right now.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1211,7 +1211,14 @@
             <span class="app-header-label">Logout</span>
           </a>
           {% else %}
-          <!-- Alumni header profile moved to quick nav -->
+          <a href="{% url 'alumni_profile' %}" class="app-profile-action">
+            <i class="fas fa-user"></i>
+            <span class="app-header-label">Profile</span>
+          </a>
+          <a href="{% url 'user_logout' %}">
+            <i class="fas fa-sign-out-alt"></i>
+            <span class="app-header-label">Logout</span>
+          </a>
           {% endif %} {% else %}
           <a href="{% url 'login_page' %}">
             <i class="fas fa-sign-in-alt"></i>

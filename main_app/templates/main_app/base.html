@@ -222,18 +222,24 @@
       }
 
       .app-header-quick-nav {
-        display: flex;
-        gap: 0.35rem;
-        overflow-x: auto;
-        padding: 0 0.85rem 0.6rem;
-        max-width: 640px;
-        margin: 0 auto;
-        scrollbar-width: none;
-        justify-content: center;
+        display: none;
       }
 
-      .app-header-quick-nav::-webkit-scrollbar {
-        display: none;
+      @media (min-width: 768px) {
+        .app-header-quick-nav {
+          display: flex;
+          gap: 0.35rem;
+          overflow-x: auto;
+          padding: 0 0.85rem 0.6rem;
+          max-width: 640px;
+          margin: 0 auto;
+          scrollbar-width: none;
+          justify-content: center;
+        }
+
+        .app-header-quick-nav::-webkit-scrollbar {
+          display: none;
+        }
       }
 
       .app-chip {
@@ -1298,27 +1304,7 @@
           <i class="fas fa-bullhorn"></i>
           <span class="app-chip-label">Alerts</span>
         </a>
-        {% else %}
-        <a
-          href="{% url 'alumni_directory' %}"
-          class="app-chip {% if current == 'alumni_directory' %}active{% endif %}"
-          ><i class="fas fa-users"></i> Members</a
-        >
-        <a
-          href="{% url 'events' %}"
-          class="app-chip {% if current == 'events' %}active{% endif %}"
-          ><i class="fas fa-calendar-alt"></i> Events</a
-        >
-        <a
-          href="{% url 'job_board' %}"
-          class="app-chip {% if current == 'job_board' %}active{% endif %}"
-          ><i class="fas fa-briefcase"></i> Careers</a
-        >
-        <a
-          href="{% url 'my_events' %}"
-          class="app-chip {% if current == 'my_events' %}active{% endif %}"
-          ><i class="fas fa-ticket-alt"></i> My Events</a
-        >
+        {% elif user.user_type == '3' %}
         <a
           href="{% url 'alumni_profile' %}"
           class="app-chip app-chip-profile {% if current == 'alumni_profile' %}active{% endif %}"
@@ -1462,9 +1448,11 @@
         >
           <span class="app-tab-icon">
             <i class="fas fa-house"></i>
-            {% with count=alumni_badges.home %} {% if count %}
-            <span class="app-icon-badge">{{ count }}</span>
-            {% endif %} {% endwith %}
+            {% with count=alumni_badges.home %}
+              {% if count %}
+                <span class="app-icon-badge">{{ count }}</span>
+              {% endif %}
+            {% endwith %}
           </span>
           Home
         </a>
@@ -1474,9 +1462,11 @@
         >
           <span class="app-tab-icon">
             <i class="fas fa-envelope"></i>
-            {% with count=alumni_badges.messages %} {% if count %}
-            <span class="app-icon-badge">{{ count }}</span>
-            {% endif %} {% endwith %}
+            {% with count=alumni_badges.messages %}
+              {% if count %}
+                <span class="app-icon-badge">{{ count }}</span>
+              {% endif %}
+            {% endwith %}
           </span>
           Inbox
         </a>
@@ -1486,11 +1476,11 @@
         >
           <span class="app-tab-icon">
             <i class="fas fa-bell"></i>
-            {% with
-            count=alumni_badges.alerts|default:alumni_badges.notifications %} {%
-            if count %}
-            <span class="app-icon-badge">{{ count }}</span>
-            {% endif %} {% endwith %}
+            {% with count=alumni_badges.alerts|default:alumni_badges.notifications %}
+              {% if count %}
+                <span class="app-icon-badge">{{ count }}</span>
+              {% endif %}
+            {% endwith %}
           </span>
           Alerts
         </a>
@@ -1500,9 +1490,11 @@
         >
           <span class="app-tab-icon">
             <i class="fas fa-comment-dots"></i>
-            {% with count=alumni_badges.feedback %} {% if count %}
-            <span class="app-icon-badge">{{ count }}</span>
-            {% endif %} {% endwith %}
+            {% with count=alumni_badges.feedback %}
+              {% if count %}
+                <span class="app-icon-badge">{{ count }}</span>
+              {% endif %}
+            {% endwith %}
           </span>
           Feedback
         </a>

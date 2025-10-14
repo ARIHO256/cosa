@@ -1,4 +1,20 @@
 {% extends 'main_app/base.html' %}
+
+{% block alumni_rail %}
+  {% include 'alumni_template/includes/dashboard_rail.html' %}
+{% endblock %}
+
+{% block alumni_meta %}
+  {% include 'alumni_template/includes/dashboard_meta.html' %}
+{% endblock %}
 {% block content %}
-{% block alumni_content %}{% endblock %}
+<section class="app-section app-section--dashboard">
+  <div class="app-section-inner">
+    <div class="app-dashboard">
+      <aside class="app-dashboard__rail">{% block alumni_rail %}{% endblock %}</aside>
+      <main class="app-dashboard__main">{% block alumni_content %}{% endblock %}</main>
+      <aside class="app-dashboard__meta">{% block alumni_meta %}{% endblock %}</aside>
+    </div>
+  </div>
+</section>
 {% endblock %}

@@ -1,4 +1,20 @@
 {% extends 'main_app/base.html' %}
+
+{% block coordinator_rail %}
+  {% include 'coordinator_template/includes/dashboard_rail.html' %}
+{% endblock %}
+
+{% block coordinator_meta %}
+  {% include 'coordinator_template/includes/dashboard_meta.html' %}
+{% endblock %}
 {% block content %}
-{% block coordinator_content %}{% endblock %}
+<section class="app-section app-section--dashboard">
+  <div class="app-section-inner">
+    <div class="app-dashboard">
+      <aside class="app-dashboard__rail">{% block coordinator_rail %}{% endblock %}</aside>
+      <main class="app-dashboard__main">{% block coordinator_content %}{% endblock %}</main>
+      <aside class="app-dashboard__meta">{% block coordinator_meta %}{% endblock %}</aside>
+    </div>
+  </div>
+</section>
 {% endblock %}

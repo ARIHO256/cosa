@@ -1,0 +1,49 @@
+{% with current=request.resolver_match.url_name %}
+<div class="app-rail-card">
+  <h6>Navigation</h6>
+  <ul>
+    <li>
+      <a href="{% url 'admin_home' %}" class="{% if current == 'admin_home' %}active{% endif %}">
+        <i class="fas fa-newspaper"></i>
+        <span>News Feed</span>
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'manage_alumni' %}" class="{% if current == 'manage_alumni' or current == 'admin_register_alumni' or current == 'verify_alumni' %}active{% endif %}">
+        <i class="fas fa-user-graduate"></i>
+        <span>Alumni Network</span>
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'manage_coordinators' %}" class="{% if current == 'manage_coordinators' or current == 'add_coordinator' or current == 'edit_coordinator' %}active{% endif %}">
+        <i class="fas fa-user-tie"></i>
+        <span>Coordinators</span>
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'manage_companies' %}" class="{% if current == 'manage_companies' or current == 'edit_company' or current == 'verify_company' %}active{% endif %}">
+        <i class="fas fa-building"></i>
+        <span>Partner Companies</span>
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'system_analytics' %}" class="{% if current == 'system_analytics' %}active{% endif %}">
+        <i class="fas fa-chart-line"></i>
+        <span>Analytics</span>
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'admin_messages_inbox' %}" class="{% if current == 'admin_messages_inbox' or current == 'admin_view_message' or current == 'admin_send_message' or current == 'admin_send_message_to' %}active{% endif %}">
+        <i class="fas fa-comments"></i>
+        <span>Messages</span>
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'system_settings' %}" class="{% if current == 'system_settings' %}active{% endif %}">
+        <i class="fas fa-cog"></i>
+        <span>Settings</span>
+      </a>
+    </li>
+  </ul>
+</div>
+{% endwith %}

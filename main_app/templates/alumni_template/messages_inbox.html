@@ -133,6 +133,7 @@
 </section>
 
 {% block extra_js %}
+{{ block.super }}
 <script>
     const selectAll = document.getElementById('select-all');
     if (selectAll) {

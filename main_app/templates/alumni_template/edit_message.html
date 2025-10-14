@@ -1,0 +1,36 @@
+{% extends 'alumni_template/base.html' %}
+{% load crispy_forms_tags %}
+{% block title %}Edit Message - COSA Alumni{% endblock %}
+{% block alumni_content %}
+<section class="app-hero mb-4">
+    <div class="container d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3">
+        <div>
+            <h1>Edit Message</h1>
+            <p>You can edit this message within 10 minutes of sending.</p>
+        </div>
+        <a href="{% url 'messages_sent' %}" class="btn btn-outline-primary">
+            <i class="fas fa-inbox me-2"></i>Back to Sent Messages
+        </a>
+    </div>
+</section>
+
+<section class="container">
+    <div class="surface-card stack-gap-sm">
+        <div class="text-muted small">
+            <i class="fas fa-clock me-1"></i>
+            Sent {{ message_obj.created_at|timesince }} ago &bullet;
+            Edit until {{ deadline|date:"M d, Y g:i A" }}
+        </div>
+        <form method="post" enctype="multipart/form-data" class="stack-gap-sm">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-1"></i>Save changes
+                </button>
+                <a href="{% url 'messages_sent' %}" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

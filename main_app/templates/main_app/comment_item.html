@@ -56,41 +56,41 @@
             </form>
             {% endif %}
         </div>
-    </div>
+</div>
 
-    {% if comment.get_replies %}
+{% if comment.get_replies %}
     <div class="comment-thread__children">
         {% for reply in comment.get_replies %}
             {% include 'main_app/comment_item.html' with comment=reply %}
         {% endfor %}
     </div>
-    {% endif %}
+{% endif %}
 </div>
 
 <style>
 .comment-thread {
     position: relative;
     margin-top: 0.75rem;
-    margin-left: clamp(0rem, calc(var(--depth, 0) * 1.1rem), 3.4rem);
+    margin-left: clamp(0rem, calc(var(--depth, 0) * 1rem), 3rem);
 }
 
 .comment-thread::before {
     content: "";
     position: absolute;
-    top: 0.5rem;
-    bottom: -0.5rem;
-    left: calc(-0.55rem);
+    top: 1rem;
+    bottom: calc(-0.5rem);
+    left: calc(-0.5rem);
     width: 1px;
-    background: rgba(148, 163, 184, 0.35);
+    background: rgba(148, 163, 184, 0.3);
     opacity: calc(var(--depth, 0) > 0 ? 1 : 0);
 }
 
 .comment-thread__bubble {
     background: rgba(255, 255, 255, 0.95);
-    border-radius: 18px;
+    border-radius: 16px;
     border: 1px solid rgba(148, 163, 184, 0.2);
-    box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
-    padding: 0.85rem 1rem;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+    padding: 0.9rem 1rem;
 }
 
 .comment-thread__header {
@@ -100,8 +100,8 @@
 }
 
 .comment-thread__avatar {
-    width: 36px;
-    height: 36px;
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
     background: linear-gradient(135deg, rgba(37, 99, 235, 0.85), rgba(59, 130, 246, 0.75));
     color: #fff;
@@ -112,7 +112,6 @@
     overflow: hidden;
     text-transform: uppercase;
     flex-shrink: 0;
-    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.25);
 }
 
 .comment-thread__avatar img {
@@ -121,24 +120,19 @@
     object-fit: cover;
 }
 
-.comment-thread__title {
-    display: flex;
-    flex-direction: column;
-    font-size: 0.85rem;
-}
-
 .comment-thread__author {
-    font-weight: 700;
+    font-weight: 600;
     color: #1f2937;
 }
 
 .comment-thread__timestamp {
-    font-size: 0.72rem;
+    display: block;
+    font-size: 0.7rem;
     color: #94a3b8;
 }
 
 .comment-thread__content {
-    margin: 0.65rem 0 0.5rem;
+    margin: 0.65rem 0;
     color: #334155;
     line-height: 1.55;
     font-size: 0.9rem;
@@ -147,7 +141,8 @@
 .comment-thread__footer {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.4rem;
+    flex-wrap: wrap;
 }
 
 .comment-thread__action {
@@ -160,50 +155,27 @@
     font-size: 0.72rem;
     background: rgba(255, 255, 255, 0.9);
     color: #475569;
-    transition: background 0.15s ease, transform 0.15s ease;
-}
-
-.comment-thread__action:hover {
-    transform: translateY(-1px);
-    background: rgba(37, 99, 235, 0.08);
-}
-
-.comment-thread__action.muted {
-    border-style: dashed;
-    cursor: default;
 }
 
 .comment-thread__action-count {
     font-weight: 600;
-    color: #1f2937;
 }
 
 .comment-thread__children {
-    margin-left: clamp(0.6rem, calc(var(--depth, 0) * 0.2rem + 0.8rem), 2rem);
-    margin-top: 0.4rem;
     display: flex;
     flex-direction: column;
     gap: 0.6rem;
-}
-
-.reply-form {
-    margin-top: 0.75rem;
+    margin-left: clamp(0.6rem, calc(var(--depth, 0) * 0.3rem + 0.6rem), 1.8rem);
+    margin-top: 0.5rem;
 }
 
 @media (max-width: 576px) {
-    .comment-thread__bubble {
-        border-radius: 16px;
-        padding: 0.75rem;
-    }
     .comment-thread {
-        margin-left: clamp(0rem, calc(var(--depth, 0) * 0.85rem), 2.5rem);
+        margin-left: clamp(0rem, calc(var(--depth, 0) * 0.7rem), 2.2rem);
     }
-    .comment-thread__children {
-        margin-left: clamp(0.5rem, calc(var(--depth, 0) * 0.15rem + 0.6rem), 1.5rem);
-    }
-    .comment-thread__footer {
-        flex-wrap: wrap;
-        gap: 0.4rem;
+    .comment-thread__bubble {
+        padding: 0.75rem;
+        border-radius: 14px;
     }
 }
 </style>

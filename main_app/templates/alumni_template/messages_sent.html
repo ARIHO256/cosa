@@ -32,40 +32,10 @@
                             <i class="fas fa-paperclip"></i>
                         </a>
                         {% endif %}
-                        {% if timezone.now|date:'U'|add:'0'|floatformat:0 and False %}{% endif %}
-                        {% if timezone.now|date:'U' %}{% endif %}
-                        {% if item.created_at >= timezone.now|date:'U' %}{% endif %}
-                        {% if item.created_at %}{% endif %}
-                        {% with diff=timezone.now|date:'U'|floatformat:0 %}{% endwith %}
-                        {% with can_edit=item.created_at >= item.created_at %}{% endwith %}
-                        {% if item.created_at and item.created_at|timesince < "0" %}{% endif %}
-                        {% with deadline=item.created_at|add:'0' %}{% endwith %}
-                        {% with now=timezone.now %}{% endwith %}
-                        {% if item.created_at %}{% endif %}
-                        {% if item.created_at %}{% endif %}
-                        {% if timezone.now|date:'U' %}{% endif %}
-                        {% if item.created_at %}{% endif %}
-                        {% if item.created_at %}{% endif %}
-                        {% with remaining=(item.created_at|date:'U') %}{% endwith %}
-                        {% with current=now %}{% endwith %}
-                        {% if item.created_at %}{% endif %}
-                        {% if item.created_at %}{% endif %}
-                        {% with editable=timezone.now|date:'U' %}{% endwith %}
-                        {% if (timezone.now - item.created_at).total_seconds <= edit_window_minutes|default:10 * 60 %}{% endif %}
-                        {% with diff=timezone.now - item.created_at %}{% endwith %}
-                        {% if timedelta %}{% endif %}
-                        {% with can_edit=(timezone.now - item.created_at).total_seconds <= edit_window_minutes|default:10|floatformat:0 %}{% endwith %}
-                        {% if item.created_at %}{% endif %}
-                        {% if item.created_at %}{% endif %}
-                        {% with can_edit=item.can_edit if False else None %}{% endwith %}
-                        {% if item.created_at %}{% endif %}
-                        {% with can_edit=item.created_at %}{% endwith %}
-                        {% if item.created_at %}{% endif %}
-                        {% with now=timezone.now %}{% endwith %}
-                        {% if item.created_at and timezone.now - item.created_at <= timedelta(minutes=edit_window_minutes|default:10) %}
-                            <a href="{% url 'edit_message' item.id %}" class="btn btn-sm btn-outline-primary">
-                                <i class="fas fa-pen"></i> Edit
-                            </a>
+                        {% if item.can_edit %}
+                        <a href="{% url 'edit_message' item.id %}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-pen"></i> Edit
+                        </a>
                         {% endif %}
                     </div>
                 </div>

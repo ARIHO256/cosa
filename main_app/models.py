@@ -160,18 +160,10 @@ class AlumniCoordinator(models.Model):
 
 
 class GraduationYear(models.Model):
-    LEVEL_CHOICES = [
-        ('S1', 'Senior One (S1)'),
-        ('S2', 'Senior Two (S2)'),
-        ('S3', 'Senior Three (S3)'),
-        ('S4', 'Senior Four (S4) - O\' Level'),
-        ('S5', 'Senior Five (S5)'),
-        ('S6', 'Senior Six (S6) - A\' Level'),
-        ('O_LEVEL', 'Completed O\' Level'),
-        ('A_LEVEL', 'Completed A\' Level'),
-    ]
+    YEAR_CHOICES = [(str(year), str(year)) for year in range(2003, 2026)]
 
-    year = models.CharField(max_length=20, unique=True, choices=LEVEL_CHOICES)
+
+    year = models.CharField(max_length=20, unique=True, choices=YEAR_CHOICES)
     description = models.CharField(max_length=255, blank=True)
     display_order = models.PositiveIntegerField(default=0, help_text="Controls the ordering of levels in lists")
     is_active = models.BooleanField(default=True)

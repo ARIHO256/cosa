@@ -13,17 +13,28 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         transition: transform 0.2s ease;
         margin-bottom: 20px;
+        position: relative;
+        z-index: 1;
+        padding: 1.25rem 1.25rem 1rem; /* more breathing room */
     }
     .alumni-card:hover {
         transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     }
+
+    /* Ensure dropdown menus render above following content */
+    .alumni-card .dropdown-menu {
+        z-index: 1055;
+    }
+
+    /* Prevent next sections from visually overlapping pending cards */
+    .card.alumni-card + .card.alumni-card { margin-top: 12px; }
     .status-verified { background-color: #d4edda; color: #155724; }
     .status-pending { background-color: #fff3cd; color: #856404; }
     .status-rejected { background-color: #f8d7da; color: #721c24; }
     .alumni-avatar {
-        width: 50px;
-        height: 50px;
+        width: 64px;
+        height: 64px;
         object-fit: cover;
     }
     .filter-card {
@@ -123,7 +134,7 @@
                             {% endif %}
                         </div>
                         
-                        <div class="col-md-5">
+                        <div class="col-md-6">
                             <h5 class="mb-1">{{ alumnus.admin.get_full_name }}</h5>
                             <p class="text-muted mb-1">{{ alumnus.admin.email }}</p>
                             <div class="small text-muted">

@@ -3,7 +3,8 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import get_object_or_404, redirect, render, reverse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q
 from django.core.paginator import Paginator
@@ -359,8 +360,7 @@ def news_detail(request, slug):
         'total_comments': total_comments,
     }
     
-    # Debug: Print context data
-    print(f"News Detail Context: content_type={context['content_type']}, object_id={context['object_id']}, total_likes={context['total_likes']}, total_comments={context['total_comments']}")
+    # Intentionally avoid noisy prints in production paths
     
     return render(request, 'main_app/news_detail.html', context)
 
@@ -442,8 +442,7 @@ def job_detail(request, job_id):
         'total_comments': total_comments,
     }
     
-    # Debug: Print context data
-    print(f"Job Detail Context: content_type={context['content_type']}, object_id={context['object_id']}, total_likes={context['total_likes']}, total_comments={context['total_comments']}")
+    # Intentionally avoid noisy prints in production paths
     
     return render(request, 'main_app/job_detail.html', context)
 
@@ -525,13 +524,11 @@ def event_detail(request, event_id):
         'total_comments': total_comments,
     }
     
-    # Debug: Print context data
-    print(f"Event Detail Context: content_type={context['content_type']}, object_id={context['object_id']}, total_likes={context['total_likes']}, total_comments={context['total_comments']}")
+    # Intentionally avoid noisy prints in production paths
     
     return render(request, 'main_app/event_detail.html', context)
 
 
-@csrf_exempt
 def check_email_availability(request):
     """AJAX endpoint to check if email is available"""
     if request.method == 'POST':

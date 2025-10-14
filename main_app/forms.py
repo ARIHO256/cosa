@@ -1,4 +1,5 @@
 from django import forms
+from django.db import transaction
 from django.forms.widgets import DateInput, DateTimeInput, TextInput, Select, CheckboxInput
 from django.contrib.auth.forms import UserCreationForm
 from django.utils import timezone
@@ -115,16 +116,19 @@ class AlumniRegistrationForm(UserCreationForm):
         user.email = self.cleaned_data['email']
         user.is_verified = False  # Requires admin approval
         user.is_active = True     # Can login but with limited access
-        
-        if commit:
+
+        if not commit:
+            return user
+
+        with transaction.atomic():
             user.save()
-            # Create Alumni profile (student_id will be auto-generated)
-            alumni = Alumni.objects.create(
-                admin=user,
-                graduation_year=self.cleaned_data['graduation_year'],
-                degree=self.cleaned_data['degree'],
-                privacy_level='private'  # Default to private until verified
-            )
+            # Ensure a single Alumni profile (signals may create one already)
+            alumni, _ = Alumni.objects.get_or_create(admin=user)
+            alumni.graduation_year = self.cleaned_data['graduation_year']
+            alumni.degree = self.cleaned_data['degree']
+            if not getattr(alumni, 'privacy_level', None):
+                alumni.privacy_level = 'private'
+            alumni.save()
         return user
 
 

@@ -98,25 +98,6 @@
 }
 </style>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const suspensionType = document.querySelector('input[name="suspension_type"]');
-    const expiresAtField = document.querySelector('input[name="expires_at"]');
-    const expiresAtGroup = expiresAtField.closest('.form-group');
-    
-    function toggleExpiresAt() {
-        if (suspensionType.value === 'temporary') {
-            expiresAtGroup.style.display = 'block';
-            expiresAtField.required = true;
-        } else {
-            expiresAtGroup.style.display = 'none';
-            expiresAtField.required = false;
-            expiresAtField.value = '';
-        }
-    }
-    
-    suspensionType.addEventListener('change', toggleExpiresAt);
-    toggleExpiresAt(); // Initial call
-});
-</script>
+<!-- Client-side toggling removed to avoid hiding fields due to varying crispy markup.
+     Server-side validation already enforces correct combinations. -->
 {% endblock %}

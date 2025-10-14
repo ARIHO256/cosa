@@ -1462,9 +1462,11 @@
         >
           <span class="app-tab-icon">
             <i class="fas fa-house"></i>
-            {% with count=alumni_badges.home %} {% if count %}
-            <span class="app-icon-badge">{{ count }}</span>
-            {% endif %} {% endwith %}
+            {% with count=alumni_badges.home %}
+              {% if count %}
+                <span class="app-icon-badge">{{ count }}</span>
+              {% endif %}
+            {% endwith %}
           </span>
           Home
         </a>
@@ -1474,9 +1476,11 @@
         >
           <span class="app-tab-icon">
             <i class="fas fa-envelope"></i>
-            {% with count=alumni_badges.messages %} {% if count %}
-            <span class="app-icon-badge">{{ count }}</span>
-            {% endif %} {% endwith %}
+            {% with count=alumni_badges.messages %}
+              {% if count %}
+                <span class="app-icon-badge">{{ count }}</span>
+              {% endif %}
+            {% endwith %}
           </span>
           Inbox
         </a>
@@ -1486,11 +1490,11 @@
         >
           <span class="app-tab-icon">
             <i class="fas fa-bell"></i>
-            {% with
-            count=alumni_badges.alerts|default:alumni_badges.notifications %} {%
-            if count %}
-            <span class="app-icon-badge">{{ count }}</span>
-            {% endif %} {% endwith %}
+            {% with count=alumni_badges.alerts|default:alumni_badges.notifications %}
+              {% if count %}
+                <span class="app-icon-badge">{{ count }}</span>
+              {% endif %}
+            {% endwith %}
           </span>
           Alerts
         </a>
@@ -1500,9 +1504,11 @@
         >
           <span class="app-tab-icon">
             <i class="fas fa-comment-dots"></i>
-            {% with count=alumni_badges.feedback %} {% if count %}
-            <span class="app-icon-badge">{{ count }}</span>
-            {% endif %} {% endwith %}
+            {% with count=alumni_badges.feedback %}
+              {% if count %}
+                <span class="app-icon-badge">{{ count }}</span>
+              {% endif %}
+            {% endwith %}
           </span>
           Feedback
         </a>

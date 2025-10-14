@@ -1,4 +1,16 @@
 {% extends 'main_app/base.html' %}
+
+{% block admin_rail %}
+  {% include 'admin_template/includes/dashboard_rail.html' %}
+{% endblock %}
+
+{% block admin_meta %}
+  {% include 'admin_template/includes/dashboard_meta.html' %}
+{% endblock %}
 {% block content %}
-{% block admin_content %}{% endblock %}
+<section class="app-section app-section--dashboard">
+  <div class="app-section-inner">
+    {% block admin_content %}{% endblock %}
+  </div>
+</section>
 {% endblock %}

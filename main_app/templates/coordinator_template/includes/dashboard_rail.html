@@ -1,0 +1,55 @@
+{% with current=request.resolver_match.url_name %}
+<div class="app-rail-card">
+  <h6>Navigation</h6>
+  <ul>
+    <li>
+      <a href="{% url 'coordinator_home' %}" class="{% if current == 'coordinator_home' %}active{% endif %}">
+        <i class="fas fa-home"></i>
+        <span>Home</span>
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'coordinator_profile' %}" class="{% if current == 'coordinator_profile' %}active{% endif %}">
+        <i class="fas fa-user-circle"></i>
+        <span>Profile</span>
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'manage_alumni' %}" class="{% if current == 'manage_alumni' or current == 'coordinator_register_alumni' or current == 'verify_alumni' or current == 'coordinator_delete_alumni' %}active{% endif %}">
+        <i class="fas fa-user-graduate"></i>
+        <span>Alumni</span>
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'manage_events' %}" class="{% if current == 'manage_events' or current == 'create_event' or current == 'edit_event' or current == 'event_registrations' %}active{% endif %}">
+        <i class="fas fa-calendar-alt"></i>
+        <span>Events</span>
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'manage_news' %}" class="{% if current == 'manage_news' or current == 'create_news' or current == 'edit_news' %}active{% endif %}">
+        <i class="fas fa-newspaper"></i>
+        <span>Newsroom</span>
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'manage_jobs' %}" class="{% if current == 'manage_jobs' or current == 'job_applications' %}active{% endif %}">
+        <i class="fas fa-briefcase"></i>
+        <span>Jobs</span>
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'manage_feedback' %}" class="{% if current == 'manage_feedback' or current == 'reply_feedback' or current == 'resolve_feedback' or current == 'pending_feedback' %}active{% endif %}">
+        <i class="fas fa-comment-dots"></i>
+        <span>Feedback</span>
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'coordinator_messages_inbox' %}" class="{% if current == 'coordinator_messages_inbox' or current == 'coordinator_view_message' or current == 'coordinator_send_message' or current == 'coordinator_send_message_to' %}active{% endif %}">
+        <i class="fas fa-envelope-open-text"></i>
+        <span>Messages</span>
+      </a>
+    </li>
+  </ul>
+</div>
+{% endwith %}

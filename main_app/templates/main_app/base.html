@@ -1,1368 +1,1550 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}COSA - Alumni Management System{% endblock %}</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      {% block title %}COSA - Alumni Management System{% endblock %}
+    </title>
 
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
     <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
 
     <style>
-        :root {
-            --app-bg: #eef2ff;
-            --app-bg-accent: #e2e8ff;
-            --app-surface: rgba(255, 255, 255, 0.92);
-            --app-elevated: rgba(255, 255, 255, 0.98);
-            --app-glass: rgba(255, 255, 255, 0.82);
-            --app-primary: #2563eb;
-            --app-primary-dark: #1d4ed8;
-            --app-secondary: #22c55e;
-            --app-accent: #f97316;
-            --app-border: rgba(148, 163, 184, 0.35);
-            --app-border-light: rgba(226, 232, 240, 0.7);
-            --app-text-primary: #0f172a;
-            --app-text-secondary: #475569;
-            --app-text-muted: #94a3b8;
-            --app-text-inverse: #ffffff;
-            --app-shadow-sm: 0 18px 30px rgba(15, 23, 42, 0.08);
-            --app-shadow: 0 28px 60px rgba(15, 23, 42, 0.14);
-            --app-radius: 20px;
-            --app-radius-lg: 28px;
-            --app-spacing-xs: 0.45rem;
-            --app-spacing-sm: 0.85rem;
-            --app-spacing: 1.15rem;
-            --app-spacing-lg: 1.75rem;
-
-            /* Legacy tokens for components still using original naming */
-            --cosa-primary: var(--app-primary);
-            --cosa-primary-dark: var(--app-primary-dark);
-            --cosa-secondary: var(--app-secondary);
-            --cosa-secondary-dark: #16a34a;
-            --cosa-success: var(--app-secondary);
-            --cosa-danger: var(--app-accent);
-            --cosa-text-light: var(--app-text-inverse);
-            --cosa-text-primary: var(--app-text-primary);
-            --cosa-text-secondary: var(--app-text-secondary);
-            --cosa-border: var(--app-border);
-            --cosa-border-light: var(--app-border-light);
-            --cosa-shadow: var(--app-shadow);
-            --cosa-shadow-lg: 0 30px 60px rgba(15, 23, 42, 0.18);
-            --cosa-shadow-md: 0 24px 40px rgba(15, 23, 42, 0.16);
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(145deg, var(--app-bg) 0%, #f8f9ff 40%, var(--app-bg-accent) 100%);
-            color: var(--app-text-primary);
-            -webkit-font-smoothing: antialiased;
-        }
-
-        a {
-            color: inherit;
-        }
-
-        .app-shell {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .app-header {
-            position: sticky;
-            top: 0;
-            z-index: 1040;
-            background: var(--app-glass);
-            border-bottom: 1px solid var(--app-border);
-            box-shadow: var(--app-shadow-sm);
-            backdrop-filter: saturate(180%) blur(16px);
-            -webkit-backdrop-filter: saturate(180%) blur(16px);
-        }
-
-        .app-header-inner {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            max-width: 640px;
-            margin: 0 auto;
-            padding: 0.55rem 0.7rem;
-            gap: 0.45rem;
-        }
-
-        .app-brand {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: var(--app-text-primary);
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 1.1rem;
-        }
-
-        .app-header-actions {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.2rem;
-        }
-
-        .app-header-actions:empty {
-            display: none;
-        }
-
-        .app-header-actions a {
-            display: inline-flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 0.1rem;
-            padding: 0.28rem 0.32rem;
-            min-width: 48px;
-            border-radius: 16px;
-            border: 1px solid var(--app-border);
-            background: rgba(255, 255, 255, 0.72);
-            color: var(--app-text-secondary);
-            font-size: 0.6rem;
-            text-decoration: none;
-            font-weight: 600;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .app-header-actions a:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 10px 24px rgba(37, 99, 235, 0.15);
-        }
-
-        .app-header-actions a i {
-            font-size: 0.9rem;
-        }
-
-        .app-header-actions .app-profile-action {
-            padding: 0.26rem 0.32rem;
-            gap: 0.1rem;
-            min-width: 52px;
-        }
-
-        .app-profile-avatar,
-        .app-profile-avatar-placeholder {
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid rgba(255, 255, 255, 0.85);
-            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.18);
-        }
-
-        .app-profile-avatar-placeholder {
-            display: inline-grid;
-            place-items: center;
-            background: linear-gradient(135deg, rgba(37, 99, 235, 0.85) 0%, rgba(59, 130, 246, 0.75) 100%);
-            color: var(--app-text-inverse);
-            font-size: 0.7rem;
-        }
-
-        .app-profile-avatar-wrapper {
-            display: inline-flex;
-            border-radius: 50%;
-            padding: 1.5px;
-            background: linear-gradient(135deg, rgba(37, 99, 235, 0.35), rgba(59, 130, 246, 0.2));
-        }
-
-        .app-profile-name {
-            font-weight: 600;
-            color: var(--app-text-primary);
-            white-space: nowrap;
-        }
-
-        .app-chip-profile {
-            padding: 0.35rem 0.6rem;
-            gap: 0.45rem;
-        }
-
-        .app-header-label,
-        .app-chip-label {
-            display: block;
-            font-size: 0.55rem;
-            line-height: 1.1;
-            text-transform: none;
-            font-weight: 600;
-        }
-
-        .app-header-quick-nav {
-            display: flex;
-            gap: 0.35rem;
-            overflow-x: auto;
-            padding: 0 0.85rem 0.6rem;
-            max-width: 640px;
-            margin: 0 auto;
-            scrollbar-width: none;
-            justify-content: center;
-        }
-
-        .app-header-quick-nav::-webkit-scrollbar {
-            display: none;
-        }
-
-        .app-chip {
-            display: inline-flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 0.1rem;
-            padding: 0.32rem 0.38rem;
-            border-radius: 16px;
-            border: 1px solid var(--app-border);
-            background: rgba(255, 255, 255, 0.72);
-            color: var(--app-text-secondary);
-            font-size: 0.64rem;
-            text-decoration: none;
-            white-space: nowrap;
-            font-weight: 600;
-            transition: transform 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
-            min-width: 56px;
-        }
-
-        .app-chip.active {
-            background: linear-gradient(135deg, rgba(37, 99, 235, 0.18) 0%, rgba(37, 99, 235, 0.28) 100%);
-            border-color: rgba(37, 99, 235, 0.35);
-            color: var(--app-primary);
-            box-shadow: 0 10px 28px rgba(37, 99, 235, 0.16);
-        }
-
-        .app-chip:hover {
-            transform: translateY(-1px);
-            color: var(--app-primary);
-        }
-
-        .app-content {
-            flex: 1;
-            padding: var(--app-spacing-lg) 0 calc(var(--app-spacing-lg) + 3.8rem);
-        }
-
-        .app-content-inner {
-            max-width: 640px;
-            margin: 0 auto;
-            padding: 0 var(--app-spacing);
-        }
-
-        .app-messages {
-            padding: var(--app-spacing) 0 0;
-        }
-
-        .app-messages-inner {
-            max-width: 640px;
-            margin: 0 auto;
-            padding: 0 var(--app-spacing);
-        }
-
-        .app-messages .alert {
-            border-radius: 16px;
-            border: none;
-            box-shadow: var(--app-shadow-sm);
-            margin-bottom: var(--app-spacing-sm);
-        }
-
-        .app-footer {
-            background: transparent;
-            color: var(--app-text-secondary);
-            padding-bottom: 3.9rem;
-        }
-
-        .app-footer-inner {
-            max-width: 640px;
-            margin: 0 auto;
-            padding: var(--app-spacing) var(--app-spacing) var(--app-spacing-lg);
-            text-align: center;
-            font-size: 0.85rem;
-        }
-
-        .app-footer-inner a {
-            color: var(--app-primary);
-            text-decoration: none;
-        }
-
-        .app-footer-inner a:hover {
-            text-decoration: underline;
-        }
-
-        .app-bottom-nav {
-            position: sticky;
-            bottom: 0;
-            z-index: 1050;
-            background: var(--app-glass);
-            border-top: 1px solid var(--app-border);
-            box-shadow: 0 -12px 30px rgba(15, 23, 42, 0.12);
-            backdrop-filter: saturate(190%) blur(18px);
-            -webkit-backdrop-filter: saturate(190%) blur(18px);
-        }
-
-        .app-bottom-nav-inner {
-            max-width: 640px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0.28rem 0.85rem;
-            gap: 0.6rem;
-        }
-
-        .app-tab {
-            flex: 0 1 auto;
-            text-align: center;
-            text-decoration: none;
-            color: var(--app-text-muted);
-            font-size: 0.68rem;
-            font-weight: 600;
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-            align-items: center;
-            justify-content: center;
-            padding: 0.28rem 0;
-        }
-
-        .app-tab i {
-            font-size: 1.1rem;
-        }
-
-        .app-tab.active {
-            color: var(--app-primary);
-            text-shadow: 0 3px 12px rgba(37, 99, 235, 0.25);
-        }
-
-        .app-tab.active i {
-            color: var(--app-primary);
-        }
-
-        .app-tab-icon {
-            position: relative;
-            display: inline-flex;
-        }
-
-        .app-icon-badge {
-            position: absolute;
-            top: -0.35rem;
-            right: -0.45rem;
-            min-width: 1.15rem;
-            height: 1.15rem;
-            padding: 0 0.25rem;
-            border-radius: 999px;
-            background: var(--app-primary);
-            color: var(--app-text-inverse);
-            font-size: 0.65rem;
-            font-weight: 700;
-            line-height: 1.15rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25);
-        }
-
-        /* Maintain existing component styles */
-        .cosa-card {
-            background: var(--app-elevated);
-            border-radius: var(--app-radius);
-            border: 1px solid var(--app-border);
-            padding: var(--app-spacing);
-            box-shadow: var(--app-shadow-sm);
-        }
-
-        .cosa-card + .cosa-card {
-            margin-top: var(--app-spacing);
-        }
-
-        .stats-card {
-            text-align: center;
-            padding: var(--app-spacing);
-            background: var(--app-elevated);
-            border-radius: var(--app-radius);
-            border: 1px solid var(--app-border);
-            box-shadow: var(--app-shadow-sm);
-        }
-
-        .stats-card h3 {
-            font-weight: 700;
-            color: var(--app-primary);
-            margin-bottom: 0.35rem;
-        }
-
-        .hero-section {
-            background: linear-gradient(135deg, rgba(37, 99, 235, 0.95) 0%, rgba(14, 165, 233, 0.9) 60%, rgba(34, 197, 94, 0.92) 100%);
-            color: var(--app-text-inverse);
-            padding: 2.75rem 0;
-            border-radius: 0 0 var(--app-radius-lg) var(--app-radius-lg);
-            box-shadow: 0 24px 45px rgba(37, 99, 235, 0.28);
-        }
-
-        .hero-section .container {
-            max-width: 640px;
-            margin: 0 auto;
-            padding: 0 var(--app-spacing);
-        }
-
-        .hero-section h1 {
-            font-size: clamp(2.2rem, 6vw, 3rem);
-            font-weight: 800;
-            margin-bottom: 0.9rem;
-        }
-
-        .hero-section p {
-            color: rgba(255, 255, 255, 0.85);
-            margin-bottom: 1.5rem;
-        }
-
-        .btn-cosa-primary {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            border-radius: 999px;
-            background: linear-gradient(135deg, var(--app-primary) 0%, var(--app-primary-dark) 100%);
-            color: var(--app-text-inverse);
-            border: none;
-            padding: 0.8rem 1.65rem;
-            font-weight: 700;
-            box-shadow: 0 20px 40px rgba(37, 99, 235, 0.35);
-            text-decoration: none;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .btn-cosa-primary:hover {
-            color: var(--app-text-inverse);
-            transform: translateY(-2px);
-            box-shadow: 0 24px 50px rgba(37, 99, 235, 0.4);
-        }
-
-        .btn-cosa-secondary {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            border-radius: 999px;
-            background: linear-gradient(135deg, var(--app-secondary) 0%, #16a34a 100%);
-            color: var(--app-text-inverse);
-            border: none;
-            padding: 0.8rem 1.65rem;
-            font-weight: 700;
-            box-shadow: 0 20px 40px rgba(34, 197, 94, 0.35);
-            text-decoration: none;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .btn-cosa-secondary:hover {
-            color: var(--app-text-inverse);
-            transform: translateY(-2px);
-            box-shadow: 0 24px 50px rgba(34, 197, 94, 0.4);
-        }
-
-        .sidebar {
-            border-radius: var(--app-radius);
-            border: 1px solid var(--app-border);
-            background: var(--app-elevated);
-            box-shadow: var(--app-shadow-sm);
-            padding: var(--app-spacing);
-        }
-
-        .sidebar .nav-link {
-            border-radius: 999px;
-            padding: 0.65rem 1rem;
-            font-weight: 600;
-            color: var(--app-text-secondary);
-        }
-
-        .sidebar .nav-link.active {
-            background: linear-gradient(135deg, rgba(37, 99, 235, 0.18) 0%, rgba(37, 99, 235, 0.3) 100%);
-            color: var(--app-primary);
-            box-shadow: 0 10px 24px rgba(37, 99, 235, 0.18);
-        }
-
-        .container,
-        .container-fluid,
-        .container-sm,
-        .container-md,
-        .container-lg,
-        .container-xl,
-        .container-xxl {
-            width: 100% !important;
-            max-width: 640px !important;
-            padding-left: var(--app-spacing) !important;
-            padding-right: var(--app-spacing) !important;
-            margin-left: auto !important;
-            margin-right: auto !important;
-        }
-
-        .row {
-            margin-left: 0 !important;
-            margin-right: 0 !important;
-        }
-
-        .row > [class*="col-"] {
-            padding-left: var(--app-spacing-xs) !important;
-            padding-right: var(--app-spacing-xs) !important;
-            flex: 0 0 100%;
-            max-width: 100%;
-        }
-
-        footer .row > [class*="col-"] {
-            flex: 0 0 100% !important;
-            max-width: 100% !important;
-            margin-bottom: var(--app-spacing);
-        }
-
-        footer .row > [class*="col-"]:last-child {
-            margin-bottom: 0;
-        }
-
-        footer .text-end {
-            text-align: left !important;
-        }
-
-        /* Typography */
-        h1, h2, h3, h4, h5, h6 {
-            font-weight: 700;
-            letter-spacing: -0.01em;
-            color: var(--app-text-primary);
-        }
-
-        p, li {
-            color: var(--app-text-secondary);
-            line-height: 1.7;
-        }
-
-        a:hover {
-            color: var(--app-primary);
-        }
-
-        /* Common surface styles */
-        section {
-            margin-bottom: var(--app-spacing-lg);
-        }
-
-        .surface-card {
-            background: var(--app-elevated);
-            border-radius: var(--app-radius);
-            border: 1px solid var(--app-border);
-            padding: var(--app-spacing);
-            box-shadow: var(--app-shadow-sm);
-        }
-
-        .surface-card + .surface-card {
-            margin-top: var(--app-spacing);
-        }
-
-        .surface-card--flush {
-            padding: 1.25rem 1.5rem;
-        }
-
-        .surface-card--flush .form-label {
-            font-weight: 600;
-            color: var(--app-text-secondary);
-        }
-
-        .form-control-rect,
-        .form-select.form-control-rect {
-            border-radius: 18px;
-            padding: 0.85rem 1rem;
-            height: calc(1.5em + 1.4rem + 2px);
-        }
-
-        .filter-form {
-            display: grid;
-            gap: 1rem;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            max-width: 780px;
-            margin: 0 auto;
-            align-items: end;
-        }
-
-        .filter-form__group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.35rem;
-        }
-
+      :root {
+        --app-bg: #eef2ff;
+        --app-bg-accent: #e2e8ff;
+        --app-surface: rgba(255, 255, 255, 0.92);
+        --app-elevated: rgba(255, 255, 255, 0.98);
+        --app-glass: rgba(255, 255, 255, 0.82);
+        --app-primary: #2563eb;
+        --app-primary-dark: #1d4ed8;
+        --app-secondary: #22c55e;
+        --app-accent: #f97316;
+        --app-border: rgba(148, 163, 184, 0.35);
+        --app-border-light: rgba(226, 232, 240, 0.7);
+        --app-text-primary: #0f172a;
+        --app-text-secondary: #475569;
+        --app-text-muted: #94a3b8;
+        --app-text-inverse: #ffffff;
+        --app-shadow-sm: 0 18px 30px rgba(15, 23, 42, 0.08);
+        --app-shadow: 0 28px 60px rgba(15, 23, 42, 0.14);
+        --app-radius: 20px;
+        --app-radius-lg: 28px;
+        --app-spacing-xs: 0.45rem;
+        --app-spacing-sm: 0.85rem;
+        --app-spacing: 1.15rem;
+        --app-spacing-lg: 1.75rem;
+
+        /* Legacy tokens for components still using original naming */
+        --cosa-primary: var(--app-primary);
+        --cosa-primary-dark: var(--app-primary-dark);
+        --cosa-secondary: var(--app-secondary);
+        --cosa-secondary-dark: #16a34a;
+        --cosa-success: var(--app-secondary);
+        --cosa-danger: var(--app-accent);
+        --cosa-text-light: var(--app-text-inverse);
+        --cosa-text-primary: var(--app-text-primary);
+        --cosa-text-secondary: var(--app-text-secondary);
+        --cosa-border: var(--app-border);
+        --cosa-border-light: var(--app-border-light);
+        --cosa-shadow: var(--app-shadow);
+        --cosa-shadow-lg: 0 30px 60px rgba(15, 23, 42, 0.18);
+        --cosa-shadow-md: 0 24px 40px rgba(15, 23, 42, 0.16);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          Roboto, sans-serif;
+        background: linear-gradient(
+          145deg,
+          var(--app-bg) 0%,
+          #f8f9ff 40%,
+          var(--app-bg-accent) 100%
+        );
+        color: var(--app-text-primary);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .app-shell {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .app-header {
+        position: sticky;
+        top: 0;
+        z-index: 1040;
+        background: var(--app-glass);
+        border-bottom: 1px solid var(--app-border);
+        box-shadow: var(--app-shadow-sm);
+        backdrop-filter: saturate(180%) blur(16px);
+        -webkit-backdrop-filter: saturate(180%) blur(16px);
+      }
+
+      .app-header-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 0.55rem 0.7rem;
+        gap: 0.45rem;
+      }
+
+      .app-brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--app-text-primary);
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 1.1rem;
+      }
+
+      .app-header-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.2rem;
+      }
+
+      .app-header-actions:empty {
+        display: none;
+      }
+
+      .app-header-actions a {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.1rem;
+        padding: 0.28rem 0.32rem;
+        min-width: 48px;
+        border-radius: 16px;
+        border: 1px solid var(--app-border);
+        background: rgba(255, 255, 255, 0.72);
+        color: var(--app-text-secondary);
+        font-size: 0.6rem;
+        text-decoration: none;
+        font-weight: 600;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .app-header-actions a:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 24px rgba(37, 99, 235, 0.15);
+      }
+
+      .app-header-actions a i {
+        font-size: 0.9rem;
+      }
+
+      .app-header-actions .app-profile-action {
+        padding: 0.26rem 0.32rem;
+        gap: 0.1rem;
+        min-width: 52px;
+      }
+
+      .app-profile-avatar,
+      .app-profile-avatar-placeholder {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(255, 255, 255, 0.85);
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.18);
+      }
+
+      .app-profile-avatar-placeholder {
+        display: inline-grid;
+        place-items: center;
+        background: linear-gradient(
+          135deg,
+          rgba(37, 99, 235, 0.85) 0%,
+          rgba(59, 130, 246, 0.75) 100%
+        );
+        color: var(--app-text-inverse);
+        font-size: 0.7rem;
+      }
+
+      .app-profile-avatar-wrapper {
+        display: inline-flex;
+        border-radius: 50%;
+        padding: 1.5px;
+        background: linear-gradient(
+          135deg,
+          rgba(37, 99, 235, 0.35),
+          rgba(59, 130, 246, 0.2)
+        );
+      }
+
+      .app-profile-name {
+        font-weight: 600;
+        color: var(--app-text-primary);
+        white-space: nowrap;
+      }
+
+      .app-chip-profile {
+        padding: 0.35rem 0.6rem;
+        gap: 0.45rem;
+      }
+
+      .app-header-label,
+      .app-chip-label {
+        display: block;
+        font-size: 0.55rem;
+        line-height: 1.1;
+        text-transform: none;
+        font-weight: 600;
+      }
+
+      .app-header-quick-nav {
+        display: flex;
+        gap: 0.35rem;
+        overflow-x: auto;
+        padding: 0 0.85rem 0.6rem;
+        max-width: 640px;
+        margin: 0 auto;
+        scrollbar-width: none;
+        justify-content: center;
+      }
+
+      .app-header-quick-nav::-webkit-scrollbar {
+        display: none;
+      }
+
+      .app-chip {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.1rem;
+        padding: 0.32rem 0.38rem;
+        border-radius: 16px;
+        border: 1px solid var(--app-border);
+        background: rgba(255, 255, 255, 0.72);
+        color: var(--app-text-secondary);
+        font-size: 0.64rem;
+        text-decoration: none;
+        white-space: nowrap;
+        font-weight: 600;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+        min-width: 56px;
+      }
+
+      .app-chip.active {
+        background: linear-gradient(
+          135deg,
+          rgba(37, 99, 235, 0.18) 0%,
+          rgba(37, 99, 235, 0.28) 100%
+        );
+        border-color: rgba(37, 99, 235, 0.35);
+        color: var(--app-primary);
+        box-shadow: 0 10px 28px rgba(37, 99, 235, 0.16);
+      }
+
+      .app-chip:hover {
+        transform: translateY(-1px);
+        color: var(--app-primary);
+      }
+
+      .app-content {
+        flex: 1;
+        padding: var(--app-spacing-lg) 0 calc(var(--app-spacing-lg) + 3.8rem);
+      }
+
+      .app-content-inner {
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 0 var(--app-spacing);
+      }
+
+      .app-messages {
+        padding: var(--app-spacing) 0 0;
+      }
+
+      .app-messages-inner {
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 0 var(--app-spacing);
+      }
+
+      .app-messages .alert {
+        border-radius: 16px;
+        border: none;
+        box-shadow: var(--app-shadow-sm);
+        margin-bottom: var(--app-spacing-sm);
+      }
+
+      .app-footer {
+        background: transparent;
+        color: var(--app-text-secondary);
+        padding-bottom: 3.9rem;
+      }
+
+      .app-footer-inner {
+        max-width: 640px;
+        margin: 0 auto;
+        padding: var(--app-spacing) var(--app-spacing) var(--app-spacing-lg);
+        text-align: center;
+        font-size: 0.85rem;
+      }
+
+      .app-footer-inner a {
+        color: var(--app-primary);
+        text-decoration: none;
+      }
+
+      .app-footer-inner a:hover {
+        text-decoration: underline;
+      }
+
+      .app-bottom-nav {
+        position: sticky;
+        bottom: 0;
+        z-index: 1050;
+        background: var(--app-glass);
+        border-top: 1px solid var(--app-border);
+        box-shadow: 0 -12px 30px rgba(15, 23, 42, 0.12);
+        backdrop-filter: saturate(190%) blur(18px);
+        -webkit-backdrop-filter: saturate(190%) blur(18px);
+      }
+
+      .app-bottom-nav-inner {
+        max-width: 640px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.28rem 0.85rem;
+        gap: 0.6rem;
+      }
+
+      .app-tab {
+        flex: 0 1 auto;
+        text-align: center;
+        text-decoration: none;
+        color: var(--app-text-muted);
+        font-size: 0.68rem;
+        font-weight: 600;
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        align-items: center;
+        justify-content: center;
+        padding: 0.28rem 0;
+      }
+
+      .app-tab i {
+        font-size: 1.1rem;
+      }
+
+      .app-tab.active {
+        color: var(--app-primary);
+        text-shadow: 0 3px 12px rgba(37, 99, 235, 0.25);
+      }
+
+      .app-tab.active i {
+        color: var(--app-primary);
+      }
+
+      .app-tab-icon {
+        position: relative;
+        display: inline-flex;
+      }
+
+      .app-icon-badge {
+        position: absolute;
+        top: -0.35rem;
+        right: -0.45rem;
+        min-width: 1.15rem;
+        height: 1.15rem;
+        padding: 0 0.25rem;
+        border-radius: 999px;
+        background: var(--app-primary);
+        color: var(--app-text-inverse);
+        font-size: 0.65rem;
+        font-weight: 700;
+        line-height: 1.15rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25);
+      }
+
+      /* Maintain existing component styles */
+      .cosa-card {
+        background: var(--app-elevated);
+        border-radius: var(--app-radius);
+        border: 1px solid var(--app-border);
+        padding: var(--app-spacing);
+        box-shadow: var(--app-shadow-sm);
+      }
+
+      .cosa-card + .cosa-card {
+        margin-top: var(--app-spacing);
+      }
+
+      .stats-card {
+        text-align: center;
+        padding: var(--app-spacing);
+        background: var(--app-elevated);
+        border-radius: var(--app-radius);
+        border: 1px solid var(--app-border);
+        box-shadow: var(--app-shadow-sm);
+      }
+
+      .stats-card h3 {
+        font-weight: 700;
+        color: var(--app-primary);
+        margin-bottom: 0.35rem;
+      }
+
+      .hero-section {
+        background: linear-gradient(
+          135deg,
+          rgba(37, 99, 235, 0.95) 0%,
+          rgba(14, 165, 233, 0.9) 60%,
+          rgba(34, 197, 94, 0.92) 100%
+        );
+        color: var(--app-text-inverse);
+        padding: 2.75rem 0;
+        border-radius: 0 0 var(--app-radius-lg) var(--app-radius-lg);
+        box-shadow: 0 24px 45px rgba(37, 99, 235, 0.28);
+      }
+
+      .hero-section .container {
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 0 var(--app-spacing);
+      }
+
+      .hero-section h1 {
+        font-size: clamp(2.2rem, 6vw, 3rem);
+        font-weight: 800;
+        margin-bottom: 0.9rem;
+      }
+
+      .hero-section p {
+        color: rgba(255, 255, 255, 0.85);
+        margin-bottom: 1.5rem;
+      }
+
+      .btn-cosa-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        border-radius: 999px;
+        background: linear-gradient(
+          135deg,
+          var(--app-primary) 0%,
+          var(--app-primary-dark) 100%
+        );
+        color: var(--app-text-inverse);
+        border: none;
+        padding: 0.8rem 1.65rem;
+        font-weight: 700;
+        box-shadow: 0 20px 40px rgba(37, 99, 235, 0.35);
+        text-decoration: none;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .btn-cosa-primary:hover {
+        color: var(--app-text-inverse);
+        transform: translateY(-2px);
+        box-shadow: 0 24px 50px rgba(37, 99, 235, 0.4);
+      }
+
+      .btn-cosa-secondary {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        border-radius: 999px;
+        background: linear-gradient(
+          135deg,
+          var(--app-secondary) 0%,
+          #16a34a 100%
+        );
+        color: var(--app-text-inverse);
+        border: none;
+        padding: 0.8rem 1.65rem;
+        font-weight: 700;
+        box-shadow: 0 20px 40px rgba(34, 197, 94, 0.35);
+        text-decoration: none;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .btn-cosa-secondary:hover {
+        color: var(--app-text-inverse);
+        transform: translateY(-2px);
+        box-shadow: 0 24px 50px rgba(34, 197, 94, 0.4);
+      }
+
+      .sidebar {
+        border-radius: var(--app-radius);
+        border: 1px solid var(--app-border);
+        background: var(--app-elevated);
+        box-shadow: var(--app-shadow-sm);
+        padding: var(--app-spacing);
+      }
+
+      .sidebar .nav-link {
+        border-radius: 999px;
+        padding: 0.65rem 1rem;
+        font-weight: 600;
+        color: var(--app-text-secondary);
+      }
+
+      .sidebar .nav-link.active {
+        background: linear-gradient(
+          135deg,
+          rgba(37, 99, 235, 0.18) 0%,
+          rgba(37, 99, 235, 0.3) 100%
+        );
+        color: var(--app-primary);
+        box-shadow: 0 10px 24px rgba(37, 99, 235, 0.18);
+      }
+
+      .container,
+      .container-fluid,
+      .container-sm,
+      .container-md,
+      .container-lg,
+      .container-xl,
+      .container-xxl {
+        width: 100% !important;
+        max-width: 640px !important;
+        padding-left: var(--app-spacing) !important;
+        padding-right: var(--app-spacing) !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+      }
+
+      .row {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+      }
+
+      .row > [class*="col-"] {
+        padding-left: var(--app-spacing-xs) !important;
+        padding-right: var(--app-spacing-xs) !important;
+        flex: 0 0 100%;
+        max-width: 100%;
+      }
+
+      footer .row > [class*="col-"] {
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+        margin-bottom: var(--app-spacing);
+      }
+
+      footer .row > [class*="col-"]:last-child {
+        margin-bottom: 0;
+      }
+
+      footer .text-end {
+        text-align: left !important;
+      }
+
+      /* Typography */
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        color: var(--app-text-primary);
+      }
+
+      p,
+      li {
+        color: var(--app-text-secondary);
+        line-height: 1.7;
+      }
+
+      a:hover {
+        color: var(--app-primary);
+      }
+
+      /* Common surface styles */
+      section {
+        margin-bottom: var(--app-spacing-lg);
+      }
+
+      .surface-card {
+        background: var(--app-elevated);
+        border-radius: var(--app-radius);
+        border: 1px solid var(--app-border);
+        padding: var(--app-spacing);
+        box-shadow: var(--app-shadow-sm);
+      }
+
+      .surface-card + .surface-card {
+        margin-top: var(--app-spacing);
+      }
+
+      .surface-card--flush {
+        padding: 1.25rem 1.5rem;
+      }
+
+      .surface-card--flush .form-label {
+        font-weight: 600;
+        color: var(--app-text-secondary);
+      }
+
+      .form-control-rect,
+      .form-select.form-control-rect {
+        border-radius: 18px;
+        padding: 0.85rem 1rem;
+        height: calc(1.5em + 1.4rem + 2px);
+      }
+
+      .filter-form {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        max-width: 780px;
+        margin: 0 auto;
+        align-items: end;
+      }
+
+      .filter-form__group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+      }
+
+      .filter-form__group--wide {
+        grid-column: span 2;
+      }
+
+      .filter-form__actions {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: center;
+        align-items: center;
+      }
+
+      @media (max-width: 576px) {
         .filter-form__group--wide {
-            grid-column: span 2;
+          grid-column: span 1;
         }
-
         .filter-form__actions {
-            display: flex;
-            gap: 0.75rem;
-            justify-content: center;
-            align-items: center;
-        }
-
-        @media (max-width: 576px) {
-            .filter-form__group--wide {
-                grid-column: span 1;
-            }
-            .filter-form__actions {
-                flex-wrap: wrap;
-            }
-        }
-
-        .filter-badge {
-            font-size: 0.75rem;
-            padding: 0.3rem 0.6rem;
-            border-radius: 999px;
-        }
-
-        .privacy-badge {
-            font-size: 0.7rem;
-            padding: 0.2rem 0.5rem;
-            border-radius: 999px;
-        }
-
-        .alumni-card {
-            border: 1px solid var(--app-border);
-            border-radius: var(--app-radius);
-            box-shadow: var(--app-shadow-sm);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            height: 100%;
-        }
-
-        .alumni-card:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--app-shadow);
-        }
-
-        .alumni-avatar {
-            width: 72px;
-            height: 72px;
-            border-radius: 50%;
-            object-fit: cover;
-            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.15);
-        }
-
-        .app-hero {
-            background: linear-gradient(135deg, rgba(37, 99, 235, 0.95) 0%, rgba(59, 130, 246, 0.9) 55%, rgba(34, 197, 94, 0.85) 100%);
-            color: var(--app-text-inverse);
-            border-radius: var(--app-radius-lg);
-            padding: var(--app-spacing-lg);
-            box-shadow: 0 32px 64px rgba(37, 99, 235, 0.25);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .app-hero::after {
-            content: "";
-            position: absolute;
-            inset: auto -30% -40% 50%;
-            width: 50%;
-            height: 80%;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.28), transparent 70%);
-            transform: translateX(-50%);
-            pointer-events: none;
-        }
-
-        .app-hero h1 {
-            font-size: clamp(2.1rem, 6vw, 2.8rem);
-            margin-bottom: 0.5rem;
-        }
-
-        .app-hero p {
-            font-size: 1rem;
-            color: rgba(255, 255, 255, 0.85);
-        }
-
-        .app-hero .app-hero-meta {
-            display: flex;
-            flex-wrap: wrap;
-            gap: var(--app-spacing);
-            margin-top: var(--app-spacing);
-        }
-
-        .app-hero .app-hero-stat {
-            background: rgba(255, 255, 255, 0.15);
-            padding: var(--app-spacing-sm) var(--app-spacing);
-            border-radius: var(--app-radius);
-            min-width: 140px;
-            text-align: left;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
-        }
-
-        .app-hero .app-hero-stat h4 {
-            margin: 0;
-            font-size: 1.5rem;
-            color: var(--app-text-inverse);
-        }
-
-        .app-hero .app-hero-stat span {
-            font-size: 0.85rem;
-            color: rgba(255, 255, 255, 0.78);
-        }
-
-        .stack-gap-sm {
-            display: flex;
-            flex-direction: column;
-            gap: var(--app-spacing-sm);
-        }
-
-        .stack-gap {
-            display: flex;
-            flex-direction: column;
-            gap: var(--app-spacing);
-        }
-
-        .list-card {
-            display: flex;
-            flex-direction: column;
-            gap: var(--app-spacing-sm);
-        }
-
-        .message-item {
-            display: flex;
-            gap: var(--app-spacing);
-            border: 1px solid var(--app-border);
-            border-radius: var(--app-radius);
-            padding: var(--app-spacing);
-            background: var(--app-elevated);
-            box-shadow: var(--app-shadow-sm);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .message-item:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--app-shadow);
-        }
-
-        .message-item.unread {
-            border-color: rgba(37, 99, 235, 0.4);
-            background: rgba(37, 99, 235, 0.08);
-        }
-
-        .loading {
-            opacity: 0.6;
-            pointer-events: none;
-            transition: opacity 0.2s ease;
-        }
-
-        .metric-card {
-            display: flex;
-            flex-direction: column;
-            gap: 0.35rem;
-            align-items: flex-start;
-            background: linear-gradient(135deg, rgba(37, 99, 235, 0.12) 0%, rgba(59, 130, 246, 0.1) 100%);
-            border: 1px solid rgba(37, 99, 235, 0.22);
-            border-radius: var(--app-radius);
-            padding: var(--app-spacing);
-            box-shadow: var(--app-shadow-sm);
-        }
-
-        .metric-card h3 {
-            font-size: 1.75rem;
-            margin: 0;
-            color: var(--app-primary);
-        }
-
-        .metric-card span {
-            font-size: 0.9rem;
-            color: var(--app-text-muted);
-        }
-
-        /* Forms */
-        form {
-            display: flex;
-            flex-direction: column;
-            gap: var(--app-spacing);
-        }
-
-        form .row {
-            gap: var(--app-spacing);
-        }
-
-        label {
-            font-weight: 600;
-            color: var(--app-text-secondary);
-        }
-
-        input[type="text"],
-        input[type="email"],
-        input[type="password"],
-        input[type="number"],
-        input[type="date"],
-        input[type="tel"],
-        select,
-        textarea {
-            width: 100%;
-            border: 1.5px solid var(--app-border);
-            border-radius: 1rem;
-            padding: 0.85rem 1rem;
-            font-size: 1rem;
-            background: rgba(255, 255, 255, 0.92);
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        input:focus,
-        select:focus,
-        textarea:focus {
-            border-color: rgba(37, 99, 235, 0.65);
-            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
-            outline: none;
-        }
-
-        .form-control,
-        .form-select {
-            border-radius: 1rem;
-            border: 1.5px solid var(--app-border);
-            padding: 0.85rem 1rem;
-            background: rgba(255, 255, 255, 0.92);
-        }
-
-        .form-control:focus,
-        .form-select:focus {
-            border-color: rgba(37, 99, 235, 0.65);
-            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
-        }
-
-        .btn {
-            border-radius: 999px;
-            font-weight: 600;
-            padding: 0.75rem 1.5rem;
-            box-shadow: 0 18px 36px rgba(15, 23, 42, 0.12);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 24px 46px rgba(15, 23, 42, 0.14);
-        }
-
-        .badge {
-            border-radius: 999px;
-            padding: 0.35rem 0.65rem;
-            font-weight: 600;
-        }
-
-        /* Tables */
-        .table {
-            width: 100%;
-            margin-bottom: var(--app-spacing);
-            border-collapse: collapse;
-            border-radius: var(--app-radius);
-            overflow: hidden;
-            background: var(--app-elevated);
-            box-shadow: var(--app-shadow-sm);
-        }
-
-        .table thead {
-            background: rgba(37, 99, 235, 0.08);
-            color: var(--app-text-primary);
-        }
-
-        .table th,
-        .table td {
-            padding: 0.85rem 1rem;
-            border-bottom: 1px solid var(--app-border);
-            white-space: nowrap;
-        }
-
-        .table tbody tr:last-child td {
-            border-bottom: none;
-        }
-
-        .table-responsive {
-            width: 100%;
-            overflow-x: auto;
-            background: transparent;
-            border-radius: var(--app-radius);
-            margin-bottom: var(--app-spacing);
-        }
-
-        /* Lists & feeds */
-        .feed-stack {
-            display: flex;
-            flex-direction: column;
-            gap: var(--app-spacing);
-        }
-
-        .feed-card {
-            background: var(--app-elevated);
-            border-radius: var(--app-radius);
-            border: 1px solid var(--app-border);
-            padding: var(--app-spacing);
-            box-shadow: var(--app-shadow-sm);
-        }
-
-        .feed-card .feed-meta {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            font-size: 0.85rem;
-            color: var(--app-text-muted);
-            margin-bottom: 0.75rem;
-        }
-
-        .feed-actions {
-            display: flex;
-            align-items: center;
-            gap: var(--app-spacing);
-            margin-top: var(--app-spacing);
-        }
-
-        /* Bootstrap card overrides */
-        .card {
-            border-radius: var(--app-radius);
-            border: 1px solid var(--app-border);
-            background: var(--app-elevated);
-            box-shadow: var(--app-shadow-sm);
-            overflow: hidden;
-        }
-
-        .card + .card {
-            margin-top: var(--app-spacing);
-        }
-
-        .card-header {
-            background: rgba(37, 99, 235, 0.08);
-            border-bottom: 1px solid var(--app-border);
-            padding: var(--app-spacing);
-            font-weight: 700;
-            color: var(--app-text-primary);
-        }
-
-        .card-body {
-            padding: var(--app-spacing);
-            display: flex;
-            flex-direction: column;
-            gap: var(--app-spacing-sm);
-        }
-
-        .card-footer {
-            background: rgba(148, 163, 184, 0.1);
-            border-top: 1px solid var(--app-border);
-            padding: var(--app-spacing);
-        }
-
-        /* Buttons */
-        .btn-light,
-        .btn-outline-light {
-            background: rgba(255, 255, 255, 0.75);
-            border: 1px solid rgba(148, 163, 184, 0.35);
-            color: var(--app-text-secondary);
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--app-primary) 0%, var(--app-primary-dark) 100%);
-            border: none;
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, var(--app-secondary) 0%, #16a34a 100%);
-            border: none;
-        }
-
-        /* Alerts */
-        .alert {
-            border-radius: var(--app-radius);
-            border: 1px solid transparent;
-            padding: var(--app-spacing-sm) var(--app-spacing);
-            box-shadow: var(--app-shadow-sm);
-        }
-
-        .alert-info {
-            background: rgba(37, 99, 235, 0.12);
-            border-color: rgba(37, 99, 235, 0.25);
-            color: var(--app-primary);
-        }
-
-        .alert-success {
-            background: rgba(34, 197, 94, 0.12);
-            border-color: rgba(34, 197, 94, 0.25);
-            color: #15803d;
-        }
-
-        .alert-warning {
-            background: rgba(249, 115, 22, 0.15);
-            border-color: rgba(249, 115, 22, 0.3);
-            color: #b45309;
-        }
-
-        .alert-danger {
-            background: rgba(239, 68, 68, 0.15);
-            border-color: rgba(239, 68, 68, 0.3);
-            color: #b91c1c;
-        }
-
-        /* Modal styling */
-        .modal-content {
-            border-radius: var(--app-radius);
-            border: 1px solid var(--app-border);
-            box-shadow: var(--app-shadow);
-        }
-
-        .modal-header {
-            border-bottom: 1px solid var(--app-border);
-            background: rgba(37, 99, 235, 0.08);
-        }
-
-        .modal-footer {
-            border-top: 1px solid var(--app-border);
-            background: rgba(148, 163, 184, 0.1);
-        }
-
-        /* Lists */
-        .list-group-item {
-            border: 1px solid var(--app-border);
-            border-radius: calc(var(--app-radius) - 8px);
-            margin-bottom: var(--app-spacing-xs);
-            background: var(--app-elevated);
-        }
-
-        .list-group-item.active {
-            background: linear-gradient(135deg, rgba(37, 99, 235, 0.18) 0%, rgba(37, 99, 235, 0.28) 100%);
-            border-color: rgba(37, 99, 235, 0.35);
-        }
-
-        /* Tabs & pagination */
-        .nav-tabs .nav-link {
-            border: none;
-            border-radius: 999px;
-            padding: 0.65rem 1.25rem;
-            color: var(--app-text-secondary);
-            background: rgba(255, 255, 255, 0.65);
-            margin-right: 0.5rem;
-        }
-
-        .nav-tabs .nav-link.active {
-            background: linear-gradient(135deg, var(--app-primary) 0%, var(--app-primary-dark) 100%);
-            color: var(--app-text-inverse);
-            box-shadow: 0 16px 32px rgba(37, 99, 235, 0.24);
-        }
-
-        .pagination .page-link {
-            border-radius: 999px;
-            border: 1px solid var(--app-border);
-            color: var(--app-text-secondary);
-            margin: 0 0.25rem;
-        }
-
-        .pagination .page-item.active .page-link {
-            background: var(--app-primary);
-            border-color: var(--app-primary);
-            color: var(--app-text-inverse);
-            box-shadow: 0 18px 36px rgba(37, 99, 235, 0.28);
-        }
-
-        /* Media & avatars */
-        img {
-            max-width: 100%;
-            height: auto;
-            border-radius: var(--app-radius);
-        }
-
-        .avatar {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            object-fit: cover;
-            box-shadow: 0 10px 20px rgba(15, 23, 42, 0.12);
-        }
-
-        /* Utility helpers */
-        .scroll-soft {
-            scrollbar-width: thin;
-            scrollbar-color: rgba(148, 163, 184, 0.55) transparent;
-        }
-
-        .scroll-soft::-webkit-scrollbar {
-            height: 6px;
-            width: 6px;
-        }
-
-        .scroll-soft::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .scroll-soft::-webkit-scrollbar-thumb {
-            background: rgba(148, 163, 184, 0.55);
-            border-radius: 999px;
-        }
-
-        .chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-            padding: 0.45rem 0.8rem;
-            border-radius: 999px;
-            background: rgba(37, 99, 235, 0.12);
-            color: var(--app-primary);
-            border: 1px solid rgba(37, 99, 235, 0.22);
-            font-weight: 600;
-            font-size: 0.85rem;
-        }
+          flex-wrap: wrap;
+        }
+      }
+
+      .filter-badge {
+        font-size: 0.75rem;
+        padding: 0.3rem 0.6rem;
+        border-radius: 999px;
+      }
+
+      .privacy-badge {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.5rem;
+        border-radius: 999px;
+      }
+
+      .alumni-card {
+        border: 1px solid var(--app-border);
+        border-radius: var(--app-radius);
+        box-shadow: var(--app-shadow-sm);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        height: 100%;
+      }
+
+      .alumni-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--app-shadow);
+      }
+
+      .alumni-avatar {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        object-fit: cover;
+        box-shadow: 0 12px 24px rgba(15, 23, 42, 0.15);
+      }
+
+      .app-hero {
+        background: linear-gradient(
+          135deg,
+          rgba(37, 99, 235, 0.95) 0%,
+          rgba(59, 130, 246, 0.9) 55%,
+          rgba(34, 197, 94, 0.85) 100%
+        );
+        color: var(--app-text-inverse);
+        border-radius: var(--app-radius-lg);
+        padding: var(--app-spacing-lg);
+        box-shadow: 0 32px 64px rgba(37, 99, 235, 0.25);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .app-hero::after {
+        content: "";
+        position: absolute;
+        inset: auto -30% -40% 50%;
+        width: 50%;
+        height: 80%;
+        background: radial-gradient(
+          circle,
+          rgba(255, 255, 255, 0.28),
+          transparent 70%
+        );
+        transform: translateX(-50%);
+        pointer-events: none;
+      }
+
+      .app-hero h1 {
+        font-size: clamp(2.1rem, 6vw, 2.8rem);
+        margin-bottom: 0.5rem;
+      }
+
+      .app-hero p {
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.85);
+      }
+
+      .app-hero .app-hero-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--app-spacing);
+        margin-top: var(--app-spacing);
+      }
+
+      .app-hero .app-hero-stat {
+        background: rgba(255, 255, 255, 0.15);
+        padding: var(--app-spacing-sm) var(--app-spacing);
+        border-radius: var(--app-radius);
+        min-width: 140px;
+        text-align: left;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      }
+
+      .app-hero .app-hero-stat h4 {
+        margin: 0;
+        font-size: 1.5rem;
+        color: var(--app-text-inverse);
+      }
+
+      .app-hero .app-hero-stat span {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.78);
+      }
+
+      .stack-gap-sm {
+        display: flex;
+        flex-direction: column;
+        gap: var(--app-spacing-sm);
+      }
+
+      .stack-gap {
+        display: flex;
+        flex-direction: column;
+        gap: var(--app-spacing);
+      }
+
+      .list-card {
+        display: flex;
+        flex-direction: column;
+        gap: var(--app-spacing-sm);
+      }
+
+      .message-item {
+        display: flex;
+        gap: var(--app-spacing);
+        border: 1px solid var(--app-border);
+        border-radius: var(--app-radius);
+        padding: var(--app-spacing);
+        background: var(--app-elevated);
+        box-shadow: var(--app-shadow-sm);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .message-item:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--app-shadow);
+      }
+
+      .message-item.unread {
+        border-color: rgba(37, 99, 235, 0.4);
+        background: rgba(37, 99, 235, 0.08);
+      }
+
+      .loading {
+        opacity: 0.6;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+      }
+
+      .metric-card {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        align-items: flex-start;
+        background: linear-gradient(
+          135deg,
+          rgba(37, 99, 235, 0.12) 0%,
+          rgba(59, 130, 246, 0.1) 100%
+        );
+        border: 1px solid rgba(37, 99, 235, 0.22);
+        border-radius: var(--app-radius);
+        padding: var(--app-spacing);
+        box-shadow: var(--app-shadow-sm);
+      }
+
+      .metric-card h3 {
+        font-size: 1.75rem;
+        margin: 0;
+        color: var(--app-primary);
+      }
+
+      .metric-card span {
+        font-size: 0.9rem;
+        color: var(--app-text-muted);
+      }
+
+      /* Forms */
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: var(--app-spacing);
+      }
+
+      form .row {
+        gap: var(--app-spacing);
+      }
+
+      label {
+        font-weight: 600;
+        color: var(--app-text-secondary);
+      }
+
+      input[type="text"],
+      input[type="email"],
+      input[type="password"],
+      input[type="number"],
+      input[type="date"],
+      input[type="tel"],
+      select,
+      textarea {
+        width: 100%;
+        border: 1.5px solid var(--app-border);
+        border-radius: 1rem;
+        padding: 0.85rem 1rem;
+        font-size: 1rem;
+        background: rgba(255, 255, 255, 0.92);
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      input:focus,
+      select:focus,
+      textarea:focus {
+        border-color: rgba(37, 99, 235, 0.65);
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+        outline: none;
+      }
+
+      .form-control,
+      .form-select {
+        border-radius: 1rem;
+        border: 1.5px solid var(--app-border);
+        padding: 0.85rem 1rem;
+        background: rgba(255, 255, 255, 0.92);
+      }
+
+      .form-control:focus,
+      .form-select:focus {
+        border-color: rgba(37, 99, 235, 0.65);
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+      }
+
+      .btn {
+        border-radius: 999px;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        box-shadow: 0 18px 36px rgba(15, 23, 42, 0.12);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 24px 46px rgba(15, 23, 42, 0.14);
+      }
+
+      .badge {
+        border-radius: 999px;
+        padding: 0.35rem 0.65rem;
+        font-weight: 600;
+      }
+
+      /* Tables */
+      .table {
+        width: 100%;
+        margin-bottom: var(--app-spacing);
+        border-collapse: collapse;
+        border-radius: var(--app-radius);
+        overflow: hidden;
+        background: var(--app-elevated);
+        box-shadow: var(--app-shadow-sm);
+      }
+
+      .table thead {
+        background: rgba(37, 99, 235, 0.08);
+        color: var(--app-text-primary);
+      }
+
+      .table th,
+      .table td {
+        padding: 0.85rem 1rem;
+        border-bottom: 1px solid var(--app-border);
+        white-space: nowrap;
+      }
+
+      .table tbody tr:last-child td {
+        border-bottom: none;
+      }
+
+      .table-responsive {
+        width: 100%;
+        overflow-x: auto;
+        background: transparent;
+        border-radius: var(--app-radius);
+        margin-bottom: var(--app-spacing);
+      }
+
+      /* Lists & feeds */
+      .feed-stack {
+        display: flex;
+        flex-direction: column;
+        gap: var(--app-spacing);
+      }
+
+      .feed-card {
+        background: var(--app-elevated);
+        border-radius: var(--app-radius);
+        border: 1px solid var(--app-border);
+        padding: var(--app-spacing);
+        box-shadow: var(--app-shadow-sm);
+      }
+
+      .feed-card .feed-meta {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 0.85rem;
+        color: var(--app-text-muted);
+        margin-bottom: 0.75rem;
+      }
+
+      .feed-actions {
+        display: flex;
+        align-items: center;
+        gap: var(--app-spacing);
+        margin-top: var(--app-spacing);
+      }
+
+      /* Bootstrap card overrides */
+      .card {
+        border-radius: var(--app-radius);
+        border: 1px solid var(--app-border);
+        background: var(--app-elevated);
+        box-shadow: var(--app-shadow-sm);
+        overflow: hidden;
+      }
+
+      .card + .card {
+        margin-top: var(--app-spacing);
+      }
+
+      .card-header {
+        background: rgba(37, 99, 235, 0.08);
+        border-bottom: 1px solid var(--app-border);
+        padding: var(--app-spacing);
+        font-weight: 700;
+        color: var(--app-text-primary);
+      }
+
+      .card-body {
+        padding: var(--app-spacing);
+        display: flex;
+        flex-direction: column;
+        gap: var(--app-spacing-sm);
+      }
+
+      .card-footer {
+        background: rgba(148, 163, 184, 0.1);
+        border-top: 1px solid var(--app-border);
+        padding: var(--app-spacing);
+      }
+
+      /* Buttons */
+      .btn-light,
+      .btn-outline-light {
+        background: rgba(255, 255, 255, 0.75);
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        color: var(--app-text-secondary);
+      }
+
+      .btn-primary {
+        background: linear-gradient(
+          135deg,
+          var(--app-primary) 0%,
+          var(--app-primary-dark) 100%
+        );
+        border: none;
+      }
+
+      .btn-success {
+        background: linear-gradient(
+          135deg,
+          var(--app-secondary) 0%,
+          #16a34a 100%
+        );
+        border: none;
+      }
+
+      /* Alerts */
+      .alert {
+        border-radius: var(--app-radius);
+        border: 1px solid transparent;
+        padding: var(--app-spacing-sm) var(--app-spacing);
+        box-shadow: var(--app-shadow-sm);
+      }
+
+      .alert-info {
+        background: rgba(37, 99, 235, 0.12);
+        border-color: rgba(37, 99, 235, 0.25);
+        color: var(--app-primary);
+      }
+
+      .alert-success {
+        background: rgba(34, 197, 94, 0.12);
+        border-color: rgba(34, 197, 94, 0.25);
+        color: #15803d;
+      }
+
+      .alert-warning {
+        background: rgba(249, 115, 22, 0.15);
+        border-color: rgba(249, 115, 22, 0.3);
+        color: #b45309;
+      }
+
+      .alert-danger {
+        background: rgba(239, 68, 68, 0.15);
+        border-color: rgba(239, 68, 68, 0.3);
+        color: #b91c1c;
+      }
+
+      /* Modal styling */
+      .modal-content {
+        border-radius: var(--app-radius);
+        border: 1px solid var(--app-border);
+        box-shadow: var(--app-shadow);
+      }
+
+      .modal-header {
+        border-bottom: 1px solid var(--app-border);
+        background: rgba(37, 99, 235, 0.08);
+      }
+
+      .modal-footer {
+        border-top: 1px solid var(--app-border);
+        background: rgba(148, 163, 184, 0.1);
+      }
+
+      /* Lists */
+      .list-group-item {
+        border: 1px solid var(--app-border);
+        border-radius: calc(var(--app-radius) - 8px);
+        margin-bottom: var(--app-spacing-xs);
+        background: var(--app-elevated);
+      }
+
+      .list-group-item.active {
+        background: linear-gradient(
+          135deg,
+          rgba(37, 99, 235, 0.18) 0%,
+          rgba(37, 99, 235, 0.28) 100%
+        );
+        border-color: rgba(37, 99, 235, 0.35);
+      }
+
+      /* Tabs & pagination */
+      .nav-tabs .nav-link {
+        border: none;
+        border-radius: 999px;
+        padding: 0.65rem 1.25rem;
+        color: var(--app-text-secondary);
+        background: rgba(255, 255, 255, 0.65);
+        margin-right: 0.5rem;
+      }
+
+      .nav-tabs .nav-link.active {
+        background: linear-gradient(
+          135deg,
+          var(--app-primary) 0%,
+          var(--app-primary-dark) 100%
+        );
+        color: var(--app-text-inverse);
+        box-shadow: 0 16px 32px rgba(37, 99, 235, 0.24);
+      }
+
+      .pagination .page-link {
+        border-radius: 999px;
+        border: 1px solid var(--app-border);
+        color: var(--app-text-secondary);
+        margin: 0 0.25rem;
+      }
+
+      .pagination .page-item.active .page-link {
+        background: var(--app-primary);
+        border-color: var(--app-primary);
+        color: var(--app-text-inverse);
+        box-shadow: 0 18px 36px rgba(37, 99, 235, 0.28);
+      }
+
+      /* Media & avatars */
+      img {
+        max-width: 100%;
+        height: auto;
+        border-radius: var(--app-radius);
+      }
+
+      .avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        object-fit: cover;
+        box-shadow: 0 10px 20px rgba(15, 23, 42, 0.12);
+      }
+
+      /* Utility helpers */
+      .scroll-soft {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(148, 163, 184, 0.55) transparent;
+      }
+
+      .scroll-soft::-webkit-scrollbar {
+        height: 6px;
+        width: 6px;
+      }
+
+      .scroll-soft::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      .scroll-soft::-webkit-scrollbar-thumb {
+        background: rgba(148, 163, 184, 0.55);
+        border-radius: 999px;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.45rem 0.8rem;
+        border-radius: 999px;
+        background: rgba(37, 99, 235, 0.12);
+        color: var(--app-primary);
+        border: 1px solid rgba(37, 99, 235, 0.22);
+        font-weight: 600;
+        font-size: 0.85rem;
+      }
     </style>
 
     {% block extra_css %}{% endblock %}
-</head>
-<body class="app-shell">
+  </head>
+  <body class="app-shell">
     {% with request.resolver_match.url_name as current %}
     <header class="app-header">
-        <div class="app-header-inner">
-            <a class="app-brand" href="{% url 'home' %}">
-                <i class="fas fa-graduation-cap"></i>
-                COSA
-            </a>
+      <div class="app-header-inner">
+        <a class="app-brand" href="{% url 'home' %}">
+          <i class="fas fa-graduation-cap"></i>
+          COSA
+        </a>
 
-            <div class="app-header-actions">
-                {% if user.is_authenticated %}
-                    {% if user.user_type == '1' %}
-                        <a href="{% url 'admin_profile' %}">
-                            <i class="fas fa-user-cog"></i>
-                            <span class="app-header-label">Profile</span>
-                        </a>
-                        <a href="{% url 'user_logout' %}">
-                            <i class="fas fa-sign-out-alt"></i>
-                            <span class="app-header-label">Logout</span>
-                        </a>
-                    {% elif user.user_type == '2' %}
-                        <a href="{% url 'coordinator_profile' %}">
-                            <i class="fas fa-user-cog"></i>
-                            <span class="app-header-label">Profile</span>
-                        </a>
-                        <a href="{% url 'user_logout' %}">
-                            <i class="fas fa-sign-out-alt"></i>
-                            <span class="app-header-label">Logout</span>
-                        </a>
-                    {% else %}
-                        <!-- Alumni header profile moved to quick nav -->
-                    {% endif %}
-                {% else %}
-                    <a href="{% url 'login_page' %}">
-                        <i class="fas fa-sign-in-alt"></i>
-                        <span class="app-header-label">Log in</span>
-                    </a>
-                    <a href="{% url 'alumni_registration' %}">
-                        <i class="fas fa-user-plus"></i>
-                        <span class="app-header-label">Join</span>
-                    </a>
-                {% endif %}
-            </div>
+        <div class="app-header-actions">
+          {% if user.is_authenticated %} {% if user.user_type == '1' %}
+          <a href="{% url 'admin_profile' %}">
+            <i class="fas fa-user-cog"></i>
+            <span class="app-header-label">Profile</span>
+          </a>
+          <a href="{% url 'user_logout' %}">
+            <i class="fas fa-sign-out-alt"></i>
+            <span class="app-header-label">Logout</span>
+          </a>
+          {% elif user.user_type == '2' %}
+          <a href="{% url 'coordinator_profile' %}">
+            <i class="fas fa-user-cog"></i>
+            <span class="app-header-label">Profile</span>
+          </a>
+          <a href="{% url 'user_logout' %}">
+            <i class="fas fa-sign-out-alt"></i>
+            <span class="app-header-label">Logout</span>
+          </a>
+          {% else %}
+          <!-- Alumni header profile moved to quick nav -->
+          {% endif %} {% else %}
+          <a href="{% url 'login_page' %}">
+            <i class="fas fa-sign-in-alt"></i>
+            <span class="app-header-label">Log in</span>
+          </a>
+          <a href="{% url 'alumni_registration' %}">
+            <i class="fas fa-user-plus"></i>
+            <span class="app-header-label">Join</span>
+          </a>
+          {% endif %}
         </div>
+      </div>
 
-        <div class="app-header-quick-nav">
-            {% if user.is_authenticated %}
-                {% if user.user_type == '1' %}
-                    <a href="{% url 'manage_coordinators' %}" class="app-chip {% if current == 'manage_coordinators' %}active{% endif %}">
-                        <i class="fas fa-user-tie"></i>
-                        <span class="app-chip-label">Coordinators</span>
-                    </a>
-                    <a href="{% url 'manage_companies' %}" class="app-chip {% if current == 'manage_companies' %}active{% endif %}">
-                        <i class="fas fa-building"></i>
-                        <span class="app-chip-label">Companies</span>
-                    </a>
-                    <a href="{% url 'manage_departments' %}" class="app-chip {% if current == 'manage_departments' %}active{% endif %}">
-                        <i class="fas fa-layer-group"></i>
-                        <span class="app-chip-label">Departments</span>
-                    </a>
-                    <a href="{% url 'manage_degrees' %}" class="app-chip {% if current == 'manage_degrees' %}active{% endif %}">
-                        <i class="fas fa-graduation-cap"></i>
-                        <span class="app-chip-label">Programs</span>
-                    </a>
-                    <a href="{% url 'system_settings' %}" class="app-chip {% if current == 'system_settings' %}active{% endif %}">
-                        <i class="fas fa-sliders-h"></i>
-                        <span class="app-chip-label">Settings</span>
-                    </a>
-                {% elif user.user_type == '2' %}
-                    <a href="{% url 'manage_jobs' %}" class="app-chip {% if current == 'manage_jobs' %}active{% endif %}">
-                        <i class="fas fa-briefcase"></i>
-                        <span class="app-chip-label">Jobs</span>
-                    </a>
-                    <a href="{% url 'manage_news' %}" class="app-chip {% if current == 'manage_news' %}active{% endif %}">
-                        <i class="fas fa-newspaper"></i>
-                        <span class="app-chip-label">News</span>
-                    </a>
-                    <a href="{% url 'manage_donations' %}" class="app-chip {% if current == 'manage_donations' %}active{% endif %}">
-                        <i class="fas fa-hand-holding-heart"></i>
-                        <span class="app-chip-label">Donations</span>
-                    </a>
-                    <a href="{% url 'manage_mentorships' %}" class="app-chip {% if current == 'manage_mentorships' %}active{% endif %}">
-                        <i class="fas fa-lightbulb"></i>
-                        <span class="app-chip-label">Mentorships</span>
-                    </a>
-                    <a href="{% url 'send_notification' %}" class="app-chip {% if current == 'send_notification' %}active{% endif %}">
-                        <i class="fas fa-bullhorn"></i>
-                        <span class="app-chip-label">Alerts</span>
-                    </a>
-                {% else %}
-                    <a href="{% url 'alumni_directory' %}" class="app-chip {% if current == 'alumni_directory' %}active{% endif %}"><i class="fas fa-users"></i> Directory</a>
-                    <a href="{% url 'events' %}" class="app-chip {% if current == 'events' %}active{% endif %}"><i class="fas fa-calendar-alt"></i> Events</a>
-                    <a href="{% url 'job_board' %}" class="app-chip {% if current == 'job_board' %}active{% endif %}"><i class="fas fa-briefcase"></i> Careers</a>
-                    <a href="{% url 'my_events' %}" class="app-chip {% if current == 'my_events' %}active{% endif %}"><i class="fas fa-ticket-alt"></i> My Events</a>
-                    <a href="{% url 'alumni_profile' %}" class="app-chip app-chip-profile {% if current == 'alumni_profile' %}active{% endif %}">
-                        <span class="app-profile-avatar-wrapper">
-                            {% if user.profile_pic %}
-                                <img src="{{ user.profile_pic.url }}" alt="{{ user.get_full_name|default:'Profile' }}" class="app-profile-avatar">
-                            {% else %}
-                                <span class="app-profile-avatar-placeholder">
-                                    <i class="fas fa-user"></i>
-                                </span>
-                            {% endif %}
-                        </span>
-                        <span class="app-profile-name">{{ user.first_name|default:user.get_short_name|default:"Profile" }}</span>
-                    </a>
-                {% endif %}
+      <div class="app-header-quick-nav">
+        {% if user.is_authenticated %} {% if user.user_type == '1' %}
+        <a
+          href="{% url 'manage_coordinators' %}"
+          class="app-chip {% if current == 'manage_coordinators' %}active{% endif %}"
+        >
+          <i class="fas fa-user-tie"></i>
+          <span class="app-chip-label">Coordinators</span>
+        </a>
+        <a
+          href="{% url 'manage_companies' %}"
+          class="app-chip {% if current == 'manage_companies' %}active{% endif %}"
+        >
+          <i class="fas fa-building"></i>
+          <span class="app-chip-label">Companies</span>
+        </a>
+        <a
+          href="{% url 'manage_departments' %}"
+          class="app-chip {% if current == 'manage_departments' %}active{% endif %}"
+        >
+          <i class="fas fa-layer-group"></i>
+          <span class="app-chip-label">Departments</span>
+        </a>
+        <a
+          href="{% url 'manage_degrees' %}"
+          class="app-chip {% if current == 'manage_degrees' %}active{% endif %}"
+        >
+          <i class="fas fa-graduation-cap"></i>
+          <span class="app-chip-label">Programs</span>
+        </a>
+        <a
+          href="{% url 'system_settings' %}"
+          class="app-chip {% if current == 'system_settings' %}active{% endif %}"
+        >
+          <i class="fas fa-sliders-h"></i>
+          <span class="app-chip-label">Settings</span>
+        </a>
+        {% elif user.user_type == '2' %}
+        <a
+          href="{% url 'manage_jobs' %}"
+          class="app-chip {% if current == 'manage_jobs' %}active{% endif %}"
+        >
+          <i class="fas fa-briefcase"></i>
+          <span class="app-chip-label">Jobs</span>
+        </a>
+        <a
+          href="{% url 'manage_news' %}"
+          class="app-chip {% if current == 'manage_news' %}active{% endif %}"
+        >
+          <i class="fas fa-newspaper"></i>
+          <span class="app-chip-label">News</span>
+        </a>
+        <a
+          href="{% url 'manage_donations' %}"
+          class="app-chip {% if current == 'manage_donations' %}active{% endif %}"
+        >
+          <i class="fas fa-hand-holding-heart"></i>
+          <span class="app-chip-label">Donations</span>
+        </a>
+        <a
+          href="{% url 'manage_mentorships' %}"
+          class="app-chip {% if current == 'manage_mentorships' %}active{% endif %}"
+        >
+          <i class="fas fa-lightbulb"></i>
+          <span class="app-chip-label">Mentorships</span>
+        </a>
+        <a
+          href="{% url 'send_notification' %}"
+          class="app-chip {% if current == 'send_notification' %}active{% endif %}"
+        >
+          <i class="fas fa-bullhorn"></i>
+          <span class="app-chip-label">Alerts</span>
+        </a>
+        {% else %}
+        <a
+          href="{% url 'alumni_directory' %}"
+          class="app-chip {% if current == 'alumni_directory' %}active{% endif %}"
+          ><i class="fas fa-users"></i> Members</a
+        >
+        <a
+          href="{% url 'events' %}"
+          class="app-chip {% if current == 'events' %}active{% endif %}"
+          ><i class="fas fa-calendar-alt"></i> Events</a
+        >
+        <a
+          href="{% url 'job_board' %}"
+          class="app-chip {% if current == 'job_board' %}active{% endif %}"
+          ><i class="fas fa-briefcase"></i> Careers</a
+        >
+        <a
+          href="{% url 'my_events' %}"
+          class="app-chip {% if current == 'my_events' %}active{% endif %}"
+          ><i class="fas fa-ticket-alt"></i> My Events</a
+        >
+        <a
+          href="{% url 'alumni_profile' %}"
+          class="app-chip app-chip-profile {% if current == 'alumni_profile' %}active{% endif %}"
+        >
+          <span class="app-profile-avatar-wrapper">
+            {% if user.profile_pic %}
+            <img
+              src="{{ user.profile_pic.url }}"
+              alt="{{ user.get_full_name|default:'Profile' }}"
+              class="app-profile-avatar"
+            />
             {% else %}
-                <a href="{% url 'public_alumni_directory' %}" class="app-chip {% if current == 'public_alumni_directory' %}active{% endif %}"><i class="fas fa-users"></i> Directory</a>
-                <a href="{% url 'public_events' %}" class="app-chip {% if current == 'public_events' %}active{% endif %}"><i class="fas fa-calendar-alt"></i> Events</a>
-                <a href="{% url 'public_news' %}" class="app-chip {% if current == 'public_news' %}active{% endif %}"><i class="fas fa-newspaper"></i> News</a>
-                <a href="{% url 'about_cosa' %}" class="app-chip {% if current == 'about_cosa' %}active{% endif %}"><i class="fas fa-info-circle"></i> About</a>
+            <span class="app-profile-avatar-placeholder">
+              <i class="fas fa-user"></i>
+            </span>
             {% endif %}
-        </div>
+          </span>
+          <span class="app-profile-name"
+            >{{ user.first_name|default:user.get_short_name|default:"Profile"
+            }}</span
+          >
+        </a>
+        {% endif %} {% else %}
+        <a
+          href="{% url 'about_cosa' %}"
+          class="app-chip {% if current == 'about_cosa' %}active{% endif %}"
+          ><i class="fas fa-info-circle"></i> About</a
+        >
+        {% endif %}
+      </div>
     </header>
 
     {% if messages %}
-        <section class="app-messages">
-            <div class="app-messages-inner">
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                {% endfor %}
-            </div>
-        </section>
+    <section class="app-messages">
+      <div class="app-messages-inner">
+        {% for message in messages %}
+        <div
+          class="alert alert-{{ message.tags }} alert-dismissible fade show"
+          role="alert"
+        >
+          {{ message }}
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+            aria-label="Close"
+          ></button>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
     {% endif %}
 
     <main class="app-content">
-        <div class="app-content-inner">
-            {% block content %}{% endblock %}
-        </div>
+      <div class="app-content-inner">{% block content %}{% endblock %}</div>
     </main>
 
     <footer class="app-footer">
-        <div class="app-footer-inner">
-            <p><strong>COSA Alumni Network</strong> — keeping graduates connected wherever they are.</p>
-            <p>
-                <a href="{% url 'public_alumni_directory' %}">Directory</a> •
-                <a href="{% url 'public_events' %}">Events</a> •
-                <a href="{% url 'public_news' %}">News</a> •
-                <a href="mailto:cosa@gmail.com">Support</a>
-            </p>
-            <p>&copy; {% now "Y" %} COSA Alumni Management System. Built for mobile first experiences.</p>
-        </div>
+      <div class="app-footer-inner">
+        <p>
+          <strong>COSA Alumni Network</strong> — keeping graduates connected
+          wherever they are.
+        </p>
+        <p>
+          <a href="{% url 'about_cosa' %}">About</a> •
+          <a href="{% url 'login_page' %}">Log in</a> •
+          <a href="{% url 'alumni_registration' %}">Join</a> •
+          <a href="mailto:cosa@gmail.com">Support</a>
+        </p>
+        <p>
+          &copy; {% now "Y" %} COSA Alumni Management System. Built for mobile
+          first experiences.
+        </p>
+      </div>
     </footer>
 
     <nav class="app-bottom-nav">
-        <div class="app-bottom-nav-inner">
-            {% if user.is_authenticated %}
-                {% if user.user_type == '1' %}
-                    <a href="{% url 'admin_home' %}" class="app-tab {% if current == 'admin_home' %}active{% endif %}">
-                        <i class="fas fa-house"></i>
-                        Home
-                    </a>
-                    <a href="{% url 'manage_alumni' %}" class="app-tab {% if current == 'manage_alumni' %}active{% endif %}">
-                        <i class="fas fa-user-friends"></i>
-                        Alumni
-                    </a>
-                    <a href="{% url 'system_analytics' %}" class="app-tab {% if current == 'system_analytics' %}active{% endif %}">
-                        <i class="fas fa-chart-pie"></i>
-                        Insights
-                    </a>
-                    <a href="{% url 'admin_profile' %}" class="app-tab {% if current == 'admin_profile' %}active{% endif %}">
-                        <i class="fas fa-user-cog"></i>
-                        Profile
-                    </a>
-                {% elif user.user_type == '2' %}
-                    <a href="{% url 'coordinator_home' %}" class="app-tab {% if current == 'coordinator_home' %}active{% endif %}">
-                        <i class="fas fa-house"></i>
-                        Home
-                    </a>
-                    <a href="{% url 'manage_alumni' %}" class="app-tab {% if current == 'manage_alumni' %}active{% endif %}">
-                        <i class="fas fa-user-friends"></i>
-                        Alumni
-                    </a>
-                    <a href="{% url 'manage_events' %}" class="app-tab {% if current == 'manage_events' %}active{% endif %}">
-                        <i class="fas fa-calendar-alt"></i>
-                        Events
-                    </a>
-                    <a href="{% url 'coordinator_messages_inbox' %}" class="app-tab {% if current == 'coordinator_messages_inbox' %}active{% endif %}">
-                        <i class="fas fa-envelope"></i>
-                        Inbox
-                    </a>
-                {% else %}
-                    <a href="{% url 'alumni_home' %}" class="app-tab {% if current == 'alumni_home' %}active{% endif %}">
-                        <span class="app-tab-icon">
-                            <i class="fas fa-house"></i>
-                            {% with count=alumni_badges.home %}
-                                {% if count %}
-                                    <span class="app-icon-badge">{{ count }}</span>
-                                {% endif %}
-                            {% endwith %}
-                        </span>
-                        Home
-                    </a>
-                    <a href="{% url 'messages_inbox' %}" class="app-tab {% if current == 'messages_inbox' %}active{% endif %}">
-                        <span class="app-tab-icon">
-                            <i class="fas fa-envelope"></i>
-                            {% with count=alumni_badges.messages %}
-                                {% if count %}
-                                    <span class="app-icon-badge">{{ count }}</span>
-                                {% endif %}
-                            {% endwith %}
-                        </span>
-                        Inbox
-                    </a>
-                    <a href="{% url 'notifications' %}" class="app-tab {% if current == 'notifications' %}active{% endif %}">
-                        <span class="app-tab-icon">
-                            <i class="fas fa-bell"></i>
-                            {% with count=alumni_badges.alerts|default:alumni_badges.notifications %}
-                                {% if count %}
-                                    <span class="app-icon-badge">{{ count }}</span>
-                                {% endif %}
-                            {% endwith %}
-                        </span>
-                        Alerts
-                    </a>
-                    <a href="{% url 'alumni_feedback' %}" class="app-tab {% if current == 'alumni_feedback' %}active{% endif %}">
-                        <span class="app-tab-icon">
-                            <i class="fas fa-comment-dots"></i>
-                            {% with count=alumni_badges.feedback %}
-                                {% if count %}
-                                    <span class="app-icon-badge">{{ count }}</span>
-                                {% endif %}
-                            {% endwith %}
-                        </span>
-                        Feedback
-                    </a>
-                    <a href="{% url 'alumni_profile' %}" class="app-tab {% if current == 'alumni_profile' %}active{% endif %}">
-                        <span class="app-tab-icon">
-                            <i class="fas fa-user-circle"></i>
-                        </span>
-                        Profile
-                    </a>
-                    <a href="{% url 'user_logout' %}" class="app-tab">
-                        <span class="app-tab-icon">
-                            <i class="fas fa-sign-out-alt"></i>
-                        </span>
-                        Logout
-                    </a>
-                {% endif %}
-            {% else %}
-                <a href="{% url 'home' %}" class="app-tab {% if current == 'home' %}active{% endif %}">
-                    <i class="fas fa-house"></i>
-                    Home
-                </a>
-                <a href="{% url 'public_job_board' %}" class="app-tab {% if current == 'public_job_board' %}active{% endif %}">
-                    <i class="fas fa-briefcase"></i>
-                    Jobs
-                </a>
-                <a href="{% url 'login_page' %}" class="app-tab {% if current == 'login_page' %}active{% endif %}">
-                    <i class="fas fa-user"></i>
-                    Log in
-                </a>
-                <a href="{% url 'alumni_registration' %}" class="app-tab {% if current == 'alumni_registration' %}active{% endif %}">
-                    <i class="fas fa-user-plus"></i>
-                    Join
-                </a>
-            {% endif %}
-        </div>
+      <div class="app-bottom-nav-inner">
+        {% if user.is_authenticated %} {% if user.user_type == '1' %}
+        <a
+          href="{% url 'admin_home' %}"
+          class="app-tab {% if current == 'admin_home' %}active{% endif %}"
+        >
+          <i class="fas fa-house"></i>
+          Home
+        </a>
+        <a
+          href="{% url 'manage_alumni' %}"
+          class="app-tab {% if current == 'manage_alumni' %}active{% endif %}"
+        >
+          <i class="fas fa-user-friends"></i>
+          Alumni
+        </a>
+        <a
+          href="{% url 'system_analytics' %}"
+          class="app-tab {% if current == 'system_analytics' %}active{% endif %}"
+        >
+          <i class="fas fa-chart-pie"></i>
+          Insights
+        </a>
+        <a
+          href="{% url 'admin_profile' %}"
+          class="app-tab {% if current == 'admin_profile' %}active{% endif %}"
+        >
+          <i class="fas fa-user-cog"></i>
+          Profile
+        </a>
+        {% elif user.user_type == '2' %}
+        <a
+          href="{% url 'coordinator_home' %}"
+          class="app-tab {% if current == 'coordinator_home' %}active{% endif %}"
+        >
+          <i class="fas fa-house"></i>
+          Home
+        </a>
+        <a
+          href="{% url 'manage_alumni' %}"
+          class="app-tab {% if current == 'manage_alumni' %}active{% endif %}"
+        >
+          <i class="fas fa-user-friends"></i>
+          Alumni
+        </a>
+        <a
+          href="{% url 'manage_events' %}"
+          class="app-tab {% if current == 'manage_events' %}active{% endif %}"
+        >
+          <i class="fas fa-calendar-alt"></i>
+          Events
+        </a>
+        <a
+          href="{% url 'coordinator_messages_inbox' %}"
+          class="app-tab {% if current == 'coordinator_messages_inbox' %}active{% endif %}"
+        >
+          <i class="fas fa-envelope"></i>
+          Inbox
+        </a>
+        {% else %}
+        <a
+          href="{% url 'alumni_home' %}"
+          class="app-tab {% if current == 'alumni_home' %}active{% endif %}"
+        >
+          <span class="app-tab-icon">
+            <i class="fas fa-house"></i>
+            {% with count=alumni_badges.home %} {% if count %}
+            <span class="app-icon-badge">{{ count }}</span>
+            {% endif %} {% endwith %}
+          </span>
+          Home
+        </a>
+        <a
+          href="{% url 'messages_inbox' %}"
+          class="app-tab {% if current == 'messages_inbox' %}active{% endif %}"
+        >
+          <span class="app-tab-icon">
+            <i class="fas fa-envelope"></i>
+            {% with count=alumni_badges.messages %} {% if count %}
+            <span class="app-icon-badge">{{ count }}</span>
+            {% endif %} {% endwith %}
+          </span>
+          Inbox
+        </a>
+        <a
+          href="{% url 'notifications' %}"
+          class="app-tab {% if current == 'notifications' %}active{% endif %}"
+        >
+          <span class="app-tab-icon">
+            <i class="fas fa-bell"></i>
+            {% with
+            count=alumni_badges.alerts|default:alumni_badges.notifications %} {%
+            if count %}
+            <span class="app-icon-badge">{{ count }}</span>
+            {% endif %} {% endwith %}
+          </span>
+          Alerts
+        </a>
+        <a
+          href="{% url 'alumni_feedback' %}"
+          class="app-tab {% if current == 'alumni_feedback' %}active{% endif %}"
+        >
+          <span class="app-tab-icon">
+            <i class="fas fa-comment-dots"></i>
+            {% with count=alumni_badges.feedback %} {% if count %}
+            <span class="app-icon-badge">{{ count }}</span>
+            {% endif %} {% endwith %}
+          </span>
+          Feedback
+        </a>
+        <a
+          href="{% url 'alumni_profile' %}"
+          class="app-tab {% if current == 'alumni_profile' %}active{% endif %}"
+        >
+          <span class="app-tab-icon">
+            <i class="fas fa-user-circle"></i>
+          </span>
+          Profile
+        </a>
+        <a href="{% url 'user_logout' %}" class="app-tab">
+          <span class="app-tab-icon">
+            <i class="fas fa-sign-out-alt"></i>
+          </span>
+          Logout
+        </a>
+        {% endif %} {% else %}
+        <a
+          href="{% url 'about_cosa' %}"
+          class="app-tab {% if current == 'about_cosa' %}active{% endif %}"
+        >
+          <i class="fas fa-info-circle"></i>
+          About
+        </a>
+        <a
+          href="{% url 'login_page' %}"
+          class="app-tab {% if current == 'login_page' %}active{% endif %}"
+        >
+          <i class="fas fa-user"></i>
+          Log in
+        </a>
+        <a
+          href="{% url 'alumni_registration' %}"
+          class="app-tab {% if current == 'alumni_registration' %}active{% endif %}"
+        >
+          <i class="fas fa-user-plus"></i>
+          Join
+        </a>
+        {% endif %}
+      </div>
     </nav>
     {% endwith %}
 
@@ -1372,5 +1554,5 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     {% block extra_js %}{% endblock %}
-</body>
+  </body>
 </html>

@@ -1,380 +1,472 @@
-{% extends 'main_app/base.html' %}
-{% load static %}
-
-{% block title %}{{ article.title }} - COSA Alumni News{% endblock %}
-
-{% block extra_css %}
+{% extends 'main_app/base.html' %} {% load static %} {% block title %}{{
+article.title }} - COSA Alumni News{% endblock %} {% block extra_css %}
 <style>
-    .article-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 60px 0;
-    }
-    .article-meta {
-        background-color: rgba(255, 255, 255, 0.1);
-        border-radius: 10px;
-        padding: 20px;
-        margin-top: 20px;
-    }
-    .article-content {
-        font-size: 1.1rem;
-        line-height: 1.8;
-        color: #333;
-    }
-    .article-content h2, .article-content h3, .article-content h4 {
-        margin-top: 2rem;
-        margin-bottom: 1rem;
-        color: #2c3e50;
-    }
-    .article-content p {
-        margin-bottom: 1.5rem;
-    }
-    .article-content img {
-        max-width: 100%;
-        height: auto;
-        border-radius: 8px;
-        margin: 20px 0;
-    }
-    .share-buttons {
-        position: sticky;
-        top: 100px;
-    }
-    .related-news-card {
-        border: none;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        transition: transform 0.3s ease;
-    }
-    .related-news-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-    }
-    .news-category {
-        display: inline-block;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 500;
-        text-transform: uppercase;
-    }
-    .category-general { background-color: #e3f2fd; color: #1976d2; }
-    .category-events { background-color: #f3e5f5; color: #7b1fa2; }
-    .category-achievements { background-color: #e8f5e8; color: #388e3c; }
-    .category-announcements { background-color: #fff3e0; color: #f57c00; }
-    .category-alumni-spotlight { background-color: #fce4ec; color: #c2185b; }
+  .article-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 60px 0;
+  }
+  .article-meta {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 20px;
+  }
+  .article-content {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #333;
+  }
+  .article-content h2,
+  .article-content h3,
+  .article-content h4 {
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    color: #2c3e50;
+  }
+  .article-content p {
+    margin-bottom: 1.5rem;
+  }
+  .article-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 20px 0;
+  }
+  .share-buttons {
+    position: sticky;
+    top: 100px;
+  }
+  .related-news-card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+  }
+  .related-news-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+  .news-category {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+  }
+  .category-general {
+    background-color: #e3f2fd;
+    color: #1976d2;
+  }
+  .category-events {
+    background-color: #f3e5f5;
+    color: #7b1fa2;
+  }
+  .category-achievements {
+    background-color: #e8f5e8;
+    color: #388e3c;
+  }
+  .category-announcements {
+    background-color: #fff3e0;
+    color: #f57c00;
+  }
+  .category-alumni-spotlight {
+    background-color: #fce4ec;
+    color: #c2185b;
+  }
+  .back-button {
+    position: fixed;
+    top: 50%;
+    left: 20px;
+    transform: translateY(-50%);
+    z-index: 1000;
+  }
+  @media (max-width: 768px) {
     .back-button {
-        position: fixed;
-        top: 50%;
-        left: 20px;
-        transform: translateY(-50%);
-        z-index: 1000;
+      position: static;
+      transform: none;
+      margin-bottom: 20px;
     }
-    @media (max-width: 768px) {
-        .back-button {
-            position: static;
-            transform: none;
-            margin-bottom: 20px;
-        }
-    }
+  }
 </style>
-{% endblock %}
-
-{% block content %}
+{% endblock %} {% block content %}
 <!-- Back Button -->
 <div class="back-button d-none d-lg-block">
-    <a href="{% url 'public_news' %}" class="btn btn-primary btn-lg rounded-circle" 
-       title="Back to News" data-bs-toggle="tooltip">
-        <i class="fas fa-arrow-left"></i>
-    </a>
+  <a
+    href="{% url 'public_news' %}"
+    class="btn btn-primary btn-lg rounded-circle"
+    title="Back to News"
+    data-bs-toggle="tooltip"
+  >
+    <i class="fas fa-arrow-left"></i>
+  </a>
 </div>
 
 <!-- Article Header -->
 <div class="article-header">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-8 mx-auto">
-                <!-- Mobile Back Button -->
-                <div class="d-lg-none mb-3">
-                    <a href="{% url 'public_news' %}" class="btn btn-outline-light">
-                        <i class="fas fa-arrow-left me-2"></i>Back to News
-                    </a>
-                </div>
-                
-                <span class="news-category category-{{ article.category }} mb-3 d-inline-block">
-                    {{ article.get_category_display }}
-                </span>
-                
-                <h1 class="display-5 fw-bold mb-4">{{ article.title }}</h1>
-                
-                <div class="article-meta">
-                    <div class="row align-items-center">
-                        <div class="col-md-8">
-                            <div class="d-flex align-items-center">
-                                {% if article.author.admin.profile_pic %}
-                                <img src="{{ article.author.admin.profile_pic.url }}" 
-                                     alt="{{ article.author.admin.get_full_name }}" 
-                                     class="rounded-circle me-3" width="50" height="50">
-                                {% else %}
-                                <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-3" 
-                                     style="width: 50px; height: 50px;">
-                                    <i class="fas fa-user text-muted"></i>
-                                </div>
-                                {% endif %}
-                                <div>
-                                    <div class="fw-bold">{{ article.author.admin.get_full_name }}</div>
-                                    <small>Alumni Coordinator</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                            <div>
-                                <i class="fas fa-calendar me-2"></i>{{ article.publish_date|date:"F d, Y" }}
-                            </div>
-                            {% if article.read_time %}
-                            <div class="mt-1">
-                                <i class="fas fa-clock me-2"></i>{{ article.read_time }} min read
-                            </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 mx-auto">
+        <!-- Mobile Back Button -->
+        <div class="d-lg-none mb-3">
+          <a href="{% url 'public_news' %}" class="btn btn-outline-light">
+            <i class="fas fa-arrow-left me-2"></i>Back to News
+          </a>
         </div>
+
+        <span
+          class="news-category category-{{ article.category }} mb-3 d-inline-block"
+        >
+          {{ article.get_category_display }}
+        </span>
+
+        <h1 class="display-5 fw-bold mb-4">{{ article.title }}</h1>
+
+        <div class="article-meta">
+          <div class="row align-items-center">
+            <div class="col-md-8">
+              <div class="d-flex align-items-center">
+                {% if article.author.admin.profile_pic %}
+                <img
+                  src="{{ article.author.admin.profile_pic.url }}"
+                  alt="{{ article.author.admin.get_full_name }}"
+                  class="rounded-circle me-3"
+                  width="50"
+                  height="50"
+                />
+                {% else %}
+                <div
+                  class="bg-light rounded-circle d-flex align-items-center justify-content-center me-3"
+                  style="width: 50px; height: 50px"
+                >
+                  <i class="fas fa-user text-muted"></i>
+                </div>
+                {% endif %}
+                <div>
+                  <div class="fw-bold">
+                    {{ article.author.admin.get_full_name }}
+                  </div>
+                  <small>Alumni Coordinator</small>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+              <div>
+                <i class="fas fa-calendar me-2"></i>{{
+                article.publish_date|date:"F d, Y" }}
+              </div>
+              {% if article.read_time %}
+              <div class="mt-1">
+                <i class="fas fa-clock me-2"></i>{{ article.read_time }} min
+                read
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 </div>
 
 <div class="container my-5">
-    <div class="row">
-        <!-- Article Content -->
-        <div class="col-lg-8">
-            <article class="article-content">
-                {% if article.featured_image %}
-                <div class="text-center mb-4">
-                    <img src="{{ article.featured_image.url }}" alt="{{ article.title }}" 
-                         class="img-fluid rounded shadow">
-                </div>
-                {% endif %}
-                
-                {% if article.meta_description %}
-                <div class="lead mb-4 p-4 bg-light rounded">
-                    {{ article.meta_description }}
-                </div>
-                {% endif %}
-                
-                <div class="content">
-                    {{ article.content|safe }}
-                </div>
-                
-                <!-- Tags -->
-                {% if article.tags %}
-                <div class="mt-5 pt-4 border-top">
-                    <h6 class="text-muted mb-3">Tags:</h6>
-                    {% for tag in article.tags.all %}
-                    <span class="badge bg-secondary me-2 mb-2">{{ tag.name }}</span>
-                    {% endfor %}
-                </div>
-                {% endif %}
-                
-                <!-- Share Section -->
-                <div class="mt-5 pt-4 border-top">
-                    <h6 class="mb-3">Share this article:</h6>
-                    <div class="d-flex gap-2 flex-wrap">
-                        <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" 
-                           target="_blank" class="btn btn-outline-primary btn-sm">
-                            <i class="fab fa-facebook-f me-2"></i>Facebook
-                        </a>
-                        <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text={{ article.title }}" 
-                           target="_blank" class="btn btn-outline-info btn-sm">
-                            <i class="fab fa-twitter me-2"></i>Twitter
-                        </a>
-                        <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ request.build_absolute_uri }}" 
-                           target="_blank" class="btn btn-outline-primary btn-sm">
-                            <i class="fab fa-linkedin-in me-2"></i>LinkedIn
-                        </a>
-                        <button onclick="copyToClipboard()" class="btn btn-outline-secondary btn-sm">
-                            <i class="fas fa-link me-2"></i>Copy Link
-                        </button>
-                    </div>
-                </div>
-            </article>
+  <div class="row">
+    <!-- Article Content -->
+    <div class="col-lg-8">
+      <article class="article-content">
+        {% if article.featured_image %}
+        <div class="text-center mb-4">
+          <img
+            src="{{ article.featured_image.url }}"
+            alt="{{ article.title }}"
+            class="img-fluid rounded shadow"
+          />
         </div>
-        
-        <!-- Sidebar -->
-        <div class="col-lg-4">
-            <!-- Share Buttons (Sticky) -->
-            <div class="share-buttons d-none d-lg-block">
-                <div class="card mb-4">
-                    <div class="card-header bg-primary text-white">
-                        <h6 class="mb-0"><i class="fas fa-share-alt me-2"></i>Share Article</h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="d-grid gap-2">
-                            <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" 
-                               target="_blank" class="btn btn-outline-primary btn-sm">
-                                <i class="fab fa-facebook-f me-2"></i>Facebook
-                            </a>
-                            <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text={{ article.title }}" 
-                               target="_blank" class="btn btn-outline-info btn-sm">
-                                <i class="fab fa-twitter me-2"></i>Twitter
-                            </a>
-                            <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ request.build_absolute_uri }}" 
-                               target="_blank" class="btn btn-outline-primary btn-sm">
-                                <i class="fab fa-linkedin-in me-2"></i>LinkedIn
-                            </a>
-                            <button onclick="copyToClipboard()" class="btn btn-outline-secondary btn-sm">
-                                <i class="fas fa-link me-2"></i>Copy Link
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Author Info -->
-            <div class="card mb-4">
-                <div class="card-header bg-secondary text-white">
-                    <h6 class="mb-0"><i class="fas fa-user me-2"></i>About the Author</h6>
-                </div>
-                <div class="card-body text-center">
-                    {% if article.author.admin.profile_pic %}
-                    <img src="{{ article.author.admin.profile_pic.url }}" 
-                         alt="{{ article.author.admin.get_full_name }}" 
-                         class="rounded-circle mb-3" width="80" height="80">
-                    {% else %}
-                    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" 
-                         style="width: 80px; height: 80px;">
-                        <i class="fas fa-user fa-2x text-muted"></i>
-                    </div>
-                    {% endif %}
-                    <h6>{{ article.author.admin.get_full_name }}</h6>
-                    <p class="text-muted small mb-2">Alumni Coordinator</p>
-                    {% if article.author.department %}
-                    <p class="text-muted small">{{ article.author.department }}</p>
-                    {% endif %}
-                </div>
-            </div>
-            
-            <!-- Related News -->
-            {% if related_news %}
-            <div class="card mb-4">
-                <div class="card-header bg-info text-white">
-                    <h6 class="mb-0"><i class="fas fa-newspaper me-2"></i>Related News</h6>
-                </div>
-                <div class="card-body p-0">
-                    {% for related in related_news %}
-                    <div class="related-news-card p-3 {% if not forloop.last %}border-bottom{% endif %}">
-                        <span class="news-category category-{{ related.category }} mb-2 d-inline-block">
-                            {{ related.get_category_display }}
-                        </span>
-                        <h6 class="mb-2">
-                            <a href="{% url 'news_detail' related.slug %}" class="text-decoration-none">
-                                {{ related.title|truncatewords:8 }}
-                            </a>
-                        </h6>
-                        <small class="text-muted">
-                            <i class="fas fa-calendar me-1"></i>{{ related.publish_date|date:"M d, Y" }}
-                        </small>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
-            
-            <!-- Newsletter Signup -->
-            <div class="card mb-4">
-                <div class="card-header bg-success text-white">
-                    <h6 class="mb-0"><i class="fas fa-envelope me-2"></i>Newsletter</h6>
-                </div>
-                <div class="card-body">
-                    <p class="card-text small">Get the latest news delivered to your inbox.</p>
-                    <form>
-                        <div class="mb-3">
-                            <input type="email" class="form-control form-control-sm" 
-                                   placeholder="Your email address" required>
-                        </div>
-                        <button type="submit" class="btn btn-success btn-sm w-100">Subscribe</button>
-                    </form>
-                </div>
-            </div>
-            
-            <!-- Quick Links -->
-            <div class="card">
-                <div class="card-header bg-dark text-white">
-                    <h6 class="mb-0"><i class="fas fa-link me-2"></i>Quick Links</h6>
-                </div>
-                <div class="card-body">
-                    <div class="list-group list-group-flush">
-                        <a href="{% url 'public_news' %}" class="list-group-item list-group-item-action py-2">
-                            <i class="fas fa-newspaper me-2"></i>All News
-                        </a>
-                        <a href="{% url 'public_events' %}" class="list-group-item list-group-item-action py-2">
-                            <i class="fas fa-calendar-alt me-2"></i>Events
-                        </a>
-                        <a href="{% url 'public_job_board' %}" class="list-group-item list-group-item-action py-2">
-                            <i class="fas fa-briefcase me-2"></i>Jobs
-                        </a>
-                        <a href="{% url 'public_alumni_directory' %}" class="list-group-item list-group-item-action py-2">
-                            <i class="fas fa-users me-2"></i>COSA Directory
-                        </a>
-                    </div>
-                </div>
-            </div>
+        {% endif %} {% if article.meta_description %}
+        <div class="lead mb-4 p-4 bg-light rounded">
+          {{ article.meta_description }}
         </div>
+        {% endif %}
+
+        <div class="content">{{ article.content|safe }}</div>
+
+        <!-- Tags -->
+        {% if article.tags %}
+        <div class="mt-5 pt-4 border-top">
+          <h6 class="text-muted mb-3">Tags:</h6>
+          {% for tag in article.tags.all %}
+          <span class="badge bg-secondary me-2 mb-2">{{ tag.name }}</span>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Share Section -->
+        <div class="mt-5 pt-4 border-top">
+          <h6 class="mb-3">Share this article:</h6>
+          <div class="d-flex gap-2 flex-wrap">
+            <a
+              href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}"
+              target="_blank"
+              class="btn btn-outline-primary btn-sm"
+            >
+              <i class="fab fa-facebook-f me-2"></i>Facebook
+            </a>
+            <a
+              href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text={{ article.title }}"
+              target="_blank"
+              class="btn btn-outline-info btn-sm"
+            >
+              <i class="fab fa-twitter me-2"></i>Twitter
+            </a>
+            <a
+              href="https://www.linkedin.com/sharing/share-offsite/?url={{ request.build_absolute_uri }}"
+              target="_blank"
+              class="btn btn-outline-primary btn-sm"
+            >
+              <i class="fab fa-linkedin-in me-2"></i>LinkedIn
+            </a>
+            <button
+              onclick="copyToClipboard()"
+              class="btn btn-outline-secondary btn-sm"
+            >
+              <i class="fas fa-link me-2"></i>Copy Link
+            </button>
+          </div>
+        </div>
+      </article>
     </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+      <!-- Share Buttons (Sticky) -->
+      <div class="share-buttons d-none d-lg-block">
+        <div class="card mb-4">
+          <div class="card-header bg-primary text-white">
+            <h6 class="mb-0">
+              <i class="fas fa-share-alt me-2"></i>Share Article
+            </h6>
+          </div>
+          <div class="card-body">
+            <div class="d-grid gap-2">
+              <a
+                href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}"
+                target="_blank"
+                class="btn btn-outline-primary btn-sm"
+              >
+                <i class="fab fa-facebook-f me-2"></i>Facebook
+              </a>
+              <a
+                href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text={{ article.title }}"
+                target="_blank"
+                class="btn btn-outline-info btn-sm"
+              >
+                <i class="fab fa-twitter me-2"></i>Twitter
+              </a>
+              <a
+                href="https://www.linkedin.com/sharing/share-offsite/?url={{ request.build_absolute_uri }}"
+                target="_blank"
+                class="btn btn-outline-primary btn-sm"
+              >
+                <i class="fab fa-linkedin-in me-2"></i>LinkedIn
+              </a>
+              <button
+                onclick="copyToClipboard()"
+                class="btn btn-outline-secondary btn-sm"
+              >
+                <i class="fas fa-link me-2"></i>Copy Link
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Author Info -->
+      <div class="card mb-4">
+        <div class="card-header bg-secondary text-white">
+          <h6 class="mb-0"><i class="fas fa-user me-2"></i>About the Author</h6>
+        </div>
+        <div class="card-body text-center">
+          {% if article.author.admin.profile_pic %}
+          <img
+            src="{{ article.author.admin.profile_pic.url }}"
+            alt="{{ article.author.admin.get_full_name }}"
+            class="rounded-circle mb-3"
+            width="80"
+            height="80"
+          />
+          {% else %}
+          <div
+            class="bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3"
+            style="width: 80px; height: 80px"
+          >
+            <i class="fas fa-user fa-2x text-muted"></i>
+          </div>
+          {% endif %}
+          <h6>{{ article.author.admin.get_full_name }}</h6>
+          <p class="text-muted small mb-2">Alumni Coordinator</p>
+          {% if article.author.department %}
+          <p class="text-muted small">{{ article.author.department }}</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Related News -->
+      {% if related_news %}
+      <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+          <h6 class="mb-0">
+            <i class="fas fa-newspaper me-2"></i>Related News
+          </h6>
+        </div>
+        <div class="card-body p-0">
+          {% for related in related_news %}
+          <div
+            class="related-news-card p-3 {% if not forloop.last %}border-bottom{% endif %}"
+          >
+            <span
+              class="news-category category-{{ related.category }} mb-2 d-inline-block"
+            >
+              {{ related.get_category_display }}
+            </span>
+            <h6 class="mb-2">
+              <a
+                href="{% url 'news_detail' related.slug %}"
+                class="text-decoration-none"
+              >
+                {{ related.title|truncatewords:8 }}
+              </a>
+            </h6>
+            <small class="text-muted">
+              <i class="fas fa-calendar me-1"></i>{{
+              related.publish_date|date:"M d, Y" }}
+            </small>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Newsletter Signup -->
+      <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+          <h6 class="mb-0"><i class="fas fa-envelope me-2"></i>Newsletter</h6>
+        </div>
+        <div class="card-body">
+          <p class="card-text small">
+            Get the latest news delivered to your inbox.
+          </p>
+          <form>
+            <div class="mb-3">
+              <input
+                type="email"
+                class="form-control form-control-sm"
+                placeholder="Your email address"
+                required
+              />
+            </div>
+            <button type="submit" class="btn btn-success btn-sm w-100">
+              Subscribe
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Quick Links -->
+      <div class="card">
+        <div class="card-header bg-dark text-white">
+          <h6 class="mb-0"><i class="fas fa-link me-2"></i>Quick Links</h6>
+        </div>
+        <div class="card-body">
+          <div class="list-group list-group-flush">
+            <a
+              href="{% url 'public_news' %}"
+              class="list-group-item list-group-item-action py-2"
+            >
+              <i class="fas fa-newspaper me-2"></i>All News
+            </a>
+            <a
+              href="{% url 'public_events' %}"
+              class="list-group-item list-group-item-action py-2"
+            >
+              <i class="fas fa-calendar-alt me-2"></i>Events
+            </a>
+            <a
+              href="{% url 'public_job_board' %}"
+              class="list-group-item list-group-item-action py-2"
+            >
+              <i class="fas fa-briefcase me-2"></i>Jobs
+            </a>
+            <a
+              href="{% url 'public_alumni_directory' %}"
+              class="list-group-item list-group-item-action py-2"
+            >
+              <i class="fas fa-users me-2"></i>COSA Members
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Like and Comment Section -->
 <div class="container my-5">
-    <div class="row">
-        <div class="col-lg-8 mx-auto">
-            {% include 'main_app/like_comment_section.html' %}
-        </div>
+  <div class="row">
+    <div class="col-lg-8 mx-auto">
+      {% include 'main_app/like_comment_section.html' %}
     </div>
+  </div>
 </div>
 
 <!-- Navigation -->
 <div class="bg-light py-4">
-    <div class="container">
-        <div class="row">
-            <div class="col-12">
-                <div class="d-flex justify-content-between align-items-center">
-                    <a href="{% url 'public_news' %}" class="btn btn-outline-primary">
-                        <i class="fas fa-arrow-left me-2"></i>Back to News
-                    </a>
-                    <div class="text-center">
-                        <small class="text-muted">Published on {{ article.publish_date|date:"F d, Y" }}</small>
-                    </div>
-                    <a href="{% url 'public_news' %}" class="btn btn-primary">
-                        More News <i class="fas fa-arrow-right ms-2"></i>
-                    </a>
-                </div>
-            </div>
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+          <a href="{% url 'public_news' %}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-2"></i>Back to News
+          </a>
+          <div class="text-center">
+            <small class="text-muted"
+              >Published on {{ article.publish_date|date:"F d, Y" }}</small
+            >
+          </div>
+          <a href="{% url 'public_news' %}" class="btn btn-primary">
+            More News <i class="fas fa-arrow-right ms-2"></i>
+          </a>
         </div>
+      </div>
     </div>
+  </div>
 </div>
 
 <script>
-function copyToClipboard() {
-    navigator.clipboard.writeText(window.location.href).then(function() {
-        // Show success message
-        const btn = event.target.closest('button');
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-check me-2"></i>Copied!';
-        btn.classList.remove('btn-outline-secondary');
-        btn.classList.add('btn-success');
-        
-        setTimeout(function() {
-            btn.innerHTML = originalText;
-            btn.classList.remove('btn-success');
-            btn.classList.add('btn-outline-secondary');
-        }, 2000);
-    });
-}
+  function copyToClipboard() {
+    navigator.clipboard.writeText(window.location.href).then(function () {
+      // Show success message
+      const btn = event.target.closest("button");
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-check me-2"></i>Copied!';
+      btn.classList.remove("btn-outline-secondary");
+      btn.classList.add("btn-success");
 
-// Initialize tooltips
-document.addEventListener('DOMContentLoaded', function() {
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
+      setTimeout(function () {
+        btn.innerHTML = originalText;
+        btn.classList.remove("btn-success");
+        btn.classList.add("btn-outline-secondary");
+      }, 2000);
     });
-});
+  }
+
+  // Initialize tooltips
+  document.addEventListener("DOMContentLoaded", function () {
+    var tooltipTriggerList = [].slice.call(
+      document.querySelectorAll('[data-bs-toggle="tooltip"]')
+    );
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+  });
 </script>
 {% endblock %}

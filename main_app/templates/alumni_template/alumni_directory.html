@@ -1,98 +1,98 @@
-{% extends 'alumni_template/base.html' %}
-{% block title %}COSA Directory - COSA{% endblock %}
-{% block alumni_content %}
+{% extends 'alumni_template/base.html' %} {% block title %}COSA Directory -
+COSA{% endblock %} {% block alumni_content %}
 <section class="app-hero mb-4">
-    <div class="container stack-gap-sm">
-        <div>
-            <h1>COSA Directory</h1>
-            <p>Reconnect with classmates, discover mentors, and grow your professional circle.</p>
-        </div>
-        <div class="app-hero-meta">
-            <div class="app-hero-stat">
-                <h4 id="alumni-directory-total-count">{{ total_count }}</h4>
-                <span>COSA Members</span>
-            </div>
-            <div class="app-hero-stat">
-                <h4>{{ request.user.first_name|default:"Welcome" }}</h4>
-                <span>Your community hub</span>
-            </div>
-        </div>
+  <div class="container stack-gap-sm">
+    <div>
+      <h1>COSA Members</h1>
+      <p>
+        Reconnect with classmates, discover mentors, and grow your professional
+        circle.
+      </p>
     </div>
+    <div class="app-hero-meta">
+      <div class="app-hero-stat">
+        <h4 id="alumni-directory-total-count">{{ total_count }}</h4>
+        <span>COSA Members</span>
+      </div>
+      <div class="app-hero-stat">
+        <h4>{{ request.user.first_name|default:"Welcome" }}</h4>
+        <span>Your community hub</span>
+      </div>
+    </div>
+  </div>
 </section>
 
 <section class="stack-gap">
-    <div class="surface-card">
-        <form method="get" id="alumni-directory-filter-form" data-endpoint="{% url 'alumni_directory_data' %}" class="stack-gap-sm">
-            <div class="row g-3">
-                <div class="col-12">
-                    {{ form.search.label_tag }}
-                    {{ form.search }}
-                </div>
-                <div class="col-6">
-                    {{ form.graduation_year.label_tag }}
-                    {{ form.graduation_year }}
-                </div>
-                <div class="col-6">
-                    {{ form.degree.label_tag }}
-                    {{ form.degree }}
-                </div>
-            </div>
-            <div class="row g-3 align-items-center">
-                <div class="col-6">
-                    <div class="form-check">
-                        {{ form.is_mentor }}
-                        {{ form.is_mentor.label_tag }}
-                    </div>
-                </div>
-                <div class="col-6">
-                    <div class="form-check">
-                        {{ form.willing_to_hire }}
-                        {{ form.willing_to_hire.label_tag }}
-                    </div>
-                </div>
-                <div class="col-12">
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="fas fa-search me-2"></i>Update results
-                    </button>
-                </div>
-            </div>
-        </form>
-    </div>
-
-    <div id="alumni-directory-results">
-        {% include 'alumni_template/partials/alumni_directory_results.html' %}
-    </div>
-
-    <div class="surface-card stack-gap-sm">
-        <h5 class="mb-2">Quick Links</h5>
-        <div class="d-flex flex-wrap gap-2">
-            <a href="{% url 'alumni_home' %}" class="btn btn-light">
-                <i class="fas fa-arrow-left me-2"></i>Dashboard
-            </a>
-            <a href="{% url 'alumni_profile' %}" class="btn btn-outline-primary">
-                <i class="fas fa-user me-2"></i>My Profile
-            </a>
-            <a href="{% url 'job_board' %}" class="btn btn-outline-success">
-                <i class="fas fa-briefcase me-2"></i>Job Board
-            </a>
-            <a href="{% url 'events' %}" class="btn btn-outline-info">
-                <i class="fas fa-calendar me-2"></i>Events
-            </a>
+  <div class="surface-card">
+    <form
+      method="get"
+      id="alumni-directory-filter-form"
+      data-endpoint="{% url 'alumni_directory_data' %}"
+      class="stack-gap-sm"
+    >
+      <div class="row g-3">
+        <div class="col-12">{{ form.search.label_tag }} {{ form.search }}</div>
+        <div class="col-6">
+          {{ form.graduation_year.label_tag }} {{ form.graduation_year }}
         </div>
+        <div class="col-6">{{ form.degree.label_tag }} {{ form.degree }}</div>
+      </div>
+      <div class="row g-3 align-items-center">
+        <div class="col-6">
+          <div class="form-check">
+            {{ form.is_mentor }} {{ form.is_mentor.label_tag }}
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="form-check">
+            {{ form.willing_to_hire }} {{ form.willing_to_hire.label_tag }}
+          </div>
+        </div>
+        <div class="col-12">
+          <button type="submit" class="btn btn-primary w-100">
+            <i class="fas fa-search me-2"></i>Update results
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div id="alumni-directory-results">
+    {% include 'alumni_template/partials/alumni_directory_results.html' %}
+  </div>
+
+  <div class="surface-card stack-gap-sm">
+    <h5 class="mb-2">Quick Links</h5>
+    <div class="d-flex flex-wrap gap-2">
+      <a href="{% url 'alumni_home' %}" class="btn btn-light">
+        <i class="fas fa-arrow-left me-2"></i>Dashboard
+      </a>
+      <a href="{% url 'alumni_profile' %}" class="btn btn-outline-primary">
+        <i class="fas fa-user me-2"></i>My Profile
+      </a>
+      <a href="{% url 'job_board' %}" class="btn btn-outline-success">
+        <i class="fas fa-briefcase me-2"></i>Job Board
+      </a>
+      <a href="{% url 'events' %}" class="btn btn-outline-info">
+        <i class="fas fa-calendar me-2"></i>Events
+      </a>
     </div>
+  </div>
 </section>
 
 <script>
-const directoryForm = document.getElementById('alumni-directory-filter-form');
-const resultsWrapper = document.getElementById('alumni-directory-results');
-const totalCountDisplay = document.getElementById('alumni-directory-total-count');
+  const directoryForm = document.getElementById("alumni-directory-filter-form");
+  const resultsWrapper = document.getElementById("alumni-directory-results");
+  const totalCountDisplay = document.getElementById(
+    "alumni-directory-total-count"
+  );
 
-if (directoryForm && resultsWrapper) {
+  if (directoryForm && resultsWrapper) {
     const endpoint = directoryForm.dataset.endpoint;
     const urlParams = new URLSearchParams(window.location.search);
-    let currentPage = parseInt(urlParams.get('page') || '1', 10);
+    let currentPage = parseInt(urlParams.get("page") || "1", 10);
     if (!Number.isFinite(currentPage) || currentPage < 1) {
-        currentPage = 1;
+      currentPage = 1;
     }
 
     let activeRequest = null;
@@ -100,150 +100,161 @@ if (directoryForm && resultsWrapper) {
     const debounceDelay = 300;
 
     function toggleLoading(isLoading) {
-        resultsWrapper.classList.toggle('loading', isLoading);
+      resultsWrapper.classList.toggle("loading", isLoading);
     }
 
     function buildQuery(pageOverride) {
-        const params = new URLSearchParams();
-        const formData = new FormData(directoryForm);
+      const params = new URLSearchParams();
+      const formData = new FormData(directoryForm);
 
-        formData.forEach((value, key) => {
-            if (value instanceof File) {
-                return;
-            }
-            const trimmed = typeof value === 'string' ? value.trim() : value;
-            if (trimmed === '' || trimmed === null) {
-                return;
-            }
-            params.append(key, trimmed);
-        });
-
-        if (typeof pageOverride === 'number') {
-            currentPage = pageOverride;
+      formData.forEach((value, key) => {
+        if (value instanceof File) {
+          return;
         }
-
-        if (!currentPage || currentPage < 1) {
-            currentPage = 1;
+        const trimmed = typeof value === "string" ? value.trim() : value;
+        if (trimmed === "" || trimmed === null) {
+          return;
         }
+        params.append(key, trimmed);
+      });
 
-        if (currentPage > 1) {
-            params.set('page', currentPage);
-        } else {
-            params.delete('page');
-        }
+      if (typeof pageOverride === "number") {
+        currentPage = pageOverride;
+      }
 
-        return params;
+      if (!currentPage || currentPage < 1) {
+        currentPage = 1;
+      }
+
+      if (currentPage > 1) {
+        params.set("page", currentPage);
+      } else {
+        params.delete("page");
+      }
+
+      return params;
     }
 
     async function fetchDirectory(options = {}) {
-        const params = buildQuery(options.page);
-        const queryString = params.toString();
+      const params = buildQuery(options.page);
+      const queryString = params.toString();
 
-        if (activeRequest) {
-            activeRequest.abort();
+      if (activeRequest) {
+        activeRequest.abort();
+      }
+
+      const controller = new AbortController();
+      activeRequest = controller;
+      toggleLoading(true);
+
+      try {
+        const response = await fetch(
+          `${endpoint}${queryString ? `?${queryString}` : ""}`,
+          {
+            headers: { "X-Requested-With": "XMLHttpRequest" },
+            signal: controller.signal,
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`Request failed with status ${response.status}`);
         }
 
-        const controller = new AbortController();
-        activeRequest = controller;
-        toggleLoading(true);
+        const data = await response.json();
+        resultsWrapper.innerHTML = data.html;
 
-        try {
-            const response = await fetch(`${endpoint}${queryString ? `?${queryString}` : ''}`, {
-                headers: { 'X-Requested-With': 'XMLHttpRequest' },
-                signal: controller.signal
-            });
-
-            if (!response.ok) {
-                throw new Error(`Request failed with status ${response.status}`);
-            }
-
-            const data = await response.json();
-            resultsWrapper.innerHTML = data.html;
-
-            if (totalCountDisplay && typeof data.total_count !== 'undefined') {
-                totalCountDisplay.textContent = data.total_count;
-            }
-
-            const newUrl = `${window.location.pathname}${queryString ? `?${queryString}` : ''}`;
-            window.history.replaceState({}, '', newUrl);
-        } catch (error) {
-            if (error.name !== 'AbortError') {
-                console.error('Unable to update directory:', error);
-            }
-        } finally {
-            if (activeRequest === controller) {
-                toggleLoading(false);
-                activeRequest = null;
-            }
+        if (totalCountDisplay && typeof data.total_count !== "undefined") {
+          totalCountDisplay.textContent = data.total_count;
         }
+
+        const newUrl = `${window.location.pathname}${
+          queryString ? `?${queryString}` : ""
+        }`;
+        window.history.replaceState({}, "", newUrl);
+      } catch (error) {
+        if (error.name !== "AbortError") {
+          console.error("Unable to update directory:", error);
+        }
+      } finally {
+        if (activeRequest === controller) {
+          toggleLoading(false);
+          activeRequest = null;
+        }
+      }
     }
 
     function handleTextInput() {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(() => fetchDirectory({ page: 1 }), debounceDelay);
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(
+        () => fetchDirectory({ page: 1 }),
+        debounceDelay
+      );
     }
 
-    directoryForm.addEventListener('submit', (event) => {
-        event.preventDefault();
-        fetchDirectory({ page: 1 });
+    directoryForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      fetchDirectory({ page: 1 });
     });
 
-    directoryForm.querySelectorAll('input[type="text"], input[type="search"]').forEach((input) => {
-        input.addEventListener('input', handleTextInput);
+    directoryForm
+      .querySelectorAll('input[type="text"], input[type="search"]')
+      .forEach((input) => {
+        input.addEventListener("input", handleTextInput);
+      });
+
+    directoryForm.querySelectorAll("select").forEach((select) => {
+      select.addEventListener("change", () => fetchDirectory({ page: 1 }));
     });
 
-    directoryForm.querySelectorAll('select').forEach((select) => {
-        select.addEventListener('change', () => fetchDirectory({ page: 1 }));
-    });
+    directoryForm
+      .querySelectorAll('input[type="checkbox"]')
+      .forEach((checkbox) => {
+        checkbox.addEventListener("change", () => fetchDirectory({ page: 1 }));
+      });
 
-    directoryForm.querySelectorAll('input[type="checkbox"]').forEach((checkbox) => {
-        checkbox.addEventListener('change', () => fetchDirectory({ page: 1 }));
-    });
+    resultsWrapper.addEventListener("click", (event) => {
+      const link = event.target.closest("a.page-link");
+      if (!link) {
+        return;
+      }
 
-    resultsWrapper.addEventListener('click', (event) => {
-        const link = event.target.closest('a.page-link');
-        if (!link) {
-            return;
-        }
-
-        event.preventDefault();
-        const url = new URL(link.href, window.location.origin);
-        const pageValue = parseInt(url.searchParams.get('page') || '1', 10);
-        const safePage = Number.isFinite(pageValue) && pageValue > 0 ? pageValue : 1;
-        fetchDirectory({ page: safePage });
+      event.preventDefault();
+      const url = new URL(link.href, window.location.origin);
+      const pageValue = parseInt(url.searchParams.get("page") || "1", 10);
+      const safePage =
+        Number.isFinite(pageValue) && pageValue > 0 ? pageValue : 1;
+      fetchDirectory({ page: safePage });
     });
-}
+  }
 </script>
-{% endblock %}
-
-{% block extra_css %}
+{% endblock %} {% block extra_css %}
 <style>
-    #alumni-directory-filter-form .form-control,
-    #alumni-directory-filter-form .form-select {
-        background: rgba(255, 255, 255, 0.95);
-        border: 1.5px solid var(--app-border);
-        border-radius: 1rem;
-        box-shadow: none;
-    }
+  #alumni-directory-filter-form .form-control,
+  #alumni-directory-filter-form .form-select {
+    background: rgba(255, 255, 255, 0.95);
+    border: 1.5px solid var(--app-border);
+    border-radius: 1rem;
+    box-shadow: none;
+  }
 
-    #alumni-directory-filter-form .form-check-input {
-        width: 1.1em;
-        height: 1.1em;
-        margin-right: 0.5rem;
-    }
+  #alumni-directory-filter-form .form-check-input {
+    width: 1.1em;
+    height: 1.1em;
+    margin-right: 0.5rem;
+  }
 
-    #alumni-directory-results .alumni-card .avatar {
-        width: 64px;
-        height: 64px;
-    }
+  #alumni-directory-results .alumni-card .avatar {
+    width: 64px;
+    height: 64px;
+  }
 
-    #alumni-directory-results .alumni-card .card-footer {
-        border-top: 1px solid var(--app-border);
-    }
+  #alumni-directory-results .alumni-card .card-footer {
+    border-top: 1px solid var(--app-border);
+  }
 
-    #alumni-directory-results .badge {
-        font-size: 0.75rem;
-        padding: 0.35rem 0.65rem;
-    }
+  #alumni-directory-results .badge {
+    font-size: 0.75rem;
+    padding: 0.35rem 0.65rem;
+  }
 </style>
 {% endblock %}

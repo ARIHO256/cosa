@@ -1,612 +1,708 @@
-{% extends 'alumni_template/base.html' %}
-{% load static math_filters %}
-{% block title %}{{ profile_alumni.admin.get_full_name }} - COSA Alumni{% endblock %}
-{% block extra_css %}
+{% extends 'alumni_template/base.html' %} {% load static math_filters %} {%
+block title %}{{ profile_alumni.admin.get_full_name }} - COSA Alumni{% endblock
+%} {% block extra_css %}
 <style>
-    .profile-hero {
-        padding: 4.5rem 0 7rem;
-        background: linear-gradient(135deg, #4318ff 0%, #7f53ff 40%, #ff4d8d 100%);
-    }
-    .profile-hero__inner {
-        max-width: 960px;
-        margin: 0 auto;
-        padding: 0 1.5rem;
-        position: relative;
-    }
-    .profile-hero__background {
-        position: relative;
-        border-radius: 32px;
-        background: linear-gradient(145deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02));
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        box-shadow: 0 30px 60px rgba(15, 23, 42, 0.2);
-        padding: 2.5rem clamp(1.5rem, 5vw, 3rem);
-        display: flex;
-        flex-direction: column;
-        gap: 2rem;
-        backdrop-filter: blur(18px);
-        -webkit-backdrop-filter: blur(18px);
-    }
-    .profile-hero__glow {
-        position: absolute;
-        inset: 15% -30%;
-        background: radial-gradient(circle at center, rgba(255, 255, 255, 0.35), transparent 65%);
-        opacity: 0.85;
-        pointer-events: none;
-        filter: blur(10px);
-    }
-    .profile-hero__back {
-        position: absolute;
-        top: 2rem;
-        left: 2rem;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.45rem;
-        padding: 0.55rem 1.25rem;
-        border-radius: 999px;
-        background: rgba(15, 23, 42, 0.2);
-        color: #ffffff;
-        text-decoration: none;
-        font-weight: 600;
-        backdrop-filter: blur(10px);
-        transition: transform 0.18s ease, background 0.18s ease;
-        z-index: 2;
-    }
-    .profile-hero__back:hover {
-        transform: translateY(-2px);
-        background: rgba(15, 23, 42, 0.28);
-        color: #ffffff;
-    }
+  .profile-hero {
+    padding: 4.5rem 0 7rem;
+    background: linear-gradient(135deg, #4318ff 0%, #7f53ff 40%, #ff4d8d 100%);
+  }
+  .profile-hero__inner {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    position: relative;
+  }
+  .profile-hero__background {
+    position: relative;
+    border-radius: 32px;
+    background: linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.07),
+      rgba(255, 255, 255, 0.02)
+    );
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 30px 60px rgba(15, 23, 42, 0.2);
+    padding: 2.5rem clamp(1.5rem, 5vw, 3rem);
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+  .profile-hero__glow {
+    position: absolute;
+    inset: 15% -30%;
+    background: radial-gradient(
+      circle at center,
+      rgba(255, 255, 255, 0.35),
+      transparent 65%
+    );
+    opacity: 0.85;
+    pointer-events: none;
+    filter: blur(10px);
+  }
+  .profile-hero__back {
+    position: absolute;
+    top: 2rem;
+    left: 2rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.55rem 1.25rem;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.2);
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+    transition: transform 0.18s ease, background 0.18s ease;
+    z-index: 2;
+  }
+  .profile-hero__back:hover {
+    transform: translateY(-2px);
+    background: rgba(15, 23, 42, 0.28);
+    color: #ffffff;
+  }
+  .profile-summary {
+    width: 100%;
+    max-width: 720px;
+    border-radius: 26px;
+    padding: clamp(2rem, 5vw, 3rem);
+    background: linear-gradient(
+      160deg,
+      rgba(255, 255, 255, 0.97) 0%,
+      rgba(238, 242, 255, 0.94) 100%
+    );
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    box-shadow: 0 35px 70px rgba(15, 23, 42, 0.15);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+    text-align: center;
+  }
+  .profile-avatar {
+    width: 136px;
+    height: 136px;
+    border-radius: 50%;
+    border: 6px solid #ffffff;
+    box-shadow: 0 18px 36px rgba(148, 163, 184, 0.35);
+    object-fit: cover;
+  }
+  .profile-avatar--placeholder {
+    width: 136px;
+    height: 136px;
+    border-radius: 50%;
+    background: linear-gradient(
+      135deg,
+      rgba(109, 93, 252, 0.85),
+      rgba(147, 51, 234, 0.85)
+    );
+    color: #ffffff;
+    display: grid;
+    place-items: center;
+    font-size: 3rem;
+    border: 6px solid #ffffff;
+    box-shadow: 0 18px 36px rgba(148, 163, 184, 0.35);
+  }
+  .profile-summary h1 {
+    font-size: clamp(1.9rem, 4vw, 2.4rem);
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.35rem;
+  }
+  .profile-summary__headline {
+    font-size: 1.1rem;
+    color: #475569;
+    margin-bottom: 0.2rem;
+    font-weight: 600;
+  }
+  .profile-summary__subline {
+    color: #64748b;
+    margin-bottom: 0;
+  }
+  .profile-summary__meta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+  .profile-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.85rem;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.08);
+    color: #1f2937;
+    font-weight: 600;
+    font-size: 0.85rem;
+  }
+  .profile-chip--primary {
+    background: rgba(37, 99, 235, 0.14);
+    color: #2563eb;
+  }
+  .profile-chip--secondary {
+    background: rgba(100, 116, 139, 0.14);
+    color: #475569;
+  }
+  .profile-chip--emerald {
+    background: rgba(16, 185, 129, 0.16);
+    color: #047857;
+  }
+  .profile-chip--sky {
+    background: rgba(14, 165, 233, 0.16);
+    color: #0284c7;
+  }
+  .profile-summary__location {
+    color: #475569;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-weight: 600;
+  }
+  .profile-body {
+    margin-top: -3.5rem;
+    position: relative;
+    z-index: 2;
+  }
+  .data-card {
+    background: rgba(255, 255, 255, 0.96);
+    border-radius: 22px;
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
+    padding: 1.8rem;
+  }
+  .data-card__header {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    margin-bottom: 1.35rem;
+  }
+  .data-card__icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    background: rgba(15, 23, 42, 0.08);
+    color: #1e293b;
+  }
+  .data-card__title {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #1f2937;
+  }
+  .data-card__subtitle {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #64748b;
+    font-weight: 500;
+  }
+  .data-card__body {
+    color: #334155;
+    line-height: 1.7;
+  }
+  .data-card--accent-blue .data-card__icon {
+    background: rgba(37, 99, 235, 0.12);
+    color: #2563eb;
+  }
+  .data-card--accent-emerald .data-card__icon {
+    background: rgba(16, 185, 129, 0.16);
+    color: #047857;
+  }
+  .data-card--accent-sky .data-card__icon {
+    background: rgba(14, 165, 233, 0.16);
+    color: #0284c7;
+  }
+  .data-card--accent-amber .data-card__icon {
+    background: rgba(251, 191, 36, 0.2);
+    color: #b45309;
+  }
+  .data-card--accent-indigo .data-card__icon {
+    background: rgba(99, 102, 241, 0.18);
+    color: #4338ca;
+  }
+  .data-card--accent-slate .data-card__icon {
+    background: rgba(148, 163, 184, 0.18);
+    color: #334155;
+  }
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.25rem;
+  }
+  .info-grid__item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .info-grid__label {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #94a3b8;
+    font-weight: 600;
+  }
+  .info-grid__value {
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0;
+  }
+  .skill-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.4rem 0.85rem;
+    border-radius: 999px;
+    background: rgba(37, 99, 235, 0.12);
+    color: #2563eb;
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin: 0.2rem;
+  }
+  .sticky-card {
+    position: sticky;
+    top: 110px;
+  }
+  .summary-list {
+    display: grid;
+    gap: 0.85rem;
+  }
+  .summary-list__item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.95rem;
+    color: #475569;
+  }
+  .summary-list__label {
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .summary-list__value {
+    font-weight: 600;
+    color: #1f2937;
+  }
+  .badge-soft {
+    display: inline-flex;
+    padding: 0.35rem 0.65rem;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    color: inherit;
+    gap: 0.35rem;
+    align-items: center;
+  }
+  .badge-soft--success {
+    background: rgba(34, 197, 94, 0.12);
+    color: #047857;
+  }
+  .badge-soft--warning {
+    background: rgba(251, 191, 36, 0.18);
+    color: #b45309;
+  }
+  .callout {
+    border-radius: 18px;
+    background: rgba(15, 23, 42, 0.03);
+    padding: 1rem;
+    font-size: 0.9rem;
+    color: #475569;
+  }
+  @media (max-width: 991px) {
     .profile-summary {
-        width: 100%;
-        max-width: 720px;
-        border-radius: 26px;
-        padding: clamp(2rem, 5vw, 3rem);
-        background: linear-gradient(160deg, rgba(255, 255, 255, 0.97) 0%, rgba(238, 242, 255, 0.94) 100%);
-        border: 1px solid rgba(148, 163, 184, 0.15);
-        box-shadow: 0 35px 70px rgba(15, 23, 42, 0.15);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 1.25rem;
-        text-align: center;
-    }
-    .profile-avatar {
-        width: 136px;
-        height: 136px;
-        border-radius: 50%;
-        border: 6px solid #ffffff;
-        box-shadow: 0 18px 36px rgba(148, 163, 184, 0.35);
-        object-fit: cover;
-    }
-    .profile-avatar--placeholder {
-        width: 136px;
-        height: 136px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, rgba(109, 93, 252, 0.85), rgba(147, 51, 234, 0.85));
-        color: #ffffff;
-        display: grid;
-        place-items: center;
-        font-size: 3rem;
-        border: 6px solid #ffffff;
-        box-shadow: 0 18px 36px rgba(148, 163, 184, 0.35);
-    }
-    .profile-summary h1 {
-        font-size: clamp(1.9rem, 4vw, 2.4rem);
-        font-weight: 700;
-        color: #1e293b;
-        margin-bottom: 0.35rem;
-    }
-    .profile-summary__headline {
-        font-size: 1.1rem;
-        color: #475569;
-        margin-bottom: 0.2rem;
-        font-weight: 600;
-    }
-    .profile-summary__subline {
-        color: #64748b;
-        margin-bottom: 0;
-    }
-    .profile-summary__meta {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 0.5rem;
-        margin-top: 0.75rem;
-    }
-    .profile-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-        padding: 0.45rem 0.85rem;
-        border-radius: 999px;
-        background: rgba(15, 23, 42, 0.08);
-        color: #1f2937;
-        font-weight: 600;
-        font-size: 0.85rem;
-    }
-    .profile-chip--primary { background: rgba(37, 99, 235, 0.14); color: #2563eb; }
-    .profile-chip--secondary { background: rgba(100, 116, 139, 0.14); color: #475569; }
-    .profile-chip--emerald { background: rgba(16, 185, 129, 0.16); color: #047857; }
-    .profile-chip--sky { background: rgba(14, 165, 233, 0.16); color: #0284c7; }
-    .profile-summary__location {
-        color: #475569;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.35rem;
-        font-weight: 600;
-    }
-    .profile-body {
-        margin-top: -3.5rem;
-        position: relative;
-        z-index: 2;
-    }
-    .data-card {
-        background: rgba(255, 255, 255, 0.96);
-        border-radius: 22px;
-        border: 1px solid rgba(148, 163, 184, 0.18);
-        box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
-        padding: 1.8rem;
-    }
-    .data-card__header {
-        display: flex;
-        align-items: center;
-        gap: 0.85rem;
-        margin-bottom: 1.35rem;
-    }
-    .data-card__icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 16px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.25rem;
-        background: rgba(15, 23, 42, 0.08);
-        color: #1e293b;
-    }
-    .data-card__title {
-        margin: 0;
-        font-size: 1.2rem;
-        font-weight: 700;
-        color: #1f2937;
-    }
-    .data-card__subtitle {
-        margin: 0;
-        font-size: 0.85rem;
-        color: #64748b;
-        font-weight: 500;
-    }
-    .data-card__body {
-        color: #334155;
-        line-height: 1.7;
-    }
-    .data-card--accent-blue .data-card__icon { background: rgba(37, 99, 235, 0.12); color: #2563eb; }
-    .data-card--accent-emerald .data-card__icon { background: rgba(16, 185, 129, 0.16); color: #047857; }
-    .data-card--accent-sky .data-card__icon { background: rgba(14, 165, 233, 0.16); color: #0284c7; }
-    .data-card--accent-amber .data-card__icon { background: rgba(251, 191, 36, 0.2); color: #b45309; }
-    .data-card--accent-indigo .data-card__icon { background: rgba(99, 102, 241, 0.18); color: #4338ca; }
-    .data-card--accent-slate .data-card__icon { background: rgba(148, 163, 184, 0.18); color: #334155; }
-    .info-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1.25rem;
-    }
-    .info-grid__item {
-        display: flex;
-        flex-direction: column;
-        gap: 0.35rem;
-    }
-    .info-grid__label {
-        font-size: 0.85rem;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        color: #94a3b8;
-        font-weight: 600;
-    }
-    .info-grid__value {
-        font-weight: 600;
-        color: #1e293b;
-        margin: 0;
-    }
-    .skill-tag {
-        display: inline-flex;
-        align-items: center;
-        padding: 0.4rem 0.85rem;
-        border-radius: 999px;
-        background: rgba(37, 99, 235, 0.12);
-        color: #2563eb;
-        font-weight: 600;
-        font-size: 0.85rem;
-        margin: 0.2rem;
+      max-width: 640px;
     }
     .sticky-card {
-        position: sticky;
-        top: 110px;
+      position: static;
     }
-    .summary-list {
-        display: grid;
-        gap: 0.85rem;
+  }
+  @media (max-width: 576px) {
+    .profile-hero {
+      padding-bottom: 6rem;
     }
-    .summary-list__item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 0.95rem;
-        color: #475569;
+    .profile-summary {
+      border-radius: 24px;
     }
-    .summary-list__label {
-        color: #94a3b8;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        font-size: 0.75rem;
-        font-weight: 600;
-    }
-    .summary-list__value {
-        font-weight: 600;
-        color: #1f2937;
-    }
-    .badge-soft {
-        display: inline-flex;
-        padding: 0.35rem 0.65rem;
-        border-radius: 999px;
-        font-weight: 600;
-        font-size: 0.75rem;
-        color: inherit;
-        gap: 0.35rem;
-        align-items: center;
-    }
-    .badge-soft--success { background: rgba(34, 197, 94, 0.12); color: #047857; }
-    .badge-soft--warning { background: rgba(251, 191, 36, 0.18); color: #b45309; }
-    .callout {
-        border-radius: 18px;
-        background: rgba(15, 23, 42, 0.03);
-        padding: 1rem;
-        font-size: 0.9rem;
-        color: #475569;
-    }
-    @media (max-width: 991px) {
-        .profile-summary {
-            max-width: 640px;
-        }
-        .sticky-card {
-            position: static;
-        }
-    }
-    @media (max-width: 576px) {
-        .profile-hero {
-            padding-bottom: 6rem;
-        }
-        .profile-summary {
-            border-radius: 24px;
-        }
-    }
+  }
 </style>
-{% endblock %}
-{% block alumni_content %}
+{% endblock %} {% block alumni_content %}
 <section class="profile-hero">
-    <div class="profile-hero__inner">
-        <div class="profile-hero__background">
-            <span class="profile-hero__glow"></span>
-            <a href="{% url 'alumni_directory' %}" class="profile-hero__back">
-                <i class="fas fa-arrow-left"></i>
-                <span>Back to Directory</span>
-            </a>
+  <div class="profile-hero__inner">
+    <div class="profile-hero__background">
+      <span class="profile-hero__glow"></span>
+      <a href="{% url 'alumni_directory' %}" class="profile-hero__back">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back to Members</span>
+      </a>
 
-            <div class="profile-summary mx-auto position-relative">
-            {% if profile_alumni.admin.profile_pic %}
-                <img src="{{ profile_alumni.admin.profile_pic.url }}" alt="{{ profile_alumni.admin.get_full_name }}" class="profile-avatar">
-            {% else %}
-                <div class="profile-avatar--placeholder">
-                    <i class="fas fa-user"></i>
-                </div>
-            {% endif %}
-
-            <div>
-                <h1>{{ profile_alumni.admin.get_full_name }}</h1>
-                {% if profile_alumni.job_title %}
-                    <p class="profile-summary__headline">{{ profile_alumni.job_title }}</p>
-                {% endif %}
-                {% if profile_alumni.current_company %}
-                    <p class="profile-summary__subline">{{ profile_alumni.current_company.name }}</p>
-                {% endif %}
-            </div>
-
-            <div class="profile-summary__meta">
-                {% if profile_alumni.level %}
-                    <span class="profile-chip profile-chip--primary">
-                        <i class="fas fa-layer-group"></i>{{ profile_alumni.level.name }}
-                    </span>
-                {% endif %}
-                {% if profile_alumni.graduation_year %}
-                    <span class="profile-chip profile-chip--secondary">
-                        <i class="fas fa-graduation-cap"></i>Class of {{ profile_alumni.graduation_year.year }}
-                    </span>
-                {% endif %}
-                {% if profile_alumni.is_mentor %}
-                    <span class="profile-chip profile-chip--emerald">
-                        <i class="fas fa-handshake-angle"></i>Mentor
-                    </span>
-                {% endif %}
-                {% if profile_alumni.willing_to_hire %}
-                    <span class="profile-chip profile-chip--sky">
-                        <i class="fas fa-briefcase"></i>Hiring
-                    </span>
-                {% endif %}
-            </div>
-
-            {% if profile_alumni.current_city %}
-                <span class="profile-summary__location">
-                    <i class="fas fa-map-marker-alt"></i>{{ profile_alumni.current_city }}
-                </span>
-            {% endif %}
-            </div>
+      <div class="profile-summary mx-auto position-relative">
+        {% if profile_alumni.admin.profile_pic %}
+        <img
+          src="{{ profile_alumni.admin.profile_pic.url }}"
+          alt="{{ profile_alumni.admin.get_full_name }}"
+          class="profile-avatar"
+        />
+        {% else %}
+        <div class="profile-avatar--placeholder">
+          <i class="fas fa-user"></i>
         </div>
+        {% endif %}
+
+        <div>
+          <h1>{{ profile_alumni.admin.get_full_name }}</h1>
+          {% if profile_alumni.job_title %}
+          <p class="profile-summary__headline">
+            {{ profile_alumni.job_title }}
+          </p>
+          {% endif %} {% if profile_alumni.current_company %}
+          <p class="profile-summary__subline">
+            {{ profile_alumni.current_company.name }}
+          </p>
+          {% endif %}
+        </div>
+
+        <div class="profile-summary__meta">
+          {% if profile_alumni.level %}
+          <span class="profile-chip profile-chip--primary">
+            <i class="fas fa-layer-group"></i>{{ profile_alumni.level.name }}
+          </span>
+          {% endif %} {% if profile_alumni.graduation_year %}
+          <span class="profile-chip profile-chip--secondary">
+            <i class="fas fa-graduation-cap"></i>Class of {{
+            profile_alumni.graduation_year.year }}
+          </span>
+          {% endif %} {% if profile_alumni.is_mentor %}
+          <span class="profile-chip profile-chip--emerald">
+            <i class="fas fa-handshake-angle"></i>Mentor
+          </span>
+          {% endif %} {% if profile_alumni.willing_to_hire %}
+          <span class="profile-chip profile-chip--sky">
+            <i class="fas fa-briefcase"></i>Hiring
+          </span>
+          {% endif %}
+        </div>
+
+        {% if profile_alumni.current_city %}
+        <span class="profile-summary__location">
+          <i class="fas fa-map-marker-alt"></i>{{ profile_alumni.current_city }}
+        </span>
+        {% endif %}
+      </div>
     </div>
+  </div>
 </section>
 
 <section class="profile-body container">
-    <div class="row gy-4">
-        <div class="col-lg-8 d-flex flex-column gap-4">
-            {% if profile_alumni.bio %}
-            <article class="data-card data-card--accent-blue">
-                <header class="data-card__header">
-                    <span class="data-card__icon"><i class="fas fa-user"></i></span>
-                    <div>
-                        <h5 class="data-card__title">About</h5>
-                        <p class="data-card__subtitle">A quick story in their own words</p>
-                    </div>
-                </header>
-                <div class="data-card__body">
-                    <p class="mb-0">{{ profile_alumni.bio }}</p>
-                </div>
-            </article>
-            {% endif %}
-
-            <article class="data-card data-card--accent-emerald">
-                <header class="data-card__header">
-                    <span class="data-card__icon"><i class="fas fa-briefcase"></i></span>
-                    <div>
-                        <h5 class="data-card__title">Professional Information</h5>
-                        <p class="data-card__subtitle">Where they are making an impact today</p>
-                    </div>
-                </header>
-                <div class="data-card__body">
-                    <div class="info-grid">
-                        {% if profile_alumni.current_company %}
-                        <div class="info-grid__item">
-                            <span class="info-grid__label">Current Company</span>
-                            <p class="info-grid__value">{{ profile_alumni.current_company.name }}</p>
-                        </div>
-                        {% endif %}
-                        {% if profile_alumni.job_title %}
-                        <div class="info-grid__item">
-                            <span class="info-grid__label">Position</span>
-                            <p class="info-grid__value">{{ profile_alumni.job_title }}</p>
-                        </div>
-                        {% endif %}
-                        {% if profile_alumni.industry %}
-                        <div class="info-grid__item">
-                            <span class="info-grid__label">Industry</span>
-                            <p class="info-grid__value">{{ profile_alumni.industry }}</p>
-                        </div>
-                        {% endif %}
-                        {% if profile_alumni.employment_status %}
-                        <div class="info-grid__item">
-                            <span class="info-grid__label">Employment Status</span>
-                            <p class="info-grid__value">{{ profile_alumni.get_employment_status_display }}</p>
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-            </article>
-
-            {% if profile_alumni.skills or profile_alumni.interests %}
-            <article class="data-card data-card--accent-sky">
-                <header class="data-card__header">
-                    <span class="data-card__icon"><i class="fas fa-cogs"></i></span>
-                    <div>
-                        <h5 class="data-card__title">Skills & Interests</h5>
-                        <p class="data-card__subtitle">What they excel at and enjoy</p>
-                    </div>
-                </header>
-                <div class="data-card__body">
-                    {% if profile_alumni.skills %}
-                    <h6 class="text-uppercase text-muted fs-6 mb-3">Skills</h6>
-                    <div class="mb-4">
-                        {% for skill in profile_alumni.skills|split_string %}
-                        <span class="skill-tag">{{ skill }}</span>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-                    {% if profile_alumni.interests %}
-                    <h6 class="text-uppercase text-muted fs-6 mb-3">Interests</h6>
-                    <div>
-                        {% for interest in profile_alumni.interests|split_string %}
-                        <span class="skill-tag">{{ interest }}</span>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-                </div>
-            </article>
-            {% endif %}
-
-            <article class="data-card data-card--accent-amber">
-                <header class="data-card__header">
-                    <span class="data-card__icon"><i class="fas fa-graduation-cap"></i></span>
-                    <div>
-                        <h5 class="data-card__title">Academic Background</h5>
-                        <p class="data-card__subtitle">Their journey through COSA</p>
-                    </div>
-                </header>
-                <div class="data-card__body">
-                    <div class="info-grid">
-                        {% if profile_alumni.level %}
-                        <div class="info-grid__item">
-                            <span class="info-grid__label">Level</span>
-                            <p class="info-grid__value">{{ profile_alumni.level.name }}</p>
-                        </div>
-                        {% endif %}
-                        {% if profile_alumni.graduation_year %}
-                        <div class="info-grid__item">
-                            <span class="info-grid__label">Completion Year</span>
-                            <p class="info-grid__value">{{ profile_alumni.graduation_year.year }}</p>
-                        </div>
-                        {% endif %}
-                        {% if profile_alumni.department %}
-                        <div class="info-grid__item">
-                            <span class="info-grid__label">Department</span>
-                            <p class="info-grid__value">{{ profile_alumni.department.name }}</p>
-                        </div>
-                        {% endif %}
-                        {% if profile_alumni.student_id %}
-                        <div class="info-grid__item">
-                            <span class="info-grid__label">Student ID</span>
-                            <p class="info-grid__value">{{ profile_alumni.student_id }}</p>
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-            </article>
+  <div class="row gy-4">
+    <div class="col-lg-8 d-flex flex-column gap-4">
+      {% if profile_alumni.bio %}
+      <article class="data-card data-card--accent-blue">
+        <header class="data-card__header">
+          <span class="data-card__icon"><i class="fas fa-user"></i></span>
+          <div>
+            <h5 class="data-card__title">About</h5>
+            <p class="data-card__subtitle">A quick story in their own words</p>
+          </div>
+        </header>
+        <div class="data-card__body">
+          <p class="mb-0">{{ profile_alumni.bio }}</p>
         </div>
+      </article>
+      {% endif %}
 
-        <div class="col-lg-4 d-flex flex-column gap-4">
-            {% if can_contact %}
-            <aside class="data-card data-card--accent-indigo sticky-card">
-                <header class="data-card__header">
-                    <span class="data-card__icon"><i class="fas fa-envelope"></i></span>
-                    <div>
-                        <h5 class="data-card__title">Connect</h5>
-                        <p class="data-card__subtitle">Reach out directly</p>
-                    </div>
-                </header>
-                <div class="data-card__body d-grid gap-2">
-                    <a href="{% url 'send_message_to' profile_alumni.id %}" class="btn btn-primary w-100">
-                        <i class="fas fa-paper-plane me-2"></i>Send Message
-                    </a>
-                    {% if profile_alumni.linkedin_profile %}
-                    <a href="{{ profile_alumni.linkedin_profile }}" class="btn btn-outline-primary w-100" target="_blank">
-                        <i class="fab fa-linkedin me-2"></i>LinkedIn Profile
-                    </a>
-                    {% endif %}
-                    {% if profile_alumni.website %}
-                    <a href="{{ profile_alumni.website }}" class="btn btn-outline-secondary w-100" target="_blank">
-                        <i class="fas fa-globe me-2"></i>Personal Website
-                    </a>
-                    {% endif %}
-                </div>
-            </aside>
+      <article class="data-card data-card--accent-emerald">
+        <header class="data-card__header">
+          <span class="data-card__icon"><i class="fas fa-briefcase"></i></span>
+          <div>
+            <h5 class="data-card__title">Professional Information</h5>
+            <p class="data-card__subtitle">
+              Where they are making an impact today
+            </p>
+          </div>
+        </header>
+        <div class="data-card__body">
+          <div class="info-grid">
+            {% if profile_alumni.current_company %}
+            <div class="info-grid__item">
+              <span class="info-grid__label">Current Company</span>
+              <p class="info-grid__value">
+                {{ profile_alumni.current_company.name }}
+              </p>
+            </div>
+            {% endif %} {% if profile_alumni.job_title %}
+            <div class="info-grid__item">
+              <span class="info-grid__label">Position</span>
+              <p class="info-grid__value">{{ profile_alumni.job_title }}</p>
+            </div>
+            {% endif %} {% if profile_alumni.industry %}
+            <div class="info-grid__item">
+              <span class="info-grid__label">Industry</span>
+              <p class="info-grid__value">{{ profile_alumni.industry }}</p>
+            </div>
+            {% endif %} {% if profile_alumni.employment_status %}
+            <div class="info-grid__item">
+              <span class="info-grid__label">Employment Status</span>
+              <p class="info-grid__value">
+                {{ profile_alumni.get_employment_status_display }}
+              </p>
+            </div>
             {% endif %}
-
-            <aside class="data-card data-card--accent-slate">
-                <header class="data-card__header">
-                    <span class="data-card__icon"><i class="fas fa-info-circle"></i></span>
-                    <div>
-                        <h5 class="data-card__title">Profile Snapshot</h5>
-                        <p class="data-card__subtitle">Key highlights at a glance</p>
-                    </div>
-                </header>
-                <div class="data-card__body summary-list">
-                    <div class="summary-list__item">
-                        <div>
-                            <div class="summary-list__label">Member Since</div>
-                            <div class="summary-list__value">{{ profile_alumni.admin.date_joined|date:"M Y" }}</div>
-                        </div>
-                    </div>
-                    <div class="summary-list__item">
-                        <div>
-                            <div class="summary-list__label">Last Active</div>
-                            <div class="summary-list__value">{{ profile_alumni.admin.last_login|timesince }} ago</div>
-                        </div>
-                    </div>
-                    <div class="summary-list__item">
-                        <div>
-                            <div class="summary-list__label">Profile Views</div>
-                            <div class="summary-list__value">{{ profile_alumni.profile_views|default:0 }}</div>
-                        </div>
-                    </div>
-                    <div class="summary-list__item">
-                        <div>
-                            <div class="summary-list__label">Verification</div>
-                            {% if profile_alumni.admin.is_verified %}
-                                <span class="badge-soft badge-soft--success"><i class="fas fa-check-circle"></i>Verified</span>
-                            {% else %}
-                                <span class="badge-soft badge-soft--warning"><i class="fas fa-clock"></i>Pending</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </aside>
-
-            {% if profile_alumni.is_mentor %}
-            <aside class="data-card data-card--accent-emerald">
-                <header class="data-card__header">
-                    <span class="data-card__icon"><i class="fas fa-handshake-angle"></i></span>
-                    <div>
-                        <h5 class="data-card__title">Mentorship</h5>
-                        <p class="data-card__subtitle">Ready to support fellow alumni</p>
-                    </div>
-                </header>
-                <div class="data-card__body text-center">
-                    <p class="mb-3">This alumni is available to mentor within the COSA community.</p>
-                    {% if can_contact %}
-                    <a href="{% url 'send_message_to' profile_alumni.id %}" class="btn btn-success btn-sm">
-                        <i class="fas fa-envelope me-1"></i>Request Mentorship
-                    </a>
-                    {% endif %}
-                </div>
-            </aside>
-            {% endif %}
-
-            {% if profile_alumni.willing_to_hire %}
-            <aside class="data-card data-card--accent-sky">
-                <header class="data-card__header">
-                    <span class="data-card__icon"><i class="fas fa-briefcase"></i></span>
-                    <div>
-                        <h5 class="data-card__title">Hiring</h5>
-                        <p class="data-card__subtitle">Open to alumni talent</p>
-                    </div>
-                </header>
-                <div class="data-card__body text-center">
-                    <p class="mb-3">Looking to hire from within the COSA network.</p>
-                    {% if can_contact %}
-                    <a href="{% url 'send_message_to' profile_alumni.id %}" class="btn btn-info btn-sm">
-                        <i class="fas fa-envelope me-1"></i>Inquire About Roles
-                    </a>
-                    {% endif %}
-                </div>
-            </aside>
-            {% endif %}
-
-            <aside class="data-card data-card--accent-amber">
-                <header class="data-card__header">
-                    <span class="data-card__icon"><i class="fas fa-users"></i></span>
-                    <div>
-                        <h5 class="data-card__title">Discover More Alumni</h5>
-                        <p class="data-card__subtitle">Stay curious and keep exploring</p>
-                    </div>
-                </header>
-                <div class="data-card__body summary-list">
-                    <a href="{% url 'alumni_directory' %}?graduation_year={{ profile_alumni.graduation_year.id }}" class="text-decoration-none d-block fw-semibold mb-2">
-                        More from Class of {{ profile_alumni.graduation_year.year }}
-                    </a>
-                    {% if profile_alumni.level %}
-                    <a href="{% url 'alumni_directory' %}?level={{ profile_alumni.level.id }}" class="text-decoration-none d-block fw-semibold mb-2">
-                        Explore {{ profile_alumni.level.name }} graduates
-                    </a>
-                    {% endif %}
-                    {% if profile_alumni.industry %}
-                    <div class="callout mb-2">
-                        <i class="fas fa-industry me-2 text-warning"></i>{{ profile_alumni.industry }}
-                    </div>
-                    {% endif %}
-                    {% if profile_alumni.current_city %}
-                    <div class="callout mb-0">
-                        <i class="fas fa-map-marker-alt me-2 text-danger"></i>{{ profile_alumni.current_city }}
-                    </div>
-                    {% endif %}
-                </div>
-            </aside>
+          </div>
         </div>
+      </article>
+
+      {% if profile_alumni.skills or profile_alumni.interests %}
+      <article class="data-card data-card--accent-sky">
+        <header class="data-card__header">
+          <span class="data-card__icon"><i class="fas fa-cogs"></i></span>
+          <div>
+            <h5 class="data-card__title">Skills & Interests</h5>
+            <p class="data-card__subtitle">What they excel at and enjoy</p>
+          </div>
+        </header>
+        <div class="data-card__body">
+          {% if profile_alumni.skills %}
+          <h6 class="text-uppercase text-muted fs-6 mb-3">Skills</h6>
+          <div class="mb-4">
+            {% for skill in profile_alumni.skills|split_string %}
+            <span class="skill-tag">{{ skill }}</span>
+            {% endfor %}
+          </div>
+          {% endif %} {% if profile_alumni.interests %}
+          <h6 class="text-uppercase text-muted fs-6 mb-3">Interests</h6>
+          <div>
+            {% for interest in profile_alumni.interests|split_string %}
+            <span class="skill-tag">{{ interest }}</span>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+      </article>
+      {% endif %}
+
+      <article class="data-card data-card--accent-amber">
+        <header class="data-card__header">
+          <span class="data-card__icon"
+            ><i class="fas fa-graduation-cap"></i
+          ></span>
+          <div>
+            <h5 class="data-card__title">Academic Background</h5>
+            <p class="data-card__subtitle">Their journey through COSA</p>
+          </div>
+        </header>
+        <div class="data-card__body">
+          <div class="info-grid">
+            {% if profile_alumni.level %}
+            <div class="info-grid__item">
+              <span class="info-grid__label">Level</span>
+              <p class="info-grid__value">{{ profile_alumni.level.name }}</p>
+            </div>
+            {% endif %} {% if profile_alumni.graduation_year %}
+            <div class="info-grid__item">
+              <span class="info-grid__label">Completion Year</span>
+              <p class="info-grid__value">
+                {{ profile_alumni.graduation_year.year }}
+              </p>
+            </div>
+            {% endif %} {% if profile_alumni.department %}
+            <div class="info-grid__item">
+              <span class="info-grid__label">Department</span>
+              <p class="info-grid__value">
+                {{ profile_alumni.department.name }}
+              </p>
+            </div>
+            {% endif %} {% if profile_alumni.student_id %}
+            <div class="info-grid__item">
+              <span class="info-grid__label">Student ID</span>
+              <p class="info-grid__value">{{ profile_alumni.student_id }}</p>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </article>
     </div>
+
+    <div class="col-lg-4 d-flex flex-column gap-4">
+      {% if can_contact %}
+      <aside class="data-card data-card--accent-indigo sticky-card">
+        <header class="data-card__header">
+          <span class="data-card__icon"><i class="fas fa-envelope"></i></span>
+          <div>
+            <h5 class="data-card__title">Connect</h5>
+            <p class="data-card__subtitle">Reach out directly</p>
+          </div>
+        </header>
+        <div class="data-card__body d-grid gap-2">
+          <a
+            href="{% url 'send_message_to' profile_alumni.id %}"
+            class="btn btn-primary w-100"
+          >
+            <i class="fas fa-paper-plane me-2"></i>Send Message
+          </a>
+          {% if profile_alumni.linkedin_profile %}
+          <a
+            href="{{ profile_alumni.linkedin_profile }}"
+            class="btn btn-outline-primary w-100"
+            target="_blank"
+          >
+            <i class="fab fa-linkedin me-2"></i>LinkedIn Profile
+          </a>
+          {% endif %} {% if profile_alumni.website %}
+          <a
+            href="{{ profile_alumni.website }}"
+            class="btn btn-outline-secondary w-100"
+            target="_blank"
+          >
+            <i class="fas fa-globe me-2"></i>Personal Website
+          </a>
+          {% endif %}
+        </div>
+      </aside>
+      {% endif %}
+
+      <aside class="data-card data-card--accent-slate">
+        <header class="data-card__header">
+          <span class="data-card__icon"
+            ><i class="fas fa-info-circle"></i
+          ></span>
+          <div>
+            <h5 class="data-card__title">Profile Snapshot</h5>
+            <p class="data-card__subtitle">Key highlights at a glance</p>
+          </div>
+        </header>
+        <div class="data-card__body summary-list">
+          <div class="summary-list__item">
+            <div>
+              <div class="summary-list__label">Member Since</div>
+              <div class="summary-list__value">
+                {{ profile_alumni.admin.date_joined|date:"M Y" }}
+              </div>
+            </div>
+          </div>
+          <div class="summary-list__item">
+            <div>
+              <div class="summary-list__label">Last Active</div>
+              <div class="summary-list__value">
+                {{ profile_alumni.admin.last_login|timesince }} ago
+              </div>
+            </div>
+          </div>
+          <div class="summary-list__item">
+            <div>
+              <div class="summary-list__label">Profile Views</div>
+              <div class="summary-list__value">
+                {{ profile_alumni.profile_views|default:0 }}
+              </div>
+            </div>
+          </div>
+          <div class="summary-list__item">
+            <div>
+              <div class="summary-list__label">Verification</div>
+              {% if profile_alumni.admin.is_verified %}
+              <span class="badge-soft badge-soft--success"
+                ><i class="fas fa-check-circle"></i>Verified</span
+              >
+              {% else %}
+              <span class="badge-soft badge-soft--warning"
+                ><i class="fas fa-clock"></i>Pending</span
+              >
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      {% if profile_alumni.is_mentor %}
+      <aside class="data-card data-card--accent-emerald">
+        <header class="data-card__header">
+          <span class="data-card__icon"
+            ><i class="fas fa-handshake-angle"></i
+          ></span>
+          <div>
+            <h5 class="data-card__title">Mentorship</h5>
+            <p class="data-card__subtitle">Ready to support fellow alumni</p>
+          </div>
+        </header>
+        <div class="data-card__body text-center">
+          <p class="mb-3">
+            This alumni is available to mentor within the COSA community.
+          </p>
+          {% if can_contact %}
+          <a
+            href="{% url 'send_message_to' profile_alumni.id %}"
+            class="btn btn-success btn-sm"
+          >
+            <i class="fas fa-envelope me-1"></i>Request Mentorship
+          </a>
+          {% endif %}
+        </div>
+      </aside>
+      {% endif %} {% if profile_alumni.willing_to_hire %}
+      <aside class="data-card data-card--accent-sky">
+        <header class="data-card__header">
+          <span class="data-card__icon"><i class="fas fa-briefcase"></i></span>
+          <div>
+            <h5 class="data-card__title">Hiring</h5>
+            <p class="data-card__subtitle">Open to alumni talent</p>
+          </div>
+        </header>
+        <div class="data-card__body text-center">
+          <p class="mb-3">Looking to hire from within the COSA network.</p>
+          {% if can_contact %}
+          <a
+            href="{% url 'send_message_to' profile_alumni.id %}"
+            class="btn btn-info btn-sm"
+          >
+            <i class="fas fa-envelope me-1"></i>Inquire About Roles
+          </a>
+          {% endif %}
+        </div>
+      </aside>
+      {% endif %}
+
+      <aside class="data-card data-card--accent-amber">
+        <header class="data-card__header">
+          <span class="data-card__icon"><i class="fas fa-users"></i></span>
+          <div>
+            <h5 class="data-card__title">Discover More Alumni</h5>
+            <p class="data-card__subtitle">Stay curious and keep exploring</p>
+          </div>
+        </header>
+        <div class="data-card__body summary-list">
+          <a
+            href="{% url 'alumni_directory' %}?graduation_year={{ profile_alumni.graduation_year.id }}"
+            class="text-decoration-none d-block fw-semibold mb-2"
+          >
+            More from Class of {{ profile_alumni.graduation_year.year }}
+          </a>
+          {% if profile_alumni.level %}
+          <a
+            href="{% url 'alumni_directory' %}?level={{ profile_alumni.level.id }}"
+            class="text-decoration-none d-block fw-semibold mb-2"
+          >
+            Explore {{ profile_alumni.level.name }} graduates
+          </a>
+          {% endif %} {% if profile_alumni.industry %}
+          <div class="callout mb-2">
+            <i class="fas fa-industry me-2 text-warning"></i>{{
+            profile_alumni.industry }}
+          </div>
+          {% endif %} {% if profile_alumni.current_city %}
+          <div class="callout mb-0">
+            <i class="fas fa-map-marker-alt me-2 text-danger"></i>{{
+            profile_alumni.current_city }}
+          </div>
+          {% endif %}
+        </div>
+      </aside>
+    </div>
+  </div>
 </section>
 {% endblock %}

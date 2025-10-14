@@ -164,7 +164,6 @@ class GraduationYear(models.Model):
 
 
     year = models.CharField(max_length=20, unique=True, choices=YEAR_CHOICES)
-    description = models.CharField(max_length=255, blank=True)
     display_order = models.PositiveIntegerField(default=0, help_text="Controls the ordering of levels in lists")
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)

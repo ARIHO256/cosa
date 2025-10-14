@@ -162,113 +162,12 @@
         font-size: 0.9rem;
       }
 
-      .app-header-actions .app-profile-action {
-        padding: 0.26rem 0.32rem;
-        gap: 0.1rem;
-        min-width: 52px;
-      }
-
-      .app-profile-avatar,
-      .app-profile-avatar-placeholder {
-        width: 22px;
-        height: 22px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 2px solid rgba(255, 255, 255, 0.85);
-        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.18);
-      }
-
-      .app-profile-avatar-placeholder {
-        display: inline-grid;
-        place-items: center;
-        background: linear-gradient(
-          135deg,
-          rgba(37, 99, 235, 0.85) 0%,
-          rgba(59, 130, 246, 0.75) 100%
-        );
-        color: var(--app-text-inverse);
-        font-size: 0.7rem;
-      }
-
-      .app-profile-avatar-wrapper {
-        display: inline-flex;
-        border-radius: 50%;
-        padding: 1.5px;
-        background: linear-gradient(
-          135deg,
-          rgba(37, 99, 235, 0.35),
-          rgba(59, 130, 246, 0.2)
-        );
-      }
-
-      .app-profile-name {
-        font-weight: 600;
-        color: var(--app-text-primary);
-        white-space: nowrap;
-      }
-
-      .app-chip-profile {
-        padding: 0.35rem 0.6rem;
-        gap: 0.45rem;
-      }
-
-      .app-header-label,
-      .app-chip-label {
+      .app-header-label {
         display: block;
         font-size: 0.55rem;
         line-height: 1.1;
         text-transform: none;
         font-weight: 600;
-      }
-
-      .app-header-quick-nav {
-        display: flex;
-        gap: 0.35rem;
-        overflow-x: auto;
-        padding: 0 0.85rem 0.6rem;
-        max-width: 640px;
-        margin: 0 auto;
-        scrollbar-width: none;
-        justify-content: center;
-      }
-
-      .app-header-quick-nav::-webkit-scrollbar {
-        display: none;
-      }
-
-      .app-chip {
-        display: inline-flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 0.1rem;
-        padding: 0.32rem 0.38rem;
-        border-radius: 16px;
-        border: 1px solid var(--app-border);
-        background: rgba(255, 255, 255, 0.72);
-        color: var(--app-text-secondary);
-        font-size: 0.64rem;
-        text-decoration: none;
-        white-space: nowrap;
-        font-weight: 600;
-        transition: transform 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
-        min-width: 56px;
-      }
-
-      .app-chip.active {
-        background: linear-gradient(
-          135deg,
-          rgba(37, 99, 235, 0.18) 0%,
-          rgba(37, 99, 235, 0.28) 100%
-        );
-        border-color: rgba(37, 99, 235, 0.35);
-        color: var(--app-primary);
-        box-shadow: 0 10px 28px rgba(37, 99, 235, 0.16);
-      }
-
-      .app-chip:hover {
-        transform: translateY(-1px);
-        color: var(--app-primary);
       }
 
       .app-content {
@@ -1211,7 +1110,14 @@
             <span class="app-header-label">Logout</span>
           </a>
           {% else %}
-          <!-- Alumni header profile moved to quick nav -->
+          <a href="{% url 'alumni_profile' %}">
+            <i class="fas fa-user"></i>
+            <span class="app-header-label">Profile</span>
+          </a>
+          <a href="{% url 'user_logout' %}">
+            <i class="fas fa-sign-out-alt"></i>
+            <span class="app-header-label">Logout</span>
+          </a>
           {% endif %} {% else %}
           <a href="{% url 'login_page' %}">
             <i class="fas fa-sign-in-alt"></i>
@@ -1223,131 +1129,6 @@
           </a>
           {% endif %}
         </div>
-      </div>
-
-      <div class="app-header-quick-nav">
-        {% if user.is_authenticated %} {% if user.user_type == '1' %}
-        <a
-          href="{% url 'manage_coordinators' %}"
-          class="app-chip {% if current == 'manage_coordinators' %}active{% endif %}"
-        >
-          <i class="fas fa-user-tie"></i>
-          <span class="app-chip-label">Coordinators</span>
-        </a>
-        <a
-          href="{% url 'manage_companies' %}"
-          class="app-chip {% if current == 'manage_companies' %}active{% endif %}"
-        >
-          <i class="fas fa-building"></i>
-          <span class="app-chip-label">Companies</span>
-        </a>
-        <a
-          href="{% url 'manage_departments' %}"
-          class="app-chip {% if current == 'manage_departments' %}active{% endif %}"
-        >
-          <i class="fas fa-layer-group"></i>
-          <span class="app-chip-label">Departments</span>
-        </a>
-        <a
-          href="{% url 'manage_degrees' %}"
-          class="app-chip {% if current == 'manage_degrees' %}active{% endif %}"
-        >
-          <i class="fas fa-graduation-cap"></i>
-          <span class="app-chip-label">Programs</span>
-        </a>
-        <a
-          href="{% url 'system_settings' %}"
-          class="app-chip {% if current == 'system_settings' %}active{% endif %}"
-        >
-          <i class="fas fa-sliders-h"></i>
-          <span class="app-chip-label">Settings</span>
-        </a>
-        {% elif user.user_type == '2' %}
-        <a
-          href="{% url 'manage_jobs' %}"
-          class="app-chip {% if current == 'manage_jobs' %}active{% endif %}"
-        >
-          <i class="fas fa-briefcase"></i>
-          <span class="app-chip-label">Jobs</span>
-        </a>
-        <a
-          href="{% url 'manage_news' %}"
-          class="app-chip {% if current == 'manage_news' %}active{% endif %}"
-        >
-          <i class="fas fa-newspaper"></i>
-          <span class="app-chip-label">News</span>
-        </a>
-        <a
-          href="{% url 'manage_donations' %}"
-          class="app-chip {% if current == 'manage_donations' %}active{% endif %}"
-        >
-          <i class="fas fa-hand-holding-heart"></i>
-          <span class="app-chip-label">Donations</span>
-        </a>
-        <a
-          href="{% url 'manage_mentorships' %}"
-          class="app-chip {% if current == 'manage_mentorships' %}active{% endif %}"
-        >
-          <i class="fas fa-lightbulb"></i>
-          <span class="app-chip-label">Mentorships</span>
-        </a>
-        <a
-          href="{% url 'send_notification' %}"
-          class="app-chip {% if current == 'send_notification' %}active{% endif %}"
-        >
-          <i class="fas fa-bullhorn"></i>
-          <span class="app-chip-label">Alerts</span>
-        </a>
-        {% else %}
-        <a
-          href="{% url 'alumni_directory' %}"
-          class="app-chip {% if current == 'alumni_directory' %}active{% endif %}"
-          ><i class="fas fa-users"></i> Members</a
-        >
-        <a
-          href="{% url 'events' %}"
-          class="app-chip {% if current == 'events' %}active{% endif %}"
-          ><i class="fas fa-calendar-alt"></i> Events</a
-        >
-        <a
-          href="{% url 'job_board' %}"
-          class="app-chip {% if current == 'job_board' %}active{% endif %}"
-          ><i class="fas fa-briefcase"></i> Careers</a
-        >
-        <a
-          href="{% url 'my_events' %}"
-          class="app-chip {% if current == 'my_events' %}active{% endif %}"
-          ><i class="fas fa-ticket-alt"></i> My Events</a
-        >
-        <a
-          href="{% url 'alumni_profile' %}"
-          class="app-chip app-chip-profile {% if current == 'alumni_profile' %}active{% endif %}"
-        >
-          <span class="app-profile-avatar-wrapper">
-            {% if user.profile_pic %}
-            <img
-              src="{{ user.profile_pic.url }}"
-              alt="{{ user.get_full_name|default:'Profile' }}"
-              class="app-profile-avatar"
-            />
-            {% else %}
-            <span class="app-profile-avatar-placeholder">
-              <i class="fas fa-user"></i>
-            </span>
-            {% endif %}
-          </span>
-          <span class="app-profile-name"
-            >{{ user.first_name|default:user.get_short_name|default:"Profile"
-            }}</span
-          >
-        </a>
-        {% endif %} {% else %}
-        <a
-          href="{% url 'about_cosa' %}"
-          class="app-chip {% if current == 'about_cosa' %}active{% endif %}"
-          ><i class="fas fa-info-circle"></i> About</a
-        >
-        {% endif %}
       </div>
     </header>
 
@@ -1462,9 +1243,11 @@
         >
           <span class="app-tab-icon">
             <i class="fas fa-house"></i>
-            {% with count=alumni_badges.home %} {% if count %}
-            <span class="app-icon-badge">{{ count }}</span>
-            {% endif %} {% endwith %}
+            {% with count=alumni_badges.home %}
+              {% if count %}
+                <span class="app-icon-badge">{{ count }}</span>
+              {% endif %}
+            {% endwith %}
           </span>
           Home
         </a>
@@ -1474,9 +1257,11 @@
         >
           <span class="app-tab-icon">
             <i class="fas fa-envelope"></i>
-            {% with count=alumni_badges.messages %} {% if count %}
-            <span class="app-icon-badge">{{ count }}</span>
-            {% endif %} {% endwith %}
+            {% with count=alumni_badges.messages %}
+              {% if count %}
+                <span class="app-icon-badge">{{ count }}</span>
+              {% endif %}
+            {% endwith %}
           </span>
           Inbox
         </a>
@@ -1486,11 +1271,11 @@
         >
           <span class="app-tab-icon">
             <i class="fas fa-bell"></i>
-            {% with
-            count=alumni_badges.alerts|default:alumni_badges.notifications %} {%
-            if count %}
-            <span class="app-icon-badge">{{ count }}</span>
-            {% endif %} {% endwith %}
+            {% with count=alumni_badges.alerts|default:alumni_badges.notifications %}
+              {% if count %}
+                <span class="app-icon-badge">{{ count }}</span>
+              {% endif %}
+            {% endwith %}
           </span>
           Alerts
         </a>
@@ -1500,9 +1285,11 @@
         >
           <span class="app-tab-icon">
             <i class="fas fa-comment-dots"></i>
-            {% with count=alumni_badges.feedback %} {% if count %}
-            <span class="app-icon-badge">{{ count }}</span>
-            {% endif %} {% endwith %}
+            {% with count=alumni_badges.feedback %}
+              {% if count %}
+                <span class="app-icon-badge">{{ count }}</span>
+              {% endif %}
+            {% endwith %}
           </span>
           Feedback
         </a>

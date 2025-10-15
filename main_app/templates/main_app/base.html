@@ -232,8 +232,8 @@
         height: 20px;
         border-radius: 50%;
         object-fit: cover;
-        border: 2px solid rgba(255, 255, 255, 0.9);
-        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.18);
+        border: 2px solid transparent; /* remove white ring */
+        box-shadow: none; /* remove glow */
       }
 
       .app-profile-avatar-placeholder {
@@ -251,12 +251,8 @@
       .app-profile-avatar-wrapper {
         display: inline-flex;
         border-radius: 50%;
-        padding: 1.5px;
-        background: linear-gradient(
-          135deg,
-          rgba(37, 99, 235, 0.35),
-          rgba(59, 130, 246, 0.2)
-        );
+        padding: 0; /* remove wrapper padding */
+        background: transparent; /* remove wrapper background */
       }
 
       .app-profile-name {

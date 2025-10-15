@@ -17,6 +17,7 @@ from django.conf import settings
 from django.template.loader import render_to_string
 
 from .models import *
+from .models import Follow, FriendRequest, Friendship, Notification, CustomUser
 from .forms import *
 
 
@@ -225,6 +226,215 @@ def alumni_detail(request, alumni_id):
     }
     
     return render(request, 'alumni_template/alumni_detail.html', context)
+
+
+# =========================
+# Social: Follow & Friends
+# =========================
+
+@login_required
+def follow_toggle(request, user_id):
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid method'}, status=405)
+    actor = request.user
+    try:
+        target = CustomUser.objects.get(id=user_id)
+    except CustomUser.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'User not found'}, status=404)
+    if actor.id == target.id:
+        return JsonResponse({'status': 'error', 'message': 'Cannot follow yourself'}, status=400)
+
+    existing = Follow.objects.filter(follower=actor, following=target).first()
+    if existing:
+        existing.delete()
+        return JsonResponse({'status': 'success', 'action': 'unfollowed'})
+
+    Follow.objects.create(follower=actor, following=target)
+    Notification.objects.create(
+        recipient=target,
+        sender=actor,
+        notification_type='follow',
+        message=f"{actor.first_name or actor.email} started following you."
+    )
+    return JsonResponse({'status': 'success', 'action': 'followed'})
+
+
+@login_required
+def send_friend_request(request, user_id):
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid method'}, status=405)
+    actor = request.user
+    try:
+        target = CustomUser.objects.get(id=user_id)
+    except CustomUser.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'User not found'}, status=404)
+    if actor.id == target.id:
+        return JsonResponse({'status': 'error', 'message': 'Cannot add yourself'}, status=400)
+
+    # Already friends?
+    if _are_friends(actor, target):
+        return JsonResponse({'status': 'error', 'message': 'Already friends'}, status=400)
+
+    fr, created = FriendRequest.objects.get_or_create(sender=actor, receiver=target, defaults={'status': 'pending'})
+    if not created and fr.status == 'pending':
+        return JsonResponse({'status': 'success', 'action': 'already_pending'})
+    if not created and fr.status in ('rejected', 'cancelled'):
+        fr.status = 'pending'
+        fr.save(update_fields=['status', 'updated_at'])
+
+    Notification.objects.create(
+        recipient=target,
+        sender=actor,
+        notification_type='friend_request',
+        message=f"{actor.first_name or actor.email} sent you a friend request."
+    )
+    return JsonResponse({'status': 'success', 'action': 'requested'})
+
+
+@login_required
+def respond_friend_request(request, request_id):
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid method'}, status=405)
+    action = request.POST.get('action')  # 'accept' or 'reject'
+    try:
+        fr = FriendRequest.objects.select_related('sender', 'receiver').get(id=request_id, receiver=request.user)
+    except FriendRequest.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Request not found'}, status=404)
+
+    if fr.status != 'pending':
+        return JsonResponse({'status': 'error', 'message': 'Request already processed'}, status=400)
+
+    if action == 'accept':
+        fr.status = 'accepted'
+        fr.save(update_fields=['status', 'updated_at'])
+
+        # Create friendship (ordered pair)
+        _ensure_friendship(fr.sender, fr.receiver)
+
+        Notification.objects.create(
+            recipient=fr.sender,
+            sender=fr.receiver,
+            notification_type='friend_acceptance',
+            message=f"{fr.receiver.first_name or fr.receiver.email} accepted your friend request."
+        )
+        return JsonResponse({'status': 'success', 'action': 'accepted'})
+
+    if action == 'reject':
+        fr.status = 'rejected'
+        fr.save(update_fields=['status', 'updated_at'])
+        return JsonResponse({'status': 'success', 'action': 'rejected'})
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid action'}, status=400)
+
+
+def _ensure_friendship(u1, u2):
+    # Order users by id to maintain uniqueness
+    if u1.id > u2.id:
+        u1, u2 = u2, u1
+    Friendship.objects.get_or_create(user1=u1, user2=u2)
+
+
+def _are_friends(u1, u2):
+    a, b = (u1, u2) if u1.id < u2.id else (u2, u1)
+    return Friendship.objects.filter(user1=a, user2=b).exists()
+
+
+@login_required
+def list_followers(request, user_id=None):
+    user = request.user if not user_id else get_object_or_404(CustomUser, id=user_id)
+    followers = Follow.objects.filter(following=user).select_related('follower')
+    data = [{
+        'id': f.follower.id,
+        'name': f.follower.get_full_name() or f.follower.email,
+        'email': f.follower.email,
+    } for f in followers]
+    return JsonResponse({'results': data})
+
+
+@login_required
+def list_following(request, user_id=None):
+    user = request.user if not user_id else get_object_or_404(CustomUser, id=user_id)
+    following = Follow.objects.filter(follower=user).select_related('following')
+    data = [{
+        'id': f.following.id,
+        'name': f.following.get_full_name() or f.following.email,
+        'email': f.following.email,
+    } for f in following]
+    return JsonResponse({'results': data})
+
+
+@login_required
+def list_friends(request, user_id=None):
+    user = request.user if not user_id else get_object_or_404(CustomUser, id=user_id)
+    friendships = Friendship.objects.filter(models.Q(user1=user) | models.Q(user2=user)).select_related('user1', 'user2')
+    results = []
+    for fs in friendships:
+        friend = fs.user2 if fs.user1_id == user.id else fs.user1
+        results.append({
+            'id': friend.id,
+            'name': friend.get_full_name() or friend.email,
+            'email': friend.email,
+        })
+    return JsonResponse({'results': results})
+
+
+@login_required
+def notifications_feed(request):
+    """Return unread and all notifications for the authenticated user."""
+    unread_only = request.GET.get('unread') == '1'
+    qs = Notification.objects.filter(recipient=request.user).select_related('sender')
+    if unread_only:
+        qs = qs.filter(is_read=False)
+    qs = qs.order_by('-created_at')[:100]
+    data = [{
+        'id': n.id,
+        'type': n.notification_type,
+        'message': n.message,
+        'sender': {
+            'id': n.sender.id,
+            'name': n.sender.get_full_name() or n.sender.email,
+            'email': n.sender.email,
+        },
+        'is_read': n.is_read,
+        'created_at': n.created_at.isoformat(),
+    } for n in qs]
+    return JsonResponse({'results': data})
+
+
+@login_required
+def mark_notification_read(request, notification_id):
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid method'}, status=405)
+    try:
+        n = Notification.objects.get(id=notification_id, recipient=request.user)
+    except Notification.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Not found'}, status=404)
+    if not n.is_read:
+        n.is_read = True
+        n.save(update_fields=['is_read', 'updated_at'])
+    return JsonResponse({'status': 'success'})
+
+
+# -------------------------
+# Simple pages consuming AJAX
+# -------------------------
+
+@login_required
+@alumni_profile_required
+def friends_page(request):
+    return render(request, 'alumni_template/friends.html')
+
+
+@login_required
+@alumni_profile_required
+def followers_page(request):
+    return render(request, 'alumni_template/followers.html')
+
+
+@login_required
+@alumni_profile_required
+def following_page(request):
+    return render(request, 'alumni_template/following.html')
 
 
 @login_required

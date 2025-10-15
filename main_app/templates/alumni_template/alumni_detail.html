@@ -368,6 +368,19 @@ block title %}{{ profile_alumni.admin.get_full_name }} - COSA Alumni{% endblock
           {% endif %}
         </div>
 
+        {% if request.user.is_authenticated and request.user.id != profile_alumni.admin.id %}
+        <div class="d-flex gap-2 mt-2">
+          <button id="followBtn" class="btn btn-outline-primary btn-sm">
+            <i class="fas fa-user-plus me-1"></i>
+            <span>Follow</span>
+          </button>
+          <button id="friendBtn" class="btn btn-primary btn-sm">
+            <i class="fas fa-user-friends me-1"></i>
+            <span>Add Friend</span>
+          </button>
+        </div>
+        {% endif %}
+
         <div class="profile-summary__meta">
           {% if profile_alumni.level %}
           <span class="profile-chip profile-chip--primary">
@@ -398,6 +411,48 @@ block title %}{{ profile_alumni.admin.get_full_name }} - COSA Alumni{% endblock
     </div>
   </div>
 </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const followBtn = document.getElementById('followBtn');
+  const friendBtn = document.getElementById('friendBtn');
+  if (followBtn) {
+    followBtn.addEventListener('click', function() {
+      followBtn.classList.add('loading');
+      fetch('{% url "follow_toggle" profile_alumni.admin.id %}', {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}'
+        }
+      }).then(r => r.json()).then(data => {
+        followBtn.classList.remove('loading');
+        if (data.action === 'followed') {
+          followBtn.querySelector('span').innerText = 'Following';
+        } else if (data.action === 'unfollowed') {
+          followBtn.querySelector('span').innerText = 'Follow';
+        }
+      }).catch(() => followBtn.classList.remove('loading'));
+    });
+  }
+  if (friendBtn) {
+    friendBtn.addEventListener('click', function() {
+      friendBtn.classList.add('loading');
+      fetch('{% url "send_friend_request" profile_alumni.admin.id %}', {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}'
+        }
+      }).then(r => r.json()).then(data => {
+        friendBtn.classList.remove('loading');
+        if (data.status === 'success') {
+          friendBtn.querySelector('span').innerText = 'Requested';
+          friendBtn.disabled = true;
+        }
+      }).catch(() => friendBtn.classList.remove('loading'));
+    });
+  }
+});
+</script>
 
 <section class="profile-body container">
   <div class="row gy-4">

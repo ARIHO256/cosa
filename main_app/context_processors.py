@@ -8,6 +8,7 @@ from .models import (
     NotificationCoordinator,
     Message,
 )
+from .models import Notification as SocialNotification
 
 
 def header_counts(request):
@@ -59,6 +60,7 @@ def header_counts(request):
         alumni = getattr(user, 'alumni', None)
         unread_messages = 0
         unread_notifications = 0
+        social_unread = 0
         if alumni:
             unread_messages = Message.objects.filter(
                 recipient=alumni,
@@ -68,13 +70,15 @@ def header_counts(request):
                 alumni=alumni,
                 is_read=False
             ).count()
+        # Count social notifications for any authenticated user
+        social_unread = SocialNotification.objects.filter(recipient=user, is_read=False).count()
 
         data['alumni_badges'] = {
             'messages': unread_messages,
-            'alerts': unread_notifications,
-            'notifications': unread_notifications,
+            'alerts': unread_notifications + social_unread,
+            'notifications': unread_notifications + social_unread,
             'feedback': 0,
-            'home': unread_messages + unread_notifications,
+            'home': unread_messages + unread_notifications + social_unread,
         }
 
     return data

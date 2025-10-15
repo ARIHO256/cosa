@@ -59,9 +59,8 @@
                 >
               </h5>
               <div class="small text-muted">
-                {% if alumnus.level %}{{ alumnus.level.name }}{% endif %} {% if
-                alumnus.graduation_year %} &middot; Class of {{
-                alumnus.graduation_year.year }}{% endif %}
+                {% if alumnus.level %}{{ alumnus.level.name }}{% endif %}
+                {% if alumnus.graduation_year %} &middot; Class of {{ alumnus.graduation_year.year }}{% endif %}
               </div>
             </div>
             <div class="d-flex flex-wrap gap-1 justify-content-end">
@@ -88,9 +87,8 @@
           {% endif %} {% if alumnus.current_company or alumnus.job_title %}
           <div class="small text-muted mt-1">
             <i class="fas fa-briefcase me-2"></i>
-            {% if alumnus.job_title %}{{ alumnus.job_title }}{% endif %} {% if
-            alumnus.current_company %} {% if alumnus.job_title %} at {% endif
-            %}{{ alumnus.current_company.name }} {% endif %}
+            {% if alumnus.job_title %}{{ alumnus.job_title }}{% endif %}
+            {% if alumnus.current_company %}{% if alumnus.job_title %} at {% endif %}{{ alumnus.current_company.name }}{% endif %}
           </div>
           {% endif %} {% if alumnus.current_city %}
           <div class="small text-muted mt-1">
@@ -131,8 +129,7 @@
         >
           <i class="fas fa-eye"></i>
         </a>
-        {% if alumnus.allow_contact and request.user.is_authenticated and
-        alumnus != request.user.alumni %}
+        {% if alumnus.allow_contact and request.user.is_authenticated and alumnus != request.user.alumni %}
         <a
           href="{% url 'send_message_to' alumnus.id %}"
           class="btn btn-outline-success btn-sm"

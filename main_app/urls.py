@@ -172,6 +172,26 @@ urlpatterns = [
     path("alumni/feedback/", alumni_views.alumni_feedback, name='alumni_feedback'),
     path("alumni/notifications/", alumni_views.notifications, name='notifications'),
     path("alumni/notifications/<int:notification_id>/delete/", alumni_views.delete_notification, name='delete_notification'),
+
+    # Social graph & notifications (AJAX)
+    path("social/follow/<int:user_id>/toggle/", alumni_views.follow_toggle, name='follow_toggle'),
+    path("social/friend-request/<int:user_id>/send/", alumni_views.send_friend_request, name='send_friend_request'),
+    path("social/friend-request/<int:request_id>/respond/", alumni_views.respond_friend_request, name='respond_friend_request'),
+
+    path("social/followers/", alumni_views.list_followers, name='list_followers'),
+    path("social/followers/<int:user_id>/", alumni_views.list_followers, name='list_followers_of'),
+    path("social/following/", alumni_views.list_following, name='list_following'),
+    path("social/following/<int:user_id>/", alumni_views.list_following, name='list_following_of'),
+    path("social/friends/", alumni_views.list_friends, name='list_friends'),
+    path("social/friends/<int:user_id>/", alumni_views.list_friends, name='list_friends_of'),
+
+    path("social/notifications/", alumni_views.notifications_feed, name='notifications_feed'),
+    path("social/notifications/<int:notification_id>/read/", alumni_views.mark_notification_read, name='mark_notification_read'),
+
+    # Social pages
+    path("alumni/friends/", alumni_views.friends_page, name='friends_page'),
+    path("alumni/followers/", alumni_views.followers_page, name='followers_page'),
+    path("alumni/following/", alumni_views.following_page, name='following_page'),
     path("alumni/fcmtoken/", alumni_views.alumni_fcmtoken, name='alumni_fcmtoken'),
     
     # Legacy URLs for backward compatibility (can be removed later)

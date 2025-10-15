@@ -1081,6 +1081,120 @@ class CommentLike(models.Model):
         return f"{self.user.get_full_name()} liked comment by {self.comment.user.get_full_name()}"
 
 
+# =========================
+# Social Graph & Notifications
+# =========================
+
+class Follow(models.Model):
+    """One-way follow: follower -> following (both are users).
+    Constraints: unique per pair, no self-follow.
+    """
+    follower = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='following')
+    following = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='followers')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = [('follower', 'following')]
+        indexes = [
+            models.Index(fields=['follower']),
+            models.Index(fields=['following']),
+        ]
+        ordering = ['-created_at']
+        verbose_name = 'Follow'
+        verbose_name_plural = 'Follows'
+
+    def __str__(self):
+        return f"{getattr(self.follower, 'email', self.follower_id)} -> {getattr(self.following, 'email', self.following_id)}"
+
+
+class FriendRequest(models.Model):
+    """Pending friend request from sender to receiver until accepted/rejected."""
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('accepted', 'Accepted'),
+        ('rejected', 'Rejected'),
+        ('cancelled', 'Cancelled'),
+    ]
+
+    sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sent_friend_requests')
+    receiver = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='received_friend_requests')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = [('sender', 'receiver')]
+        indexes = [
+            models.Index(fields=['sender']),
+            models.Index(fields=['receiver']),
+            models.Index(fields=['status']),
+        ]
+        ordering = ['-created_at']
+        verbose_name = 'Friend Request'
+        verbose_name_plural = 'Friend Requests'
+
+    def __str__(self):
+        return f"{getattr(self.sender, 'email', self.sender_id)} -> {getattr(self.receiver, 'email', self.receiver_id)} [{self.status}]"
+
+
+class Friendship(models.Model):
+    """Mutual connection between two users.
+    Store smaller user id first to keep a single row per pair.
+    """
+    user1 = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='friendships_as_user1')
+    user2 = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='friendships_as_user2')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = [('user1', 'user2')]
+        indexes = [
+            models.Index(fields=['user1']),
+            models.Index(fields=['user2']),
+        ]
+        ordering = ['-created_at']
+        verbose_name = 'Friendship'
+        verbose_name_plural = 'Friendships'
+
+    def save(self, *args, **kwargs):
+        # Ensure consistent ordering of users
+        if self.user1_id and self.user2_id and self.user1_id > self.user2_id:
+            self.user1, self.user2 = self.user2, self.user1
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Friends: {getattr(self.user1, 'email', self.user1_id)} <-> {getattr(self.user2, 'email', self.user2_id)}"
+
+
+class Notification(models.Model):
+    """User-to-user notifications for social actions."""
+    NOTIFICATION_TYPES = [
+        ('follow', 'Follow'),
+        ('friend_request', 'Friend Request'),
+        ('friend_acceptance', 'Friend Acceptance'),
+    ]
+
+    recipient = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications')
+    sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sent_notifications')
+    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
+    message = models.CharField(max_length=255, blank=True)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['recipient', 'is_read']),
+            models.Index(fields=['recipient', 'created_at']),
+        ]
+        ordering = ['-created_at']
+        verbose_name = 'Notification'
+        verbose_name_plural = 'Notifications'
+
+    def __str__(self):
+        return f"Notify {getattr(self.recipient, 'email', self.recipient_id)}: {self.notification_type} by {getattr(self.sender, 'email', self.sender_id)}"
+
 # UPDATED Signal handlers for user profile creation
 @receiver(post_save, sender=CustomUser)
 def create_user_profile(sender, instance, created, **kwargs):

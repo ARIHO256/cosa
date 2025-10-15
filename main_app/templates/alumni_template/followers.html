@@ -1,0 +1,27 @@
+{% extends 'alumni_template/base.html' %}
+{% block title %}Followers - COSA{% endblock %}
+{% block alumni_content %}
+<section class="container">
+  <div class="cosa-card">
+    <h5 class="mb-3">My Followers</h5>
+    <div id="followersList" class="list-group"></div>
+  </div>
+</section>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  fetch('{% url "list_followers" %}')
+    .then(r => r.json())
+    .then(({results}) => {
+      const list = document.getElementById('followersList');
+      list.innerHTML = results.map(u => (
+        `<div class="list-group-item d-flex justify-content-between align-items-center">
+          <span class="fw-semibold">${u.name}</span>
+          <small class="text-muted">${u.email}</small>
+        </div>`
+      )).join('') || '<div class="text-muted">No followers yet</div>';
+    });
+});
+</script>
+{% endblock %}
+
+
